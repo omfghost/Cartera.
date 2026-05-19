@@ -341,6 +341,19 @@ input,select,button,textarea{font-family:inherit}
 /* ── Botón previsión trimestral ── */
 .fc-q-btn{width:100%;margin-top:9px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);border-radius:8px;padding:9px;color:var(--c2);font-size:11px;font-weight:600;cursor:pointer}
 .fc-q-btn:active{background:rgba(34,211,238,.2)}
+/* ── Pestañas Activas/Cerradas en posiciones ── */
+.pos-tabs{display:flex;gap:6px;margin:10px 0 8px}
+.pos-tab{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;font-weight:600;color:var(--w2);cursor:pointer}
+.pos-tab.on{background:var(--c);border-color:var(--c);color:var(--bg)}
+/* ── Barra de multiselección de operaciones ── */
+.ops-selbar{align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:8px 11px;margin-bottom:9px}
+.ops-selall{background:transparent;border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:11px;color:var(--w);cursor:pointer}
+.ops-selcnt{flex:1;font-size:12px;color:var(--w2);font-weight:600}
+.ops-seldel{background:var(--r);border:none;border-radius:7px;padding:6px 14px;font-size:11px;font-weight:700;color:#fff;cursor:pointer}
+.opcard.selmode{cursor:pointer}
+.opcard.selected{border-color:var(--c);background:rgba(34,150,235,.1)}
+.op-check{width:21px;height:21px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--bg);flex-shrink:0}
+.op-check.on{background:var(--c);border-color:var(--c)}
 </style>
 </head>
 <body>
@@ -400,12 +413,21 @@ input,select,button,textarea{font-family:inherit}
       <input class="si" type="search" placeholder="Buscar activo..." oninput="onCarteraSearch(this.value)">
     </div>
     <div class="chrow" id="cartera-chips"></div>
+    <div class="pos-tabs">
+      <button class="pos-tab on" id="ptab-act" onclick="setPosTab('act')">Activas</button>
+      <button class="pos-tab" id="ptab-clo" onclick="setPosTab('clo')">Cerradas</button>
+    </div>
     <div id="positions-list"></div>
   </div>
   <div class="subview" id="sv-ops">
     <div class="btn-pair">
       <button class="fab" onclick="openAddOp()">+ Nueva operaci&oacute;n</button>
-      <button class="fab alt" style="border-color:var(--r);color:var(--r)" onclick="delAllOps()">Borrar todo</button>
+      <button class="fab alt" id="ops-seltoggle" onclick="toggleOpsSelectMode()">Seleccionar</button>
+    </div>
+    <div class="ops-selbar" id="ops-selbar" style="display:none">
+      <button class="ops-selall" onclick="selectAllOps()">Todas</button>
+      <span class="ops-selcnt" id="ops-selcount">0 seleccionadas</span>
+      <button class="ops-seldel" onclick="delSelectedOps()">Eliminar</button>
     </div>
     <div id="ops-list"></div>
   </div>
@@ -850,7 +872,11 @@ function cumulativeReturn(){
 }
 
 /* ── FORMATO ── */
-function fe(v,c){const a=Math.abs(v);if(c&&a>=1e6)return'€'+(a/1e6).toFixed(2)+'M';if(c&&a>=1e3)return'€'+(a/1e3).toFixed(0)+'k';return'€'+a.toLocaleString('es-ES',{maximumFractionDigits:a<100?2:0});}
+function fe(v,c){
+  /* siempre cifra completa en euros (sin abreviar a k/M) */
+  const a=Math.abs(v);
+  return '€'+a.toLocaleString('es-ES',{maximumFractionDigits:a<1000?2:0});
+}
 /* símbolo de una divisa por su código */
 function curSym(code){
   const m={USD:'$',EUR:'€',GBP:'£',GBp:'p',CHF:'Fr',JPY:'¥',CAD:'C$',
@@ -1157,6 +1183,39 @@ async function fetchChart(ticker,range){
   if(!meta.regularMarketPrice)meta.regularMarketPrice=series[series.length-1];
   if(meta.chartPreviousClose==null&&series.length>1)meta.chartPreviousClose=series[series.length-2];
   return {meta,series,times};
+}
+
+/* ── PRECIO ACTUAL MULTI-FUENTE ──
+   Para sincronizar precios. Prueba 4 fuentes en orden hasta lograr uno válido:
+   1) FMP (si hay clave) · 2) Stooq quote · 3) Yahoo v7 quote · 4) Yahoo chart.
+   Devuelve {price,currency} o null. */
+async function fetchBestPrice(ticker){
+  /* 1) FMP — la más fiable si hay clave */
+  if(typeof hasApiKey==='function'&&hasApiKey()){
+    try{
+      const q=await apiQuoteGet('quote',{symbol:toApiSymbol(ticker)});
+      if(q&&q.close!=null&&q.close>0)return {price:q.close,currency:q.currency||null};
+    }catch(e){}
+  }
+  /* 2) Stooq quote (CSV ligero, muy estable) */
+  try{
+    const sq=await fetchStooqQuote(ticker);
+    if(sq&&sq.price>0)return {price:sq.price,currency:null};
+  }catch(e){}
+  /* 3) Yahoo v7 quote */
+  try{
+    const q=await fetchQuote(ticker);
+    if(q&&q.regularMarketPrice>0)return {price:q.regularMarketPrice,currency:q.currency||null};
+  }catch(e){}
+  /* 4) Yahoo chart (último cierre de la serie) */
+  try{
+    const c=await fetchYahooChart(ticker,'5d');
+    if(c&&c.series&&c.series.length){
+      const p=(c.meta&&c.meta.regularMarketPrice)||c.series[c.series.length-1];
+      if(p>0)return {price:p,currency:(c.meta&&c.meta.currency)||null};
+    }
+  }catch(e){}
+  return null;
 }
 
 /* ── CAMBIO DE SESIÓN (subida/bajada del día) ──
@@ -2069,13 +2128,22 @@ function setCarteraTab(t){
   G('sv-posiciones').classList.toggle('on',t==='posiciones');
   G('sv-ops').classList.toggle('on',t==='ops');
 }
-let carteraFilter='Todos',carteraSearch='';
+let carteraFilter='Todos',carteraSearch='',posTab='act';
+let opsSelectMode=false;
+const opsSelected=new Set();
 function renderCartera(){
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
   G('cartera-chips').innerHTML=types.map(t=>`<button class="chip${t===carteraFilter?' on':''}" onclick="setCF('${t}')">${t}</button>`).join('');
   renderPositions();renderOpsList();
 }
 function setCF(t){carteraFilter=t;renderPositions();}
+function setPosTab(t){
+  posTab=t;
+  const a=G('ptab-act'),c=G('ptab-clo');
+  if(a)a.classList.toggle('on',t==='act');
+  if(c)c.classList.toggle('on',t==='clo');
+  renderPositions();
+}
 function onCarteraSearch(v){carteraSearch=v.toLowerCase();renderPositions();}
 function renderPositions(){
   const tot=portfolioTotals().val;
@@ -2085,8 +2153,22 @@ function renderPositions(){
     const ms=!carteraSearch||a.name.toLowerCase().includes(carteraSearch)||a.type.toLowerCase().includes(carteraSearch);
     return mt&&ms;
   });
+  /* separar activas y cerradas según la pestaña */
+  const tab=(typeof posTab!=='undefined')?posTab:'act';
+  items=items.filter(a=>{
+    const closed=assetMetrics(a).units<=1e-9;
+    return tab==='clo'?closed:!closed;
+  });
+  /* actualizar el contador de la pestaña Cerradas */
+  const allClosed=DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)&&assetMetrics(a).units<=1e-9).length;
+  const ctab=G('ptab-clo');
+  if(ctab)ctab.textContent='Cerradas'+(allClosed?' ('+allClosed+')':'');
   const list=G('positions-list');
-  if(!items.length){list.innerHTML='<div class="empty"><div class="ei">○</div>No hay posiciones.<br>Pulsa "Añadir operación" para empezar.</div>';return;}
+  if(!items.length){
+    list.innerHTML='<div class="empty"><div class="ei">○</div>'+
+      (tab==='clo'?'No hay posiciones cerradas.':'No hay posiciones activas.<br>Pulsa "Añadir operación" para empezar.')+'</div>';
+    return;
+  }
   list.innerHTML=items.map(a=>{
     const m=assetMetrics(a),peso=tot>0?m.val/tot:0,col=TC[a.type]||'#9aa8bd',closed=m.units<=0;
     return `<div class="acard" onclick="showAssetDetail('${a.id}')">
@@ -2106,7 +2188,7 @@ function renderPositions(){
 function renderOpsList(){
   const ops=[...DB.ops].sort((a,b)=>b.dt.localeCompare(a.dt));
   const list=G('ops-list');
-  if(!ops.length){list.innerHTML='<div class="empty"><div class="ei">○</div>Sin operaciones registradas.</div>';return;}
+  if(!ops.length){list.innerHTML='<div class="empty"><div class="ei">○</div>Sin operaciones registradas.</div>';opsSelectMode=false;updateOpsBar();return;}
   const M={C:{cls:'B',lbl:'COMP'},V:{cls:'V',lbl:'VENT'},D:{cls:'D',lbl:'DIV'}};
   list.innerHTML=ops.map(op=>{
     const a=DB.assets.find(x=>x.id===op.aid);
@@ -2114,15 +2196,60 @@ function renderOpsList(){
     const tot=op.q*op.p+(op.f||0);
     const c=op.t==='V'?'var(--g)':op.t==='D'?'var(--gold)':'var(--r)';
     const s=op.t==='V'?'+':op.t==='D'?'+':'-';
-    return `<div class="opcard">
+    const sel=opsSelected.has(op.id);
+    return `<div class="opcard${opsSelectMode?' selmode':''}${sel?' selected':''}" ${opsSelectMode?`onclick="toggleOpSelect(${op.id})"`:''}>
+      ${opsSelectMode?`<div class="op-check${sel?' on':''}">${sel?'✓':''}</div>`:''}
       <div class="opb ${t.cls}">${t.lbl}</div>
-      <div class="opi"><div class="opnm">${a?.name||op.aid}</div><div class="opdt">${op.dt} · ${fn(op.q)} ${op.t==='D'?'':'@ '+fe(op.p)}</div></div>
+      <div class="opi"><div class="opnm">${a?a.name:op.aid}</div><div class="opdt">${op.dt} · ${fn(op.q)} ${op.t==='D'?'':'@ '+fe(op.p)}</div></div>
       <div class="opr">
-        <div class="opam" style="color:${c}">${s}${fe(op.t==='D'?op.q*op.p:tot,true)}</div>
-        <div class="opdel" onclick="event.stopPropagation();delOp(${op.id})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+        <div class="opam" style="color:${c}">${s}${fe(op.t==='D'?op.q*op.p:tot)}</div>
+        ${opsSelectMode?'':`<div class="opdel" onclick="event.stopPropagation();delOp(${op.id})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>`}
       </div>
     </div>`;
   }).join('');
+  updateOpsBar();
+}
+/* ── Multiselección de operaciones ── */
+function toggleOpsSelectMode(){
+  opsSelectMode=!opsSelectMode;
+  opsSelected.clear();
+  renderOpsList();
+}
+function toggleOpSelect(id){
+  if(opsSelected.has(id))opsSelected.delete(id);
+  else opsSelected.add(id);
+  renderOpsList();
+}
+function selectAllOps(){
+  if(opsSelected.size===DB.ops.length)opsSelected.clear();
+  else DB.ops.forEach(o=>opsSelected.add(o.id));
+  renderOpsList();
+}
+function updateOpsBar(){
+  const bar=G('ops-selbar');
+  if(!bar)return;
+  if(opsSelectMode){
+    bar.style.display='flex';
+    const cnt=G('ops-selcount');
+    if(cnt)cnt.textContent=opsSelected.size+' seleccionada'+(opsSelected.size===1?'':'s');
+  }else{
+    bar.style.display='none';
+  }
+  const tgl=G('ops-seltoggle');
+  if(tgl)tgl.textContent=opsSelectMode?'Cancelar':'Seleccionar';
+}
+function delSelectedOps(){
+  if(!opsSelected.size){showToast('No hay operaciones seleccionadas');return;}
+  const n=opsSelected.size;
+  openSheet(`<div class="shttl" style="color:var(--r)">Eliminar ${n} operacion${n===1?'':'es'}</div>
+    <div class="shp">Vas a eliminar <b>${n}</b> operacion${n===1?'':'es'} seleccionada${n===1?'':'s'}. Esta acción no se puede deshacer.</div>
+    <div class="shrow"><button class="bok" style="background:var(--r)" onclick="confirmDelSelected()">Eliminar ${n}</button><button class="bcancel" onclick="closeSheet()">Cancelar</button></div>`);
+}
+function confirmDelSelected(){
+  DB.ops=DB.ops.filter(o=>!opsSelected.has(o.id));
+  opsSelected.clear();opsSelectMode=false;
+  syncAssetsFromOps();saveDB();closeSheet();renderAll();
+  showToast('Operaciones eliminadas ✓');
 }
 function delOp(id){
   const op=DB.ops.find(o=>o.id===id);if(!op)return;
@@ -2693,13 +2820,20 @@ function renderSettings(){
     if(b)b.innerHTML='<div style="font-size:11px;color:var(--r)">No se pudo cargar la configuración de la fuente de datos.</div>';
   }
   if(DB.assets.length){
-    G('price-rows').innerHTML=DB.assets.map(a=>{
-      const cur=(typeof assetCurrency==='function')?assetCurrency(a):'EUR';
-      const priceEUR=(typeof toEUR==='function')?toEUR(a.price||0,cur):(a.price||0);
-      const auto=a.ticker||a.cg;
-      const note=cur!=='EUR'?` <span style="font-size:9px;color:var(--w3)">(cotiza en ${cur})</span>`:'';
-      return `<div class="prw"><div class="prnm">${a.name} <span class="prbdg ${auto?'live':'man'}">${auto?'AUTO':'MANUAL'}</span>${note}</div><div class="pri-wrap"><span class="pri-cur">€</span><input class="pri" type="number" step="any" value="${priceEUR.toFixed(2)}" onchange="updPrice('${a.id}',this.value)"></div></div>`;
-    }).join('');
+    /* solo activos con posición abierta: los cerrados no influyen en el presente */
+    const openAssets=DB.assets.filter(a=>{
+      const m=(typeof assetMetrics==='function')?assetMetrics(a):{units:1};
+      return m.units>1e-9;
+    });
+    if(openAssets.length){
+      G('price-rows').innerHTML=openAssets.map(a=>{
+        const cur=(typeof assetCurrency==='function')?assetCurrency(a):'EUR';
+        const priceEUR=(typeof toEUR==='function')?toEUR(a.price||0,cur):(a.price||0);
+        const auto=a.ticker||a.cg;
+        const note=cur!=='EUR'?` <span style="font-size:9px;color:var(--w3)">(cotiza en ${cur})</span>`:'';
+        return `<div class="prw"><div class="prnm">${a.name} <span class="prbdg ${auto?'live':'man'}">${auto?'AUTO':'MANUAL'}</span>${note}</div><div class="pri-wrap"><span class="pri-cur">€</span><input class="pri" type="text" inputmode="decimal" value="${priceEUR.toFixed(2)}" onchange="updPrice('${a.id}',this.value)"></div></div>`;
+      }).join('');
+    }else G('price-rows').innerHTML='<div style="font-size:12px;color:var(--w2);padding:8px 0">Sin posiciones abiertas.</div>';
   }else G('price-rows').innerHTML='<div style="font-size:12px;color:var(--w2);padding:8px 0">Sin activos. Añade operaciones en Cartera.</div>';
   const years=activeYears();
   if(DB.assets.length&&years.length){
@@ -2797,11 +2931,31 @@ async function testApi(){
     else showToast('No se pudo conectar');
   }
 }
+/* Convierte un texto numérico a número, aceptando coma o punto decimal
+   y separadores de miles. Unifica el criterio entre import y entrada manual. */
+function parseNum(v){
+  if(v==null)return NaN;
+  if(typeof v==='number')return v;
+  let s=String(v).trim().replace(/[^0-9.,\-]/g,'');
+  if(!s)return NaN;
+  const hasComma=s.includes(','),hasDot=s.includes('.');
+  if(hasComma&&hasDot){
+    /* el último símbolo que aparece es el decimal */
+    if(s.lastIndexOf(',')>s.lastIndexOf('.')) s=s.replace(/\./g,'').replace(',','.');
+    else s=s.replace(/,/g,'');
+  }else if(hasComma){
+    /* solo coma: si hay 3 dígitos tras ella podría ser separador de miles,
+       pero en precios lo tratamos como decimal */
+    s=s.replace(',','.');
+  }
+  const n=parseFloat(s);
+  return isNaN(n)?NaN:n;
+}
 function updPrice(id,v){
   const a=DB.assets.find(x=>x.id===id);
   if(!a)return;
   /* el usuario introduce el precio en EUR; se guarda en la moneda nativa */
-  const eurVal=parseFloat(v)||0;
+  const eurVal=parseNum(v)||0;
   const cur=(typeof assetCurrency==='function')?assetCurrency(a):'EUR';
   let native=eurVal;
   if(cur!=='EUR'&&typeof FX_RATES!=='undefined'&&FX_RATES[cur]>0){
@@ -2809,11 +2963,11 @@ function updPrice(id,v){
   }
   a.price=native;
   if(a.needsPriceSync)delete a.needsPriceSync;
-  saveDB();renderDash();
+  saveDB();renderDash();renderSettings();
 }
 function updHist(id,year,v){
   if(!DB.hist[id])DB.hist[id]={};
-  const n=parseFloat(v);
+  const n=parseNum(v);
   if(isNaN(n)||v==='')delete DB.hist[id][year];else DB.hist[id][year]=n;
   saveDB();renderDash();
 }
@@ -3453,11 +3607,10 @@ async function fetchAllPrices(){
   /* función que actualiza un activo, con la marca _priceOK */
   const updateOne=async(a)=>{
     try{
-      const c=await fetchChart(a.ticker,'5d');
-      const p=(c.meta&&c.meta.regularMarketPrice)||c.series[c.series.length-1];
-      if(p&&p>0){
-        a.price=p;a._priceOK=true;
-        if(c.meta&&c.meta.currency)a.currency=c.meta.currency.toUpperCase();
+      const r=await fetchBestPrice(a.ticker);
+      if(r&&r.price>0){
+        a.price=r.price;a._priceOK=true;
+        if(r.currency)a.currency=r.currency.toUpperCase();
         if(a.needsPriceSync)delete a.needsPriceSync;
         return true;
       }
@@ -3565,6 +3718,18 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(saved&&saved.r){Object.assign(FX_RATES,saved.r);FX_LOADED=true;renderAll();}
       }catch(e){}
       loadFxRates().then(ok=>{if(ok)renderAll();});
+    }
+    /* actualización automática de precios al abrir la app (en segundo plano) */
+    if(DB.assets.length){
+      setTimeout(()=>{
+        setText('sync-s','Actualizando precios…');
+        const btn=G('sync-btn');if(btn)btn.classList.add('spin');
+        fetchAllPrices().then(()=>{
+          if(btn)btn.classList.remove('spin');
+          setText('sync-s','✓ Actualizado: '+DB.lastSync);
+          renderAll();
+        }).catch(()=>{if(btn)btn.classList.remove('spin');});
+      },900);
     }
     if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }catch(err){
