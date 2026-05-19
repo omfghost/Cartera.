@@ -354,6 +354,11 @@ input,select,button,textarea{font-family:inherit}
 .opcard.selected{border-color:var(--c);background:rgba(34,150,235,.1)}
 .op-check{width:21px;height:21px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--bg);flex-shrink:0}
 .op-check.on{background:var(--c);border-color:var(--c)}
+/* ── Donut más pequeño ── */
+.dnw-sm{max-width:240px;margin-left:auto;margin-right:auto}
+/* ── Color de marcadores en Explorar: verde=oportunidad, rojo=atención ── */
+.exp-mv.mv-good{color:var(--g)}
+.exp-mv.mv-bad{color:var(--r)}
 </style>
 </head>
 <body>
@@ -394,8 +399,11 @@ input,select,button,textarea{font-family:inherit}
     <div class="ybc"><div class="ybl2">RENTABILIDAD</div><div class="ybv lg" id="yb-rent">&mdash;</div></div>
   </div>
   <div class="sec">DISTRIBUCI&Oacute;N POR TIPO</div>
-  <div class="dnw"><canvas id="c-dn" height="240"></canvas><div class="dnc"><div class="dnt hide-val sm" id="dn-t">&mdash;</div><div class="dns">total</div></div></div>
+  <div class="dnw dnw-sm"><canvas id="c-dn" height="180"></canvas><div class="dnc"><div class="dnt hide-val sm" id="dn-t">&mdash;</div><div class="dns">total</div></div></div>
   <div id="dist-rows"></div>
+  <div class="sec" id="sec-acc-dist">ACCIONES POR EMPRESA</div>
+  <div class="dnw dnw-sm" id="dnw-acc"><canvas id="c-dacc" height="180"></canvas><div class="dnc"><div class="dnt hide-val sm" id="dacc-t">&mdash;</div><div class="dns">acciones</div></div></div>
+  <div id="dist-acc-rows"></div>
   <div class="sec">RENTABILIDAD ANUAL</div>
   <div class="cc" style="padding:16px 8px 8px"><canvas id="c-ab" height="220"></canvas></div>
   <div id="ann-rows"></div>
@@ -435,6 +443,12 @@ input,select,button,textarea{font-family:inherit}
 
 <section class="view" id="v-graficos">
   <div class="sec">EVOLUCI&Oacute;N DEL PATRIMONIO</div>
+  <div class="rng-row" id="patr-range">
+    <button class="rng" data-r="6" onclick="setPatrRange(6)">6M</button>
+    <button class="rng" data-r="12" onclick="setPatrRange(12)">1A</button>
+    <button class="rng" data-r="24" onclick="setPatrRange(24)">2A</button>
+    <button class="rng on" data-r="0" onclick="setPatrRange(0)">Todo</button>
+  </div>
   <div class="cc"><canvas id="c-pt" height="230"></canvas></div>
   <div class="sec">HIST&Oacute;RICO &mdash; ACCIONES, FONDOS Y ETFs</div>
   <div class="cc"><canvas id="c-eq" height="230"></canvas></div>
@@ -476,7 +490,7 @@ input,select,button,textarea{font-family:inherit}
   <div class="sblk"><div class="sbt">PRECIOS ACTUALES</div><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></div>
   <div class="sblk"><div class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</div><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></div>
   <div class="sblk"><div class="sbt">COPIA DE SEGURIDAD</div><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></div>
-  <div class="sblk"><div class="sbt">IMPORTAR OPERACIONES DE BROKER</div><div class="sbs">Importa tu historial desde un archivo exportado de <b>Trade Republic</b> o <b>Binance</b> (CSV o Excel). La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Informes / Transacciones &rarr; exporta el documento.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial de transacciones &rarr; "Exportar registros" (CSV).</div></div>
+  <div class="sblk"><div class="sbt">IMPORTAR OPERACIONES DE BROKER</div><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></div>
   <div class="sblk"><div class="sbt">INSTALAR EN iPHONE</div><div class="sbs" style="margin-bottom:14px">Sin App Store &middot; Icono en pantalla de inicio &middot; Funciona offline</div><div class="ig"><div class="igs"><div class="ign">1</div><div>Abre esta URL en <b>Safari</b> (no Chrome)</div></div><div class="igs"><div class="ign">2</div><div>Toca el bot&oacute;n <b>Compartir &#8673;</b> abajo</div></div><div class="igs"><div class="ign">3</div><div>Selecciona <b>"A&ntilde;adir a pantalla de inicio"</b></div></div><div class="igs"><div class="ign">4</div><div>Toca <b>A&ntilde;adir</b></div></div><div class="ign2">&#10003; Funciona sin internet &middot; &#10003; Datos en el dispositivo</div></div></div>
   <div class="sblk"><div class="sbt">SOBRE LOS AN&Aacute;LISIS</div><div style="font-size:11px;color:var(--w2);line-height:1.8"><div>&bull; Con clave de <b>FMP</b> configurada, los datos vienen de su API. Sin clave, se usan fuentes de respaldo.</div><div>&bull; Los an&aacute;lisis (Graham, Buffett, EV/FCF, t&eacute;cnico, veredicto, posici&oacute;n competitiva) los <b>calcula la app</b> con sus algoritmos.</div><div>&bull; Las etiquetas <b>EST</b> / <b>CONSENSO</b> marcan valores estimados o de terceros.</div><div>&bull; <b>No es asesoramiento financiero.</b> Verifica siempre antes de invertir.</div></div></div>
   <div class="ver">Mi Cartera v6.0 &middot; PWA &middot; Datos en el dispositivo</div>
@@ -781,12 +795,30 @@ function unitsAtYearEnd(aid,year){
 }
 function priceAtYearEnd(aid,year){
   const a=DB.assets.find(x=>x.id===aid);
+  /* 1) precio histórico manual introducido por el usuario (ya en EUR) */
   const h=DB.hist[aid];
-  /* los precios históricos manuales (DB.hist) se asumen ya en EUR;
-     el precio actual de la API se convierte desde la moneda nativa */
   if(h&&h[year]!=null&&h[year]>0)return h[year];
   if(!a)return 0;
   const cur=(typeof assetCurrency==='function')?assetCurrency(a):'EUR';
+  /* 2) precio histórico REAL de la serie descargada (HIST_CACHE) en el
+     31 de diciembre de ese año — la clave para que las cuentas cuadren */
+  if(typeof HIST_CACHE!=='undefined'&&HIST_CACHE[aid]&&typeof priceOnDate==='function'){
+    const hc=HIST_CACHE[aid];
+    if(hc.series&&hc.series.length&&!hc.flat){
+      const curYear=new Date().getFullYear();
+      /* para el año en curso usamos el precio actual; para años pasados,
+         el cierre del 31-dic de ese año */
+      const targetTs=year>=curYear
+        ? Math.floor(Date.now()/1000)
+        : Math.floor(new Date(year,11,31).getTime()/1000);
+      const px=priceOnDate(hc.series,hc.times,targetTs);
+      if(px!=null&&px>0){
+        return (typeof toEUR==='function')?toEUR(px,hc.cur||cur):px;
+      }
+    }
+  }
+  /* 3) sin histórico disponible: precio actual convertido a EUR
+     (solo fiable para el año en curso) */
   const conv=(typeof toEUR==='function')?toEUR(a.price||0,cur):(a.price||0);
   return conv;
 }
@@ -1871,6 +1903,25 @@ async function buildPatrimonyTimeline(filterTypes){
   return points;
 }
 
+/* Precarga el histórico de precios de todos los activos en cartera.
+   Necesario para que el cálculo de rentabilidad anual del Panel sea correcto. */
+async function preloadHistory(){
+  const assets=DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id));
+  for(const a of assets){
+    if(HIST_CACHE[a.id])continue;
+    let hist=null;
+    if(a.ticker){
+      try{
+        const c=await fetchChart(a.ticker,'5y');
+        if(c&&c.series&&c.series.length>1)hist={series:c.series,times:c.times,cur:assetCurrency(a)};
+      }catch(e){}
+    }
+    if(!hist)hist={series:[a.price||0],times:[Math.floor(Date.now()/1000)],cur:assetCurrency(a),flat:true};
+    HIST_CACHE[a.id]=hist;
+  }
+  return true;
+}
+
 /* Análisis técnico: tendencia, soportes/resistencias, señal */
 function technicalAnalysis(series){
   if(!series||series.length<30)return null;
@@ -1971,6 +2022,39 @@ function mkDonut(){
   const d=distribution();if(!d.length)return;
   try{CH.dn=new Chart(ctx,{type:'doughnut',data:{labels:d.map(x=>x.type),datasets:[{data:d.map(x=>x.val),backgroundColor:d.map(x=>x.color),borderColor:'#07101f',borderWidth:3,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(d[c.dataIndex].val)+' · '+fp(d[c.dataIndex].pct,false)}}},animation:{duration:900}}});}catch(e){}
 }
+/* Distribución de las ACCIONES por empresa, con su peso dentro del bloque */
+const ACC_COLORS=['#22d3ee','#34e89e','#ffb74d','#a78bfa','#ff6b9d','#4ade80',
+  '#60a5fa','#f472b6','#fbbf24','#2dd4bf','#c084fc','#fb7185','#38bdf8','#a3e635'];
+function accDistribution(){
+  /* solo activos de tipo Acciones con posición abierta */
+  const accs=DB.assets.filter(a=>a.type==='Acciones'&&DB.ops.some(o=>o.aid===a.id))
+    .map(a=>({name:a.name,val:assetMetrics(a).val}))
+    .filter(x=>x.val>0.01)
+    .sort((a,b)=>b.val-a.val);
+  const total=accs.reduce((s,x)=>s+x.val,0);
+  return accs.map((x,i)=>({...x,pct:total>0?x.val/total:0,color:ACC_COLORS[i%ACC_COLORS.length]}));
+}
+function mkDonutAcc(){
+  dch('dacc');if(!chartReady())return;
+  const ctx=G('c-dacc');if(!ctx)return;
+  const d=accDistribution();
+  const sec=G('sec-acc-dist'),wrap=G('dnw-acc'),rows=G('dist-acc-rows');
+  if(d.length<1){
+    if(sec)sec.style.display='none';
+    if(wrap)wrap.style.display='none';
+    if(rows)rows.innerHTML='';
+    return;
+  }
+  if(sec)sec.style.display='';
+  if(wrap)wrap.style.display='';
+  const total=d.reduce((s,x)=>s+x.val,0);
+  setText('dacc-t',fe(total));
+  try{CH.dacc=new Chart(ctx,{type:'doughnut',data:{labels:d.map(x=>x.name),datasets:[{data:d.map(x=>x.val),backgroundColor:d.map(x=>x.color),borderColor:'#07101f',borderWidth:3,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(d[c.dataIndex].val)+' · '+fp(d[c.dataIndex].pct,false)}}},animation:{duration:900}}});}catch(e){}
+  /* filas con color, nombre, porcentaje y valor */
+  if(rows){
+    rows.innerHTML=d.map(x=>`<div class="dr"><div class="ddot" style="background:${x.color}"></div><div class="dnm">${x.name}</div><div class="dpc" style="color:${x.color}">${(x.pct*100).toFixed(1)}%</div><div class="dvl hide-val sm">${fe(x.val)}</div></div><div style="margin:-2px 0 6px;padding:0 0 0 24px"><div style="height:2px;background:var(--line);border-radius:2px;overflow:hidden"><div style="height:100%;width:${(x.pct*100).toFixed(1)}%;background:${x.color};border-radius:2px;transition:width .7s ease"></div></div></div>`).join('');
+  }
+}
 function mkAnnBar(){
   dch('ab');if(!chartReady())return;
   const ctx=G('c-ab');if(!ctx)return;
@@ -1978,6 +2062,14 @@ function mkAnnBar(){
   try{CH.ab=new Chart(ctx,{type:'bar',data:{labels:a.map(x=>String(x.year)+(x.isCurrent?'*':'')),datasets:[{data:a.map(x=>parseFloat((x.rent*100).toFixed(2))),backgroundColor:a.map(x=>x.rent>=0?'rgba(52,232,158,.82)':'rgba(255,107,122,.82)'),borderColor:a.map(x=>x.rent>=0?'#34e89e':'#ff6b7a'),borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%',afterLabel:c=>' Val.fin: '+fe(a[c.dataIndex].valFin,true)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',font:{size:12,weight:'600'}}},y:{grid:{color:'#243752'},ticks:{callback:v=>v+'%',color:'#aebfd4'}}},animation:{delay:c=>c.dataIndex*90,duration:600}}});}catch(e){}
 }
 let hidS=new Set();
+let patrRangeMonths=0;  /* 0 = todo el histórico */
+function setPatrRange(m){
+  patrRangeMonths=m;
+  document.querySelectorAll('#patr-range .rng').forEach(b=>{
+    b.classList.toggle('on',parseInt(b.dataset.r)===m);
+  });
+  mkPatr();
+}
 async function mkPatr(){
   dch('pt');if(!chartReady())return;
   const ctx=G('c-pt');if(!ctx)return;
@@ -1985,13 +2077,15 @@ async function mkPatr(){
   let h=[];
   try{h=await buildPatrimonyTimeline();}catch(e){}
   if(h.length<2){
-    /* respaldo: el histórico anual antiguo */
     h=patrimonioHistory().map(x=>({label:x.year,val:x.val}));
   }
   if(h.length<2)return;
+  /* recortar al rango seleccionado */
+  if(patrRangeMonths>0&&h.length>patrRangeMonths){
+    h=h.slice(-patrRangeMonths);
+  }
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(34,211,238,.2)');g.addColorStop(1,'rgba(34,211,238,0)');
-  /* menos puntos en el eje si hay muchos meses */
   const step=h.length>18?Math.ceil(h.length/12):1;
   try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Patrimonio',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
 }
@@ -2116,7 +2210,7 @@ function renderDash(){
     G('ann-rows').innerHTML=an.map(a=>`<div class="arow arow-tap" onclick="openYearDetail(${a.year})"><div class="ayr">${a.year}${a.isCurrent?'<span style="font-size:9px;color:var(--w2)"> curso</span>':''}</div><div class="afin hide-val sm">${fe(a.valFin)}</div><div class="agn hide-val sm ${pc(a.gain)}">${a.gain>=0?'+':'-'}${fe(Math.abs(a.gain))}</div><div class="apc ${pc(a.rent)}">${fp(a.rent)}</div><div class="achev">›</div></div>`).join('');
   }else G('ann-rows').innerHTML='<div class="empty"><div class="ei">○</div>Aún no hay años con operaciones.</div>';
   setText('sync-s',DB.lastSync?'Actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online');
-  mkSparkline();mkDonut();mkAnnBar();
+  mkSparkline();mkDonut();mkDonutAcc();mkAnnBar();
 }
 
 /* ════ CARTERA ════ */
@@ -2511,12 +2605,12 @@ function renderExplore(){
   html+=`<div class="exp-card">
     <div class="an-h"><span class="ic" style="background:rgba(34,211,238,.15)">📊</span>Datos de mercado y valoración</div>
     <div class="exp-meta">
-      <div class="exp-mc"><div class="exp-ml">PER (trailing)${noteIcon('per')}</div><div class="exp-mv">${pe?pe.toFixed(1):'—'}</div></div>
-      <div class="exp-mc"><div class="exp-ml">Forward PER${noteIcon('fper')}</div><div class="exp-mv">${fwdPe?fwdPe.toFixed(1):'—'}</div></div>
+      <div class="exp-mc"><div class="exp-ml">PER (trailing)${noteIcon('per')}</div><div class="exp-mv ${pe&&medianPE?(pe<medianPE*0.9?'mv-good':pe>medianPE*1.15?'mv-bad':''):''}">${pe?pe.toFixed(1):'—'}</div></div>
+      <div class="exp-mc"><div class="exp-ml">Forward PER${noteIcon('fper')}</div><div class="exp-mv ${pe&&fwdPe?(fwdPe<pe?'mv-good':'mv-bad'):''}">${fwdPe?fwdPe.toFixed(1):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">PER mediana hist.<span class="pill-est">EST</span>${noteIcon('permediana')}</div><div class="exp-mv">${medianPE?medianPE.toFixed(1):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Capitalización${noteIcon('capitalizacion')}</div><div class="exp-mv">${mktCap?fbig(mktCap):'—'}</div></div>
-      <div class="exp-mc"><div class="exp-ml">Rentab. dividendo${noteIcon('dividendo')}</div><div class="exp-mv">${divY?(divY*100).toFixed(2)+'%':'—'}</div></div>
-      <div class="exp-mc"><div class="exp-ml">Beta (volatilidad)${noteIcon('beta')}</div><div class="exp-mv">${beta?beta.toFixed(2):'—'}</div></div>
+      <div class="exp-mc"><div class="exp-ml">Rentab. dividendo${noteIcon('dividendo')}</div><div class="exp-mv ${divY&&divY>0.03?'mv-good':''}">${divY?(divY*100).toFixed(2)+'%':'—'}</div></div>
+      <div class="exp-mc"><div class="exp-ml">Beta (volatilidad)${noteIcon('beta')}</div><div class="exp-mv ${beta?(beta>1.3?'mv-bad':beta<0.8?'mv-good':''):''}">${beta?beta.toFixed(2):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Máx. 52 sem.</div><div class="exp-mv">${w52h?w52h.toFixed(2):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Mín. 52 sem.</div><div class="exp-mv">${w52l?w52l.toFixed(2):'—'}</div></div>
     </div>
@@ -3390,6 +3484,177 @@ function parseBrokerCSV(text){
     }
   }
 
+  /* ── DEGIRO: export de transacciones ──
+     Columnas: Fecha,Hora,Producto,ISIN,Bolsa,Cantidad,Precio,Valor local,
+     Valor,Tipo de cambio,Costes de transacción,Total */
+  if(!ops.length){
+    const iFecha=idx(['fecha','date','datum']);
+    const iProd=idx(['producto','product']);
+    const iIsin=idx(['isin']);
+    const iCant=idx(['cantidad','quantity','aantal']);
+    const iPrecio=idx(['precio','price','koers']);
+    const iCostes=idx(['costes de transacción','costes de transaccion','transaction costs','transactiekosten']);
+    /* DEGIRO se identifica por tener 'producto' + 'isin' + 'cantidad' + costes de transacción */
+    if(iProd>=0&&iIsin>=0&&iCant>=0&&iPrecio>=0&&iFecha>=0){
+      broker='DEGIRO';
+      const num=v=>{
+        if(v==null)return NaN;
+        let s=String(v).trim().replace(/[^0-9.,\-]/g,'');
+        if(s.includes(',')&&s.includes('.')){
+          if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+          else s=s.replace(/,/g,'');
+        }else if(s.includes(','))s=s.replace(',','.');
+        const n=parseFloat(s);return isNaN(n)?NaN:n;
+      };
+      for(let r=1;r<lines.length;r++){
+        const c=splitCSVLine(lines[r],sep);
+        if(c.length<5)continue;
+        const qty=num(c[iCant]);          /* negativo en ventas */
+        const p=num(c[iPrecio]);
+        if(isNaN(qty)||qty===0||isNaN(p)||p<=0)continue;
+        const nm=c[iProd]||c[iIsin]||'';
+        if(!nm)continue;
+        const dt=normalizeDate(c[iFecha]);
+        if(!dt)continue;
+        const fee=iCostes>=0?Math.abs(num(c[iCostes]))||0:0;
+        ops.push({broker,name:nm,symbol:(iIsin>=0?c[iIsin]:'')||nm,type:'Acciones',
+          t:qty>0?'C':'V',q:Math.abs(qty),p:Math.abs(p),f:fee,dt});
+      }
+    }
+  }
+
+  /* ── INTERACTIVE BROKERS (IBKR): informe de operaciones ──
+     Columnas habituales: Symbol,Date/Time,Quantity,T. Price,Comm/Fee,Proceeds
+     o en el Flex/Activity: "TradeDate","Symbol","Quantity","TradePrice" */
+  if(!ops.length){
+    const iSym=idx(['symbol','símbolo','simbolo']);
+    const iDT=idx(['date/time','datetime','tradedate','date','fecha']);
+    const iQty=idx(['quantity','cantidad','qty']);
+    const iPx=idx(['t. price','tradeprice','trade price','price','precio']);
+    const iComm=idx(['comm/fee','commission','comisión','comision','ibcommission']);
+    if(iSym>=0&&iDT>=0&&iQty>=0&&iPx>=0){
+      broker='Interactive Brokers';
+      const num=v=>{
+        if(v==null)return NaN;
+        let s=String(v).trim().replace(/[^0-9.,\-]/g,'');
+        /* IBKR usa formato anglosajón: punto decimal, coma de miles */
+        if(s.includes(',')&&s.includes('.'))s=s.replace(/,/g,'');
+        else if(s.includes(',')&&!s.includes('.')){
+          /* coma sola: si hay 1-2 dígitos detrás es decimal */
+          const parts=s.split(',');
+          if(parts[parts.length-1].length<=2)s=s.replace(',','.');
+          else s=s.replace(/,/g,'');
+        }
+        const n=parseFloat(s);return isNaN(n)?NaN:n;
+      };
+      for(let r=1;r<lines.length;r++){
+        const c=splitCSVLine(lines[r],sep);
+        if(c.length<4)continue;
+        const qty=num(c[iQty]);
+        const p=num(c[iPx]);
+        if(isNaN(qty)||qty===0||isNaN(p)||p<=0)continue;
+        const sym=(c[iSym]||'').trim();
+        if(!sym||sym.toLowerCase()==='symbol')continue;
+        const dt=normalizeDate((c[iDT]||'').split(/[ ;]/)[0]);
+        if(!dt)continue;
+        const fee=iComm>=0?Math.abs(num(c[iComm]))||0:0;
+        ops.push({broker,name:sym,symbol:sym,type:'Acciones',
+          t:qty>0?'C':'V',q:Math.abs(qty),p:Math.abs(p),f:fee,dt});
+      }
+    }
+  }
+
+  /* ── XTB: historial de operaciones ──
+     Columnas: ID,Tipo,Hora de apertura,Símbolo,Volumen,Precio de apertura...
+     o en formato cuenta: Symbol,Type,Open time,Volume,Open price */
+  if(!ops.length){
+    const iSym=idx(['símbolo','simbolo','symbol','instrument']);
+    const iTipo=idx(['tipo','type']);
+    const iVol=idx(['volumen','volume','cantidad']);
+    const iOpen=idx(['precio de apertura','open price','precio','price']);
+    const iTime=idx(['hora de apertura','open time','fecha','date','time']);
+    if(iSym>=0&&iVol>=0&&iOpen>=0&&(iTipo>=0||iTime>=0)){
+      broker='XTB';
+      const num=v=>{
+        if(v==null)return NaN;
+        let s=String(v).trim().replace(/[^0-9.,\-]/g,'');
+        if(s.includes(',')&&s.includes('.')){
+          if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+          else s=s.replace(/,/g,'');
+        }else if(s.includes(','))s=s.replace(',','.');
+        const n=parseFloat(s);return isNaN(n)?NaN:n;
+      };
+      for(let r=1;r<lines.length;r++){
+        const c=splitCSVLine(lines[r],sep);
+        if(c.length<4)continue;
+        const typeTxt=(iTipo>=0?c[iTipo]||'':'').toLowerCase();
+        let t=null;
+        if(typeTxt.includes('buy')||typeTxt.includes('compra'))t='C';
+        else if(typeTxt.includes('sell')||typeTxt.includes('venta'))t='V';
+        else if(iTipo<0)t='C';
+        if(!t)continue;
+        const qty=num(c[iVol]);
+        const p=num(c[iOpen]);
+        if(isNaN(qty)||qty<=0||isNaN(p)||p<=0)continue;
+        const sym=(c[iSym]||'').trim();
+        if(!sym)continue;
+        const dt=normalizeDate((c[iTime]||'').split(/[ ;]/)[0]);
+        if(!dt)continue;
+        ops.push({broker,name:sym,symbol:sym,type:'Acciones',
+          t,q:Math.abs(qty),p:Math.abs(p),f:0,dt});
+      }
+    }
+  }
+
+  /* ── MYINVESTOR: export de movimientos de fondos/acciones ──
+     Columnas: Fecha,Operación,Fondo/Producto,ISIN,Participaciones/Títulos,
+     Valor liquidativo/Precio,Importe */
+  if(!ops.length){
+    const iFecha=idx(['fecha','date']);
+    const iOper=idx(['operación','operacion','tipo','movimiento']);
+    const iProd=idx(['fondo','producto','nombre','descripción','descripcion']);
+    const iIsin=idx(['isin']);
+    const iParts=idx(['participaciones','títulos','titulos','cantidad']);
+    const iVL=idx(['valor liquidativo','precio','vl']);
+    const iImporte=idx(['importe','total']);
+    if((iProd>=0||iIsin>=0)&&iFecha>=0&&(iParts>=0||iImporte>=0)){
+      broker='MyInvestor';
+      const num=v=>{
+        if(v==null)return NaN;
+        let s=String(v).trim().replace(/[^0-9.,\-]/g,'');
+        if(s.includes(',')&&s.includes('.')){
+          if(s.lastIndexOf(',')>s.lastIndexOf('.'))s=s.replace(/\./g,'').replace(',','.');
+          else s=s.replace(/,/g,'');
+        }else if(s.includes(','))s=s.replace(',','.');
+        const n=parseFloat(s);return isNaN(n)?NaN:n;
+      };
+      for(let r=1;r<lines.length;r++){
+        const c=splitCSVLine(lines[r],sep);
+        if(c.length<4)continue;
+        const operTxt=(iOper>=0?c[iOper]||'':'').toLowerCase();
+        let t=null;
+        if(operTxt.includes('suscrip')||operTxt.includes('compra')||operTxt.includes('aporta'))t='C';
+        else if(operTxt.includes('reembol')||operTxt.includes('venta'))t='V';
+        else if(iOper<0)t='C';
+        /* descartar traspasos internos y comisiones */
+        if(operTxt.includes('comisión')||operTxt.includes('comision')||operTxt.includes('traspaso'))continue;
+        if(!t)continue;
+        const nm=(iProd>=0?c[iProd]:'')||(iIsin>=0?c[iIsin]:'');
+        if(!nm)continue;
+        let qty=iParts>=0?num(c[iParts]):NaN;
+        let p=iVL>=0?num(c[iVL]):NaN;
+        const imp=iImporte>=0?num(c[iImporte]):NaN;
+        if((isNaN(p)||p===0)&&!isNaN(imp)&&qty)p=Math.abs(imp/qty);
+        if((isNaN(qty)||qty<=0)&&!isNaN(imp)&&p)qty=Math.abs(imp/p);
+        const dt=normalizeDate(c[iFecha]);
+        if(!qty||isNaN(qty)||qty<=0||!p||isNaN(p)||!dt)continue;
+        /* MyInvestor es sobre todo fondos */
+        ops.push({broker,name:nm,symbol:(iIsin>=0?c[iIsin]:'')||nm,type:'Fondo',
+          t,q:Math.abs(qty),p:Math.abs(p),f:0,dt});
+      }
+    }
+  }
+
   if(!ops.length)return null;
   return {broker,ops};
 }
@@ -3725,10 +3990,14 @@ document.addEventListener('DOMContentLoaded',()=>{
         setText('sync-s','Actualizando precios…');
         const btn=G('sync-btn');if(btn)btn.classList.add('spin');
         fetchAllPrices().then(()=>{
+          setText('sync-s','Cargando histórico…');
+          /* precargar histórico real: imprescindible para la rentabilidad anual */
+          return (typeof preloadHistory==='function')?preloadHistory():null;
+        }).then(()=>{
           if(btn)btn.classList.remove('spin');
           setText('sync-s','✓ Actualizado: '+DB.lastSync);
           renderAll();
-        }).catch(()=>{if(btn)btn.classList.remove('spin');});
+        }).catch(()=>{if(btn)btn.classList.remove('spin');renderAll();});
       },900);
     }
     if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
