@@ -488,6 +488,7 @@ input,select,button,textarea{font-family:inherit}
 <section class="view" id="v-ajustes">
   <div class="sblk"><div class="sbt">FUENTE DE DATOS · FMP</div><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></div>
   <div class="sblk"><div class="sbt">PRECIOS ACTUALES</div><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></div>
+  <div class="sblk"><div class="sbt">DIAGN&Oacute;STICO DE PRECIOS</div><div class="sbs">Si las cuentas anuales no cuadran, mira aqu&iacute; los datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="renderDiagnostico()">&#128270; Ver diagn&oacute;stico</button><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></div>
   <div class="sblk"><div class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</div><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></div>
   <div class="sblk"><div class="sbt">COPIA DE SEGURIDAD</div><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></div>
   <div class="sblk"><div class="sbt">IMPORTAR OPERACIONES DE BROKER</div><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></div>
@@ -884,9 +885,15 @@ function portfolioValueAtYearEnd(year){
     const pos=positionAtDate(a.id,cut);
     if(pos.units<=0)return;
     const px=priceAtYearEnd(a.id,year);
-    /* si no hay precio histórico fiable, usa el coste medio (peor caso: rent.=0) */
     const eff=px>0?px:(pos.cost/pos.units);
-    total+=pos.units*eff;
+    let val=pos.units*eff;
+    /* Salvaguarda contra precios disparatados (moneda mal guardada,
+       precio en peniques tratado como GBP, etc.): si el valor del activo
+       supera 10× su coste, casi seguro es un dato corrupto -> usar coste. */
+    if(pos.cost>0&&val>pos.cost*10){
+      val=pos.cost;   /* fallback conservador: valoración a coste */
+    }
+    total+=val;
   });
   return total;
 }
@@ -1096,23 +1103,32 @@ async function loadFxRates(){
 /* convierte un importe de la moneda 'cur' a EUR */
 function toEUR(amount,cur){
   if(amount==null||isNaN(amount))return amount;
-  cur=(cur||'EUR').toUpperCase();
+  const raw=(cur||'EUR');
+  /* GBp / GBX = peniques británicos = 1/100 GBP. Se preserva el case. */
+  if(raw==='GBp'||raw==='GBX'||raw==='gbx'){
+    const r=FX_RATES.GBP;return r?amount*r/100:amount/100;
+  }
+  cur=raw.toUpperCase();
   if(cur==='EUR')return amount;
-  /* GBp / GBX = peniques británicos = 1/100 GBP */
-  if(cur==='GBP'){const r=FX_RATES.GBP;return r?amount*r:amount;}
-  if(cur==='GBP'||cur==='GBX'){const r=FX_RATES.GBP;return r?amount*r/100:amount;}
   const r=FX_RATES[cur];
   return r?amount*r:amount;   /* si no hay tipo, devolver sin convertir */
 }
 /* moneda nativa de un activo según su ticker */
 function assetCurrency(asset){
   if(!asset)return 'EUR';
-  if(asset.currency)return asset.currency.toUpperCase();
+  /* preservar GBp tal cual (no upper-case-ar) */
+  if(asset.currency){
+    const c=asset.currency;
+    if(c==='GBp'||c==='GBX'||c==='gbx')return 'GBp';
+    return c.toUpperCase();
+  }
   const tk=(asset.ticker||'').toUpperCase();
   if(!tk)return 'EUR';
   if(/-USD$/.test(tk))return 'USD';            /* cripto cotiza en USD */
   if(/\.(MC|PA|AS|DE|MI|BR|LS|VI|HE)$/.test(tk))return 'EUR'; /* bolsas euro */
-  if(/\.L$/.test(tk))return 'GBP';             /* Londres */
+  /* Londres: la moneda real depende del valor — Yahoo lo dice. Por ticker
+     asumimos GBp para small-caps (mayoría) y dejamos que el sync lo corrija. */
+  if(/\.L$/.test(tk))return 'GBp';
   if(/\.(SW)$/.test(tk))return 'CHF';
   if(/\.(TO|V)$/.test(tk))return 'CAD';
   if(/\.(ST)$/.test(tk))return 'SEK';
@@ -3158,6 +3174,64 @@ function parseNum(v){
   const n=parseFloat(s);
   return isNaN(n)?NaN:n;
 }
+/* ════ DIAGNÓSTICO DE PRECIOS ════
+   Muestra los datos crudos guardados de cada activo para encontrar
+   monedas o precios mal guardados que distorsionen los cálculos. */
+function renderDiagnostico(){
+  const out=G('diag-out');
+  if(!out)return;
+  const ops=DB.ops||[];
+  const used=DB.assets.filter(a=>ops.some(o=>o.aid===a.id));
+  if(!used.length){out.innerHTML='<div style="font-size:11px;color:var(--w3)">No hay activos.</div>';return;}
+  let html='<div style="font-size:10px;color:var(--w3);margin-bottom:6px">Activo / ticker / moneda / precio nativo / precio en EUR / unidades / coste</div>';
+  used.forEach(a=>{
+    const pos=position(a.id);
+    const cur=assetCurrency(a);
+    const pxNat=a.price||0;
+    const pxEUR=toEUR(pxNat,cur);
+    const valOpen=pos.units*pxEUR;
+    /* señalar valores sospechosos */
+    let warn='';
+    if(pos.cost>0&&valOpen>pos.cost*5)warn=' <span style="color:var(--r);font-weight:700">⚠ inflado</span>';
+    if(pxNat===0)warn=' <span style="color:var(--warn)">sin precio</span>';
+    if(!a.currency)warn+=' <span style="color:var(--warn)">moneda no fijada</span>';
+    html+=`<div style="background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:5px;font-size:11px;line-height:1.5">
+      <div style="font-weight:600">${a.name}${warn}</div>
+      <div style="color:var(--w2);font-family:'JetBrains Mono',monospace;font-size:10px">
+        tk=${a.ticker||'(sin ticker)'} · cur=${cur} · price=${pxNat.toFixed(4)} → €${pxEUR.toFixed(2)}<br>
+        units=${pos.units.toFixed(4)} · coste=€${pos.cost.toFixed(2)} · valor abierto=€${valOpen.toFixed(2)}
+      </div>
+    </div>`;
+  });
+  out.innerHTML=html;
+}
+/* Resincroniza precios desde cero: borra precios actuales y monedas
+   guardadas para forzar que se descarguen frescos de las fuentes. */
+async function resyncAll(){
+  if(!DB.assets.length){showToast('Sin activos');return;}
+  let cleaned=0;
+  DB.assets.forEach(a=>{
+    if(a.ticker||a.cg){
+      delete a.price;          /* forzar re-descarga */
+      delete a.currency;       /* recalcular moneda */
+      a.needsPriceSync=true;
+      cleaned++;
+    }
+  });
+  /* limpiar HIST_CACHE para que se descarguen series limpias */
+  if(typeof HIST_CACHE!=='undefined'){
+    Object.keys(HIST_CACHE).forEach(k=>delete HIST_CACHE[k]);
+  }
+  saveDB();
+  showToast('Resincronizando '+cleaned+' activos…');
+  if(typeof doSync==='function')await doSync();
+  /* recargar histórico también */
+  if(typeof preloadHistory==='function')await preloadHistory();
+  renderAll();
+  renderDiagnostico();
+  showToast('Resincronización completa ✓');
+}
+
 function updPrice(id,v){
   const a=DB.assets.find(x=>x.id===id);
   if(!a)return;
@@ -3988,7 +4062,11 @@ async function fetchAllPrices(){
       const r=await fetchBestPrice(a.ticker);
       if(r&&r.price>0){
         a.price=r.price;a._priceOK=true;
-        if(r.currency)a.currency=r.currency.toUpperCase();
+        if(r.currency){
+          /* preservar GBp (peniques) tal cual; el resto en mayúsculas */
+          const c=r.currency;
+          a.currency=(c==='GBp'||c==='GBX'||c==='gbx')?'GBp':c.toUpperCase();
+        }
         if(a.needsPriceSync)delete a.needsPriceSync;
         return true;
       }
