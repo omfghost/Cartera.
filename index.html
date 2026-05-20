@@ -154,7 +154,8 @@ input,select,button,textarea{font-family:inherit}
 .igs b{color:var(--w)}
 .ign2{margin-top:6px;font-size:11px;color:var(--g);background:rgba(52,232,158,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(52,232,158,.16)}
 .ver{text-align:center;font-size:10px;color:var(--w2);padding:18px 0 6px;letter-spacing:.07em}
-.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50}
+.bnav{flex-shrink:0;display:flex;height:calc(var(--nav) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box}
+.bnav .nb{height:var(--nav)}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--w3);cursor:pointer;padding:4px 0;transition:color .15s}
 .nb span{font-size:9.5px;letter-spacing:.02em}
 .nb.on{color:var(--c)}.nb.on svg{filter:drop-shadow(0 0 5px var(--c))}
@@ -175,7 +176,7 @@ input,select,button,textarea{font-family:inherit}
 .bok{flex:2;padding:14px;background:linear-gradient(135deg,var(--c),var(--c2));border:none;border-radius:var(--rs);color:var(--bg);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 .bok:active{opacity:.85}
 .bcancel{flex:1;padding:14px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--w2);font-size:13px;cursor:pointer}
-.toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--w2);padding:40px 20px;font-size:13px;line-height:1.6}
 .empty .ei{font-size:32px;margin-bottom:10px;opacity:.5}
@@ -377,6 +378,13 @@ input,select,button,textarea{font-family:inherit}
 .snd-tg input:checked + .snd-tg-sl{background:var(--c);border-color:var(--c)}
 .snd-tg input:checked + .snd-tg-sl::after{transform:translateX(18px)}
 .snd-tg-lbl{font-size:12px;color:var(--w2);font-weight:500}
+/* ── Glosario: icono "?" y panel desplegable ── */
+.note-ic{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:rgba(34,150,235,.18);color:var(--c2);font-size:10px;font-weight:700;margin-left:5px;cursor:pointer;vertical-align:middle;font-family:'JetBrains Mono',monospace;border:none}
+.note-ic:active{background:rgba(34,150,235,.35)}
+.ex-q{font-size:11px;color:var(--c2);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.ex-a{font-size:13px;color:var(--w);line-height:1.55;margin-bottom:4px}
+.ex-a b{color:var(--c2)}
+.ex-note{font-size:11.5px;color:var(--w2);line-height:1.5;margin-top:12px;padding:8px 10px;background:var(--bg2);border-left:2px solid var(--c2);border-radius:6px}
 </style>
 </head>
 <body>
@@ -396,20 +404,20 @@ input,select,button,textarea{font-family:inherit}
 
 <section class="view active" id="v-dash">
   <div class="hero">
-    <div class="hlbl">ACTIVOS TOTALES</div>
+    <div class="hlbl">ACTIVOS TOTALES<span class="note-ic" onclick="event.stopPropagation();explain('activos-totales')">?</span></div>
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
     <div class="spkw"><canvas id="c-sp" height="50"></canvas></div>
   </div>
   <div class="sgrid">
-    <div class="sc"><div class="sl">TOTAL INVERTIDO</div><div class="sv hide-val sm" id="s-inv">&mdash;</div></div>
-    <div class="sc"><div class="sl">GANANCIA TOTAL</div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
-    <div class="sc"><div class="sl">RENT. TOTAL</div><div class="sv g" id="s-tot">&mdash;</div></div>
-    <div class="sc"><div class="sl">REALIZADO ACUMULADO</div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
-    <div class="sc tap" onclick="explainCAGR()"><div class="sl">CAGR ANUAL <span class="qm">?</span></div><div class="sv c" id="s-cagr">&mdash;</div></div>
-    <div class="sc"><div class="sl">RENT. A&Ntilde;O ACTUAL</div><div class="sv gold" id="s-yr">&mdash;</div></div>
+    <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div></div>
+    <div class="sc"><div class="sl">GANANCIA TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('ganancia-total')">?</span></div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
+    <div class="sc"><div class="sl">RENT. TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-total')">?</span></div><div class="sv g" id="s-tot">&mdash;</div></div>
+    <div class="sc"><div class="sl">REALIZADO ACUMULADO<span class="note-ic" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
+    <div class="sc"><div class="sl">CAGR ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('cagr')">?</span></div><div class="sv c" id="s-cagr">&mdash;</div></div>
+    <div class="sc"><div class="sl">RENT. A&Ntilde;O ACTUAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-año')">?</span></div><div class="sv gold" id="s-yr">&mdash;</div></div>
   </div>
-  <div class="sec">A&Ntilde;O EN CURSO <span id="yr-label" style="color:var(--gold)"></span></div>
+  <div class="sec">A&Ntilde;O EN CURSO<span class="note-ic" onclick="event.stopPropagation();explain('año-curso')">?</span> <span id="yr-label" style="color:var(--gold)"></span></div>
   <div class="ybl">
     <div class="ybc"><div class="ybl2">INICIO A&Ntilde;O</div><div class="ybv hide-val sm" id="yb-ini">&mdash;</div></div>
     <div class="ybdiv"></div>
@@ -417,13 +425,13 @@ input,select,button,textarea{font-family:inherit}
     <div class="ybdiv"></div>
     <div class="ybc"><div class="ybl2">RENTABILIDAD</div><div class="ybv lg" id="yb-rent">&mdash;</div></div>
   </div>
-  <div class="sec">DISTRIBUCI&Oacute;N POR TIPO</div>
+  <div class="sec">DISTRIBUCI&Oacute;N POR TIPO<span class="note-ic" onclick="event.stopPropagation();explain('distribucion')">?</span></div>
   <div class="dnw dnw-sm"><canvas id="c-dn" height="180"></canvas><div class="dnc"><div class="dnt hide-val sm" id="dn-t">&mdash;</div><div class="dns">total</div></div></div>
   <div id="dist-rows"></div>
   <div class="sec" id="sec-acc-dist">ACCIONES POR EMPRESA</div>
   <div class="dnw dnw-sm" id="dnw-acc"><canvas id="c-dacc" height="180"></canvas><div class="dnc"><div class="dnt hide-val sm" id="dacc-t">&mdash;</div><div class="dns">acciones</div></div></div>
   <div id="dist-acc-rows"></div>
-  <div class="sec">RENTABILIDAD ANUAL</div>
+  <div class="sec">RENTABILIDAD ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-anual')">?</span></div>
   <div class="cc" style="padding:16px 8px 8px"><canvas id="c-ab" height="220"></canvas></div>
   <div id="ann-rows"></div>
 </section>
@@ -461,7 +469,7 @@ input,select,button,textarea{font-family:inherit}
 </section>
 
 <section class="view" id="v-graficos">
-  <div class="sec">EVOLUCI&Oacute;N DE ACTIVOS</div>
+  <div class="sec">EVOLUCI&Oacute;N DE ACTIVOS<span class="note-ic" onclick="event.stopPropagation();explain('evolucion')">?</span></div>
   <div class="rng-row" id="patr-range">
     <button class="rng" data-r="6" onclick="setPatrRange(6)">6M</button>
     <button class="rng" data-r="12" onclick="setPatrRange(12)">1A</button>
@@ -505,16 +513,16 @@ input,select,button,textarea{font-family:inherit}
 
 
 <section class="view" id="v-ajustes">
-  <div class="sblk"><div class="sbt">FUENTE DE DATOS · FMP</div><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></div>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">FUENTE DE DATOS &middot; FMP</span><span class="sbt-chev">▾</span></summary><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS ACTUALES</span><span class="sbt-chev">▾</span></summary><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></details>
-  <div class="sblk"><div class="sbt">DIAGN&Oacute;STICO DE PRECIOS</div><div class="sbs">Si las cuentas anuales no cuadran, mira aqu&iacute; los datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="renderDiagnostico()">&#128270; Ver diagn&oacute;stico</button><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></div>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">DIAGN&Oacute;STICO DE PRECIOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si las cuentas anuales no cuadran, mira aqu&iacute; los datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="renderDiagnostico()">&#128270; Ver diagn&oacute;stico</button><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></details>
-  <div class="sblk"><div class="sbt">COPIA DE SEGURIDAD</div><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></div>
-  <div class="sblk"><div class="sbt">IMPORTAR OPERACIONES DE BROKER</div><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></div>
-  <div class="sblk"><div class="sbt">SONIDO DE FINALIZACI&Oacute;N</div><div class="sbs">Una nota suave cuando termina la actualizaci&oacute;n de precios o la resincronizaci&oacute;n.</div><label class="snd-tg"><input type="checkbox" id="snd-chk" onchange="setSoundEnabled(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Activado</span></label></div>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">COPIA DE SEGURIDAD</span><span class="sbt-chev">▾</span></summary><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">IMPORTAR OPERACIONES DE BROKER</span><span class="sbt-chev">▾</span></summary><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">SONIDO DE FINALIZACI&Oacute;N</span><span class="sbt-chev">▾</span></summary><div class="sbs">Una nota suave cuando termina la actualizaci&oacute;n de precios o la resincronizaci&oacute;n.</div><label class="snd-tg"><input type="checkbox" id="snd-chk" onchange="setSoundEnabled(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Activado</span></label></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">INSTALAR EN iPHONE</span><span class="sbt-chev">▾</span></summary><div class="sbs" style="margin-bottom:14px">Sin App Store &middot; Icono en pantalla de inicio &middot; Funciona offline</div><div class="ig"><div class="igs"><div class="ign">1</div><div>Abre esta URL en <b>Safari</b> (no Chrome)</div></div><div class="igs"><div class="ign">2</div><div>Toca el bot&oacute;n <b>Compartir &#8673;</b> abajo</div></div><div class="igs"><div class="ign">3</div><div>Selecciona <b>"A&ntilde;adir a pantalla de inicio"</b></div></div><div class="igs"><div class="ign">4</div><div>Toca <b>A&ntilde;adir</b></div></div><div class="ign2">&#10003; Funciona sin internet &middot; &#10003; Datos en el dispositivo</div></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">SOBRE LOS AN&Aacute;LISIS</span><span class="sbt-chev">▾</span></summary><div style="font-size:11px;color:var(--w2);line-height:1.8"><div>&bull; Con clave de <b>FMP</b> configurada, los datos vienen de su API. Sin clave, se usan fuentes de respaldo.</div><div>&bull; Los an&aacute;lisis (Graham, Buffett, EV/FCF, t&eacute;cnico, veredicto, posici&oacute;n competitiva) los <b>calcula la app</b> con sus algoritmos.</div><div>&bull; Las etiquetas <b>EST</b> / <b>CONSENSO</b> marcan valores estimados o de terceros.</div><div>&bull; <b>No es asesoramiento financiero.</b> Verifica siempre antes de invertir.</div></div></details>
-  <div class="ver">Mi Cartera v6.0 &middot; PWA &middot; Datos en el dispositivo</div>
+  <div class="ver" id="ver-tag">Mi Cartera &middot; PWA &middot; Datos en el dispositivo</div>
 </section>
 
 </main>
@@ -671,7 +679,8 @@ function searchCompanies(query){
   return Object.values(seen).slice(0,8);
 }
 'use strict';
-/* ════ MI CARTERA v6 ════ */
+/* ════ MI CARTERA v7 ════ */
+const APP_VERSION='v7.7';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1017,24 +1026,32 @@ function assetAnnualReturns(aid){
   const firstY=Math.min(...ops.map(o=>parseInt(o.dt.slice(0,4))));
   const years=activeYears().filter(y=>y>=firstY);
   return years.map((yr,i)=>{
-    /* unidades y precio a fin de año */
     const uEnd=unitsAtYearEnd(aid,yr);
-    let pEnd=priceAtYearEnd(aid,yr);
     const uPrev=i>0?unitsAtYearEnd(aid,years[i-1]):0;
-    let pPrev=i>0?priceAtYearEnd(aid,years[i-1]):0;
-    /* coste medio para sanity check del precio */
-    const costEnd=positionAtDate(aid,yr+'-12-31').cost;
-    const avgEnd=uEnd>0?costEnd/uEnd:0;
-    /* salvaguarda: si el precio "histórico" supera 10× el coste medio,
-       casi seguro es un dato corrupto -> ignora ese precio, usa el coste */
-    if(uEnd>0&&pEnd>0&&avgEnd>0&&pEnd>avgEnd*10)pEnd=avgEnd;
-    if(uPrev>0&&pPrev>0){
-      const costPrev=positionAtDate(aid,years[i-1]+'-12-31').cost;
-      const avgPrev=uPrev>0?costPrev/uPrev:0;
-      if(avgPrev>0&&pPrev>avgPrev*10)pPrev=avgPrev;
+    /* coste base acumulado a final de cada año */
+    const costEnd=uEnd>0?positionAtDate(aid,yr+'-12-31').cost:0;
+    const costPrev=i>0&&uPrev>0?positionAtDate(aid,years[i-1]+'-12-31').cost:0;
+    /* valor por defecto: a coste base (rent = 0). Solo lo cambiamos
+       si el precio histórico es claramente fiable. */
+    let valEnd=costEnd,valPrev=costPrev;
+    if(uEnd>0){
+      const pEnd=priceAtYearEnd(aid,yr);
+      const computed=uEnd*pEnd;
+      const avgEnd=costEnd/uEnd;
+      /* aceptar el precio histórico solo si está en rango razonable
+         (entre 30% y 300% del coste medio) — ETF/fondo casi nunca cambia más */
+      if(pEnd>0&&avgEnd>0&&pEnd>=avgEnd*0.3&&pEnd<=avgEnd*3){
+        valEnd=computed;
+      }
     }
-    const valEnd=uEnd*pEnd;
-    const valPrev=uPrev*pPrev;
+    if(uPrev>0&&i>0){
+      const pPrev=priceAtYearEnd(aid,years[i-1]);
+      const computed=uPrev*pPrev;
+      const avgPrev=costPrev/uPrev;
+      if(pPrev>0&&avgPrev>0&&pPrev>=avgPrev*0.3&&pPrev<=avgPrev*3){
+        valPrev=computed;
+      }
+    }
     const flow=DB.ops.filter(o=>o.aid===aid&&o.dt.slice(0,4)===String(yr)).reduce((s,o)=>{
       if(o.t==='C')return s+o.q*o.p+(o.f||0);
       if(o.t==='V')return s-(o.q*o.p-(o.f||0));return s;
@@ -1042,9 +1059,9 @@ function assetAnnualReturns(aid){
     const gain=valEnd-valPrev-flow;
     const base=valPrev+flow/2;
     let rent=base>0?gain/base:0;
-    /* última salvaguarda: capar a un máximo razonable para evitar disparates */
-    if(rent>3)rent=3;
-    if(rent<-1)rent=-1;
+    /* capa final razonable */
+    if(rent>2)rent=2;
+    if(rent<-0.95)rent=-0.95;
     return {year:yr,rent,valEnd};
   });
 }
@@ -2173,15 +2190,36 @@ function initChartDefaults(){
   Chart.defaults.color='#aebfd4';Chart.defaults.borderColor='#243752';
   Chart.defaults.font.family="'JetBrains Mono',monospace";Chart.defaults.font.size=11;
 }
-function mkSparkline(){
+async function mkSparkline(){
   dch('sp');if(!chartReady())return;
   const ctx=G('c-sp');if(!ctx)return;
-  const h=patrimonioHistory();
+  /* histórico real mes a mes para que la línea muestre evolución */
+  let h=[];
+  try{h=await buildPatrimonyTimeline();}catch(e){}
+  if(h.length<2){
+    h=patrimonioHistory().map(x=>({label:String(x.year),val:x.val}));
+  }
   if(h.length<2){ctx.style.display='none';return;}
   ctx.style.display='';
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,50);
   g.addColorStop(0,'rgba(34,211,238,.4)');g.addColorStop(1,'rgba(34,211,238,0)');
-  try{CH.sp=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.year),datasets:[{data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}},animation:{duration:800}}});}catch(e){}
+  try{CH.sp=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:h.map(x=>x.label),
+      datasets:[{data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#22d3ee',pointHoverBorderColor:'#07101f',pointHoverBorderWidth:2,tension:.4}],
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false,axis:'x'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}
+      },
+      scales:{x:{display:false},y:{display:false}},
+      animation:{duration:800}
+    }
+  });}catch(e){}
 }
 function mkDonut(){
   dch('dn');if(!chartReady())return;
@@ -2393,7 +2431,7 @@ function renderDash(){
   if(an.length){
     G('ann-rows').innerHTML=an.map(a=>`<div class="arow arow-tap" onclick="openYearDetail(${a.year})"><div class="ayr">${a.year}${a.isCurrent?'<span style="font-size:9px;color:var(--w2)"> curso</span>':''}</div><div class="afin hide-val sm">${fe(a.valFin)}</div><div class="agn hide-val sm ${pc(a.gain)}">${a.gain>=0?'+':'-'}${fe(Math.abs(a.gain))}</div><div class="apc ${pc(a.rent)}">${fp(a.rent)}</div><div class="achev">›</div></div>`).join('');
   }else G('ann-rows').innerHTML='<div class="empty"><div class="ei">○</div>Aún no hay años con operaciones.</div>';
-  setText('sync-s',DB.lastSync?'Actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online');
+  setText('sync-s',(DB.lastSync?'Actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online')+' · '+APP_VERSION);
   mkSparkline();mkDonut();mkDonutAcc();mkAnnBar();
 }
 
@@ -3141,6 +3179,8 @@ function renderSettings(){
   }
   /* estado del toggle de sonido */
   const chk=G('snd-chk');if(chk)chk.checked=isSoundEnabled();
+  /* versión visible */
+  const v=G('ver-tag');if(v)v.textContent='Mi Cartera '+APP_VERSION+' · PWA · Datos en el dispositivo';
   if(DB.assets.length){
     /* solo activos con posición abierta: los cerrados no influyen en el presente */
     const openAssets=DB.assets.filter(a=>{
@@ -3308,6 +3348,7 @@ function renderDiagnostico(){
    guardadas para forzar que se descarguen frescos de las fuentes. */
 async function resyncAll(){
   if(!DB.assets.length){showToast('Sin activos');return;}
+  primeAudio();
   let cleaned=0;
   DB.assets.forEach(a=>{
     if(a.ticker||a.cg){
@@ -3548,6 +3589,99 @@ function openYearDetail(year){
     <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
 }
 
+/* ── GLOSARIO: explicaciones desplegables de cada cabecera del Panel ── */
+const PANEL_GLOSSARY={
+  'activos-totales':{
+    t:'Activos totales',
+    q:'¿Qué es?',
+    a:'El valor de mercado actual de todo lo que tienes en cartera <b>hoy</b>, en euros.',
+    h:'Suma de (unidades × precio actual) de cada posición abierta, convertido a EUR. No incluye dinero ya recibido por ventas pasadas.',
+    n:'Si el número sube respecto a "Total invertido" tienes ganancia <span style="color:var(--g)">no realizada</span>; si baja, pérdida no realizada.'
+  },
+  'total-invertido':{
+    t:'Total invertido',
+    q:'¿Qué es?',
+    a:'Todo el dinero que has aportado de tu bolsillo a tus inversiones <b>desde el inicio</b>, incluyendo posiciones ya vendidas.',
+    h:'Suma de todas las compras realizadas (precio × unidades + comisiones) a lo largo del tiempo.',
+    n:'Es la referencia base contra la que se mide la rentabilidad total.'
+  },
+  'ganancia-total':{
+    t:'Ganancia total',
+    q:'¿Qué es?',
+    a:'Beneficio o pérdida total de tu actividad inversora, en euros.',
+    h:'(Activos totales + dinero recibido por ventas) − Total invertido. Combina lo realizado y lo no realizado.',
+    n:'Verde = ganancia; rojo = pérdida.'
+  },
+  'rent-total':{
+    t:'Rent. total',
+    q:'¿Qué es?',
+    a:'Rentabilidad acumulada desde tu primera operación, en porcentaje.',
+    h:'Ganancia total ÷ Total invertido. Es el rendimiento "real" de tu dinero invertido.',
+    n:'Verde = ganancia; rojo = pérdida. Una rentabilidad de +10% significa que €100 invertidos valen ahora €110 (incluyendo lo vendido).'
+  },
+  'realizado':{
+    t:'Realizado acumulado',
+    q:'¿Qué es?',
+    a:'Suma de ganancias y pérdidas <b>realizadas</b> (= ya materializadas en ventas) a lo largo de toda tu historia.',
+    h:'Por cada venta: (precio venta − precio medio de compra) × unidades vendidas − comisiones. Sumado a lo largo del tiempo.',
+    n:'Verde = balance positivo de ventas. Es independiente del valor actual de lo que aún tienes.'
+  },
+  'cagr':{
+    t:'CAGR anual',
+    q:'¿Qué es?',
+    a:'Tasa de crecimiento anual compuesta: si tu cartera siguiera creciendo a este ritmo constante cada año, llegaría al valor actual.',
+    h:'(Valor actual / Total invertido)^(1/años transcurridos) − 1. Estima la rentabilidad media anualizada.',
+    n:'Permite comparar con productos como depósitos (3-4%) o índices (S&P 500 ~10% anual histórico).'
+  },
+  'rent-año':{
+    t:'Rent. año actual',
+    q:'¿Qué es?',
+    a:'Rentabilidad obtenida desde el 1 de enero del año en curso, en porcentaje.',
+    h:'(Valor actual − Valor a 31 de diciembre del año anterior − aportes netos del año) / (Valor inicio + aportes/2). Es la rentabilidad ponderada por tiempo del año en curso.',
+    n:'Se compara con el resto de años en el resumen anual de abajo.'
+  },
+  'año-curso':{
+    t:'Año en curso',
+    q:'¿Qué muestra?',
+    a:'Resumen de cómo te ha ido este año: con qué valor empezaste, dónde estás ahora y qué rentabilidad llevas acumulada.',
+    h:'Inicio año = activos al 31-dic del año anterior. Valor actual = activos hoy. Rentabilidad = cambio relativo ajustado por aportes y ventas del año.',
+    n:'Si el inicio sale 0, es tu primer año con datos.'
+  },
+  'distribucion':{
+    t:'Distribución por tipo',
+    q:'¿Qué muestra?',
+    a:'Cómo está repartido el valor actual de tu cartera entre los distintos tipos de activos (Acciones, ETFs, Fondos, Cripto, etc.).',
+    h:'Suma del valor abierto por tipo, dividido entre el total de la cartera. Solo cuenta posiciones que tienes hoy.',
+    n:'Tener mucho peso en un solo tipo aumenta el riesgo. Diversificar entre tipos suaviza la volatilidad.'
+  },
+  'rent-anual':{
+    t:'Rentabilidad anual',
+    q:'¿Qué muestra?',
+    a:'Cómo te ha ido cada año por separado, en porcentaje y en euros ganados/perdidos.',
+    h:'Para cada año: (valor fin año − valor inicio − aportes del año) / (valor inicio + aportes/2). Es la rentabilidad ponderada por tiempo de ese año aislado.',
+    n:'Pulsa una fila para ver el detalle de las operaciones de ese año.'
+  },
+  'evolucion':{
+    t:'Evolución de activos',
+    q:'¿Qué muestra?',
+    a:'Cómo ha cambiado el valor total de tu cartera mes a mes a lo largo del tiempo.',
+    h:'Se descargan los precios históricos de cada activo y se calcula el valor de la cartera en cada mes.',
+    n:'Pulsa un punto para ver el valor exacto en esa fecha. Cambia el rango con los botones de arriba.'
+  },
+};
+
+function explain(key){
+  const g=PANEL_GLOSSARY[key];
+  if(!g){showToast('Sin explicación disponible');return;}
+  openSheet(`<div class="shttl" style="color:var(--c2)">${g.t}</div>
+    <div class="ex-q">${g.q}</div>
+    <div class="ex-a">${g.a}</div>
+    <div class="ex-q" style="margin-top:14px">¿Cómo se obtiene?</div>
+    <div class="ex-a">${g.h}</div>
+    <div class="ex-note">${g.n}</div>
+    <div class="shrow"><button class="bok" onclick="closeSheet()">Entendido</button></div>`);
+}
+/* helper HTML: pega un icono "?" junto a un texto, que abre el glosario */
 function explainCAGR(){
   const cg=calcCAGR();
   openSheet(`<div class="shttl">¿Qué es el CAGR anual?</div>
@@ -4205,6 +4339,9 @@ async function fetchAllPrices(){
 async function doSync(){
   const btn=G('sync-btn');if(!btn)return;
   if(!DB.assets.length){showToast('No hay activos que actualizar');return;}
+  /* desbloquear AudioContext AHORA (estamos dentro del gesto del usuario);
+     si lo intentamos tras el await, iOS lo ignora */
+  primeAudio();
   btn.classList.add('spin');
   setText('sync-s','Conectando y descargando precios…');
   try{
@@ -4212,7 +4349,7 @@ async function doSync(){
     if(typeof loadFxRates==='function')await loadFxRates();
     const r=await fetchAllPrices();
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
-    setText('sync-s','✓ Actualizado: '+DB.lastSync);
+    setText('sync-s','✓ Actualizado: '+DB.lastSync+' · '+APP_VERSION);
     renderAll();
     chime();
   }catch(e){showToast('Error de conexión');setText('sync-s','Error al actualizar');}
@@ -4235,24 +4372,40 @@ function showToast(msg){const t=G('toast');t.textContent=msg;t.classList.add('on
 /* ── Sonido suave de "completado" (Web Audio, sin archivo) ──
    Dos notas cortas tipo campana, agradables y muy breves. */
 let _audioCtx=null;
-function chime(){
-  if(localStorage.getItem('cv6_sound')==='0')return;        /* silenciado por el usuario */
+/* Desbloquea el AudioContext dentro del gesto del usuario (clic).
+   iOS bloquea Web Audio si no se inicializa síncronamente al pulsar. */
+function primeAudio(){
+  if(localStorage.getItem('cv6_sound')==='0')return;
   try{
     if(!_audioCtx){
       const AC=window.AudioContext||window.webkitAudioContext;
       if(!AC)return;
       _audioCtx=new AC();
     }
-    /* algunos navegadores requieren reanudar el contexto tras interacción */
+    if(_audioCtx.state==='suspended')_audioCtx.resume();
+    /* nota silenciosa muy corta para forzar el desbloqueo en iOS */
+    const o=_audioCtx.createOscillator(),g=_audioCtx.createGain();
+    g.gain.value=0;o.connect(g).connect(_audioCtx.destination);
+    o.start();o.stop(_audioCtx.currentTime+0.01);
+  }catch(e){}
+}
+function chime(){
+  if(localStorage.getItem('cv6_sound')==='0')return;
+  try{
+    if(!_audioCtx){
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)return;
+      _audioCtx=new AC();
+    }
     if(_audioCtx.state==='suspended')_audioCtx.resume();
     const now=_audioCtx.currentTime;
-    /* dos notas: Sol5 (~784 Hz) y Do6 (~1046 Hz) */
+    /* dos notas tipo campanita: Sol5 y Do6 */
     [{f:783.99,t:0,d:0.18},{f:1046.5,t:0.12,d:0.22}].forEach(n=>{
       const osc=_audioCtx.createOscillator();
       const gain=_audioCtx.createGain();
       osc.type='sine';osc.frequency.value=n.f;
       gain.gain.setValueAtTime(0,now+n.t);
-      gain.gain.linearRampToValueAtTime(0.12,now+n.t+0.02);
+      gain.gain.linearRampToValueAtTime(0.15,now+n.t+0.02);
       gain.gain.exponentialRampToValueAtTime(0.001,now+n.t+n.d);
       osc.connect(gain).connect(_audioCtx.destination);
       osc.start(now+n.t);osc.stop(now+n.t+n.d+0.05);
@@ -4261,8 +4414,8 @@ function chime(){
 }
 function setSoundEnabled(on){
   localStorage.setItem('cv6_sound',on?'1':'0');
-  showToast(on?'Sonido activado':'Sonido desactivado');
-  if(on)chime();
+  if(on){primeAudio();chime();showToast('Sonido activado');}
+  else showToast('Sonido desactivado');
 }
 function isSoundEnabled(){return localStorage.getItem('cv6_sound')!=='0';}
 function G(id){return document.getElementById(id);}
@@ -4320,7 +4473,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           return (typeof preloadHistory==='function')?preloadHistory():null;
         }).then(()=>{
           if(btn)btn.classList.remove('spin');
-          setText('sync-s','✓ Actualizado: '+DB.lastSync);
+          setText('sync-s','✓ Actualizado: '+DB.lastSync+' · '+APP_VERSION);
           renderAll();
         }).catch(()=>{if(btn)btn.classList.remove('spin');renderAll();});
       },900);
