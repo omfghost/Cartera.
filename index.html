@@ -154,7 +154,7 @@ input,select,button,textarea{font-family:inherit}
 .igs b{color:var(--w)}
 .ign2{margin-top:6px;font-size:11px;color:var(--g);background:rgba(52,232,158,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(52,232,158,.16)}
 .ver{text-align:center;font-size:10px;color:var(--w2);padding:18px 0 6px;letter-spacing:.07em}
-.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50}
+.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--w3);cursor:pointer;padding:4px 0;transition:color .15s}
 .nb span{font-size:9.5px;letter-spacing:.02em}
 .nb.on{color:var(--c)}.nb.on svg{filter:drop-shadow(0 0 5px var(--c))}
@@ -175,7 +175,7 @@ input,select,button,textarea{font-family:inherit}
 .bok{flex:2;padding:14px;background:linear-gradient(135deg,var(--c),var(--c2));border:none;border-radius:var(--rs);color:var(--bg);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 .bok:active{opacity:.85}
 .bcancel{flex:1;padding:14px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--w2);font-size:13px;cursor:pointer}
-.toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--w2);padding:40px 20px;font-size:13px;line-height:1.6}
 .empty .ei{font-size:32px;margin-bottom:10px;opacity:.5}
@@ -387,6 +387,8 @@ input,select,button,textarea{font-family:inherit}
   <div class="sgrid">
     <div class="sc"><div class="sl">TOTAL INVERTIDO</div><div class="sv hide-val sm" id="s-inv">&mdash;</div></div>
     <div class="sc"><div class="sl">GANANCIA TOTAL</div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
+    <div class="sc"><div class="sl">RENT. TOTAL</div><div class="sv g" id="s-tot">&mdash;</div></div>
+    <div class="sc"><div class="sl">REALIZADO ACUMULADO</div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
     <div class="sc tap" onclick="explainCAGR()"><div class="sl">CAGR ANUAL <span class="qm">?</span></div><div class="sv c" id="s-cagr">&mdash;</div></div>
     <div class="sc"><div class="sl">RENT. A&Ntilde;O ACTUAL</div><div class="sv gold" id="s-yr">&mdash;</div></div>
   </div>
@@ -505,7 +507,6 @@ input,select,button,textarea{font-family:inherit}
   <button class="nb" id="nb-explorar" onclick="navTo('explorar')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Explorar</span></button>
   <button class="nb" id="nb-ajustes" onclick="navTo('ajustes')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Ajustes</span></button>
 </nav>
-<div class="sb"></div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet"><div class="spill"></div><div class="sbody" id="sbody"></div></div>
 <div class="toast" id="toast"></div>
@@ -767,9 +768,10 @@ function position(aid){
   /* Total return: necesitamos todo el dinero invertido y todo el recibido.
      - totalCost: suma de todas las compras (con comisiones).
      - totalProceeds: dinero recibido en ventas (precio × unidades − comisiones).
+     - realizedPL: ganancia/pérdida REALIZADA (proceeds − coste de lo vendido).
      - units / costBasis: posición abierta actual (para valor no realizado). */
-  let units=0,costBasis=0;          /* posición abierta */
-  let totalCost=0,totalProceeds=0;  /* histórico para total return */
+  let units=0,costBasis=0;
+  let totalCost=0,totalProceeds=0,realizedPL=0;
   ops.forEach(o=>{
     if(o.t==='C'){
       units+=o.q;
@@ -778,12 +780,16 @@ function position(aid){
     }else if(o.t==='V'){
       const avg=units>0?costBasis/units:0;
       const sold=Math.min(o.q,units);
-      units-=sold;costBasis-=sold*avg;
-      totalProceeds+=o.q*o.p-(o.f||0);
+      const proceeds=o.q*o.p-(o.f||0);
+      const costOfSold=sold*avg;
+      realizedPL+=proceeds-costOfSold;
+      units-=sold;costBasis-=costOfSold;
+      totalProceeds+=proceeds;
     }
   });
   if(units<1e-9){units=0;costBasis=0;}
-  return {units,costBasis,costAvg:units>0?costBasis/units:0,totalCost,totalProceeds};
+  return {units,costBasis,costAvg:units>0?costBasis/units:0,
+    totalCost,totalProceeds,realizedPL};
 }
 
 function assetMetrics(a){
@@ -806,19 +812,21 @@ function assetMetrics(a){
     curr:cur,priceEUR,
     /* desglose: útil para mostrar la composición */
     valOpen,                  /* lo que vale hoy lo que aún tienes */
-    realized:pos.totalProceeds,/* lo recibido por ventas pasadas */
+    realized:pos.totalProceeds,/* lo recibido por ventas (bruto) */
+    realizedPL:pos.realizedPL,/* ganancia/pérdida realizada (neta) */
     openCost:pos.costBasis,   /* coste de las unidades que aún tienes */
   };
 }
 
 function portfolioTotals(){
   /* Total return de toda la cartera */
-  let inv=0,val=0,valOpen=0,realized=0;
+  let inv=0,val=0,valOpen=0,realized=0,realizedPL=0;
   DB.assets.forEach(a=>{
     const m=assetMetrics(a);
-    inv+=m.inv;val+=m.val;valOpen+=m.valOpen;realized+=m.realized;
+    inv+=m.inv;val+=m.val;valOpen+=m.valOpen;
+    realized+=m.realized;realizedPL+=m.realizedPL;
   });
-  return {inv,val,valOpen,realized,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
+  return {inv,val,valOpen,realized,realizedPL,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
 }
 function unitsAtYearEnd(aid,year){
   const cut=year+'-12-31';let units=0;
@@ -2317,6 +2325,13 @@ function renderDash(){
   setText('h-pct',fp(T.pct));setText('h-cagr','CAGR '+fp(cg,false));
   setText('s-inv',fe(T.inv));
   const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv '+(T.gain>=0?'g':'r');
+  const st=G('s-tot');if(st){st.textContent=fp(T.pct);st.className='sv '+(T.pct>=0?'g':'r');}
+  const sr=G('s-real');
+  if(sr){
+    const sign=T.realizedPL>=0?'+':'-';
+    sr.textContent=sign+fe(Math.abs(T.realizedPL));
+    sr.className='sv '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
+  }
   setText('s-cagr',fp(cg,false));
   const sy=G('s-yr');sy.textContent=fp(cy.rent);sy.className='sv '+(cy.rent>=0?'gold':'r');
   setText('yr-label',cy.year);
@@ -2468,23 +2483,38 @@ function delSelectedOps(){
     <div class="shp">Vas a eliminar <b>${n}</b> operacion${n===1?'':'es'} seleccionada${n===1?'':'s'}. Esta acción no se puede deshacer.</div>
     <div class="shrow"><button class="bok" style="background:var(--r)" onclick="confirmDelSelected()">Eliminar ${n}</button><button class="bcancel" onclick="closeSheet()">Cancelar</button></div>`);
 }
+/* Elimina cualquier rastro de los activos que ya no tienen operaciones:
+   activo, histórico anual, caché de precios. Usado tras borrar operaciones. */
+function purgeOrphans(){
+  const inUse=new Set(DB.ops.map(o=>o.aid));
+  const removed=DB.assets.filter(a=>!inUse.has(a.id)).map(a=>a.id);
+  DB.assets=DB.assets.filter(a=>inUse.has(a.id));
+  /* limpiar histórico manual asociado */
+  if(DB.hist){removed.forEach(id=>{delete DB.hist[id];});}
+  /* limpiar caché de precios históricos */
+  if(typeof HIST_CACHE!=='undefined'){removed.forEach(id=>{delete HIST_CACHE[id];});}
+  return removed.length;
+}
 function confirmDelSelected(){
   DB.ops=DB.ops.filter(o=>!opsSelected.has(o.id));
   opsSelected.clear();opsSelectMode=false;
-  syncAssetsFromOps();saveDB();closeSheet();renderAll();
+  purgeOrphans();saveDB();closeSheet();renderAll();
   showToast('Operaciones eliminadas ✓');
 }
 function delOp(id){
   const op=DB.ops.find(o=>o.id===id);if(!op)return;
   const a=DB.assets.find(x=>x.id===op.aid);
+  /* ¿es la única operación de este activo? -> advertir que se borrará todo */
+  const isLast=DB.ops.filter(o=>o.aid===op.aid).length===1;
+  const warn=isLast?'<div class="shp" style="color:var(--warn);font-size:11px">Era la única operación de este activo: se eliminará también el activo y todo su rastro de la cartera.</div>':'';
   openSheet(`<div class="shttl" style="color:var(--r)">Eliminar operación</div>
-    <div class="shp">¿Eliminar la operación de <b>${a?.name||op.aid}</b> del ${op.dt}?<br>Las posiciones y rentabilidades se recalcularán.</div>
-    <div class="shrow"><button class="bok" style="background:var(--r)" onclick="confirmDelOp(${id})">Eliminar</button><button class="bcancel" onclick="closeSheet()">Cancelar</button></div>`);
+    <div class="shp">¿Eliminar la operación de <b>${a?a.name:op.aid}</b> del ${op.dt}?<br>Las posiciones y rentabilidades se recalcularán.</div>
+    ${warn}
+    <div class="shrow"><button class="bok" style="background:var(--r)" onclick="confirmDelOp(${id})">Eliminar todo</button><button class="bcancel" onclick="closeSheet()">Cancelar</button></div>`);
 }
 function confirmDelOp(id){
   DB.ops=DB.ops.filter(o=>o.id!==id);
-  /* eliminar activos que ya no tienen operaciones */
-  DB.assets=DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id));
+  purgeOrphans();
   saveDB();closeSheet();renderAll();showToast('Operación eliminada');
 }
 function delAllOps(){
@@ -2510,7 +2540,27 @@ function showAssetDetail(id){
     <div style="font-size:10px;letter-spacing:.15em;color:var(--w2);margin-bottom:6px">RENTABILIDAD ANUAL</div>
     ${annHtml}
     ${a.ticker?`<button class="fab alt" style="margin:14px 0 0" onclick="closeSheet();navTo('explorar');setTimeout(()=>exploreExample('${a.ticker}'),300)">Ver análisis en Explorar</button>`:''}
+    <button class="fab alt" style="margin:8px 0 0;border-color:var(--r);color:var(--r)" onclick="delAsset('${a.id}')">Eliminar activo y todas sus operaciones</button>
     <div class="shrow"><button class="bcancel" style="flex:1" onclick="closeSheet()">Cerrar</button></div>`);
+}
+
+/* Elimina un activo COMPLETO: todas sus operaciones, histórico y caché.
+   Tras esto no queda ningún rastro en cartera, rentabilidades ni gráficas. */
+function delAsset(id){
+  const a=DB.assets.find(x=>x.id===id);if(!a)return;
+  const nOps=DB.ops.filter(o=>o.aid===id).length;
+  openSheet(`<div class="shttl" style="color:var(--r)">Eliminar activo completo</div>
+    <div class="shp">Vas a borrar <b>${a.name}</b> y sus <b>${nOps} operación${nOps===1?'':'es'}</b>.</div>
+    <div class="shp" style="font-size:11px;color:var(--w2)">No quedará ningún rastro: ni en posiciones, ni en rentabilidades anuales, ni en gráficas. Esta acción no se puede deshacer.</div>
+    <div class="shrow"><button class="bok" style="background:var(--r)" onclick="confirmDelAsset('${id}')">Eliminar todo</button><button class="bcancel" onclick="closeSheet()">Cancelar</button></div>`);
+}
+function confirmDelAsset(id){
+  DB.ops=DB.ops.filter(o=>o.aid!==id);
+  DB.assets=DB.assets.filter(a=>a.id!==id);
+  if(DB.hist)delete DB.hist[id];
+  if(typeof HIST_CACHE!=='undefined')delete HIST_CACHE[id];
+  saveDB();closeSheet();renderAll();
+  showToast('Activo eliminado por completo ✓');
 }
 
 /* ════ AÑADIR OPERACIÓN — con desplegable de catálogo precreado ════ */
