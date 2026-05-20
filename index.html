@@ -154,7 +154,7 @@ input,select,button,textarea{font-family:inherit}
 .igs b{color:var(--w)}
 .ign2{margin-top:6px;font-size:11px;color:var(--g);background:rgba(52,232,158,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(52,232,158,.16)}
 .ver{text-align:center;font-size:10px;color:var(--w2);padding:18px 0 6px;letter-spacing:.07em}
-.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box}
+.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--w3);cursor:pointer;padding:4px 0;transition:color .15s}
 .nb span{font-size:9.5px;letter-spacing:.02em}
 .nb.on{color:var(--c)}.nb.on svg{filter:drop-shadow(0 0 5px var(--c))}
@@ -175,7 +175,7 @@ input,select,button,textarea{font-family:inherit}
 .bok{flex:2;padding:14px;background:linear-gradient(135deg,var(--c),var(--c2));border:none;border-radius:var(--rs);color:var(--bg);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 .bok:active{opacity:.85}
 .bcancel{flex:1;padding:14px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--w2);font-size:13px;cursor:pointer}
-.toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--w2);padding:40px 20px;font-size:13px;line-height:1.6}
 .empty .ei{font-size:32px;margin-bottom:10px;opacity:.5}
@@ -359,6 +359,24 @@ input,select,button,textarea{font-family:inherit}
 /* ── Color de marcadores en Explorar: verde=oportunidad, rojo=atención ── */
 .exp-mv.mv-good{color:var(--g)}
 .exp-mv.mv-bad{color:var(--r)}
+/* ── Bloques de ajustes plegables ── */
+.sblk-coll{padding:0;overflow:hidden}
+.sblk-coll>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;outline:none}
+.sblk-coll>summary::-webkit-details-marker{display:none}
+.sblk-coll>summary::marker{content:''}
+.sbt-sum{display:flex;align-items:center;justify-content:space-between;width:100%}
+.sbt-chev{color:var(--c2);font-size:14px;transition:transform .2s}
+.sblk-coll[open]>summary .sbt-chev{transform:rotate(180deg)}
+.sblk-coll>*:not(summary){padding:0 14px 14px;animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+/* ── Toggle de sonido (estilo iOS) ── */
+.snd-tg{display:flex;align-items:center;gap:11px;cursor:pointer;margin-top:8px}
+.snd-tg input{display:none}
+.snd-tg-sl{width:42px;height:24px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;position:relative;transition:.2s;flex-shrink:0}
+.snd-tg-sl::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--w);border-radius:50%;transition:.2s}
+.snd-tg input:checked + .snd-tg-sl{background:var(--c);border-color:var(--c)}
+.snd-tg input:checked + .snd-tg-sl::after{transform:translateX(18px)}
+.snd-tg-lbl{font-size:12px;color:var(--w2);font-weight:500}
 </style>
 </head>
 <body>
@@ -370,7 +388,6 @@ input,select,button,textarea{font-family:inherit}
     <div class="hbts">
       <button class="hbt" id="eye-btn" onclick="togglePrivacy()"><svg id="eye-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
       <button class="hbt" id="sync-btn" onclick="doSync()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
-      <button class="hbt" onclick="navTo('ajustes')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
   </div>
   <div class="sync-s" id="sync-s">Toca &#8635; para actualizar precios online</div>
@@ -489,13 +506,14 @@ input,select,button,textarea{font-family:inherit}
 
 <section class="view" id="v-ajustes">
   <div class="sblk"><div class="sbt">FUENTE DE DATOS · FMP</div><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></div>
-  <div class="sblk"><div class="sbt">PRECIOS ACTUALES</div><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></div>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS ACTUALES</span><span class="sbt-chev">▾</span></summary><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></details>
   <div class="sblk"><div class="sbt">DIAGN&Oacute;STICO DE PRECIOS</div><div class="sbs">Si las cuentas anuales no cuadran, mira aqu&iacute; los datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="renderDiagnostico()">&#128270; Ver diagn&oacute;stico</button><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></div>
-  <div class="sblk"><div class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</div><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></div>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></details>
   <div class="sblk"><div class="sbt">COPIA DE SEGURIDAD</div><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></div>
   <div class="sblk"><div class="sbt">IMPORTAR OPERACIONES DE BROKER</div><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></div>
-  <div class="sblk"><div class="sbt">INSTALAR EN iPHONE</div><div class="sbs" style="margin-bottom:14px">Sin App Store &middot; Icono en pantalla de inicio &middot; Funciona offline</div><div class="ig"><div class="igs"><div class="ign">1</div><div>Abre esta URL en <b>Safari</b> (no Chrome)</div></div><div class="igs"><div class="ign">2</div><div>Toca el bot&oacute;n <b>Compartir &#8673;</b> abajo</div></div><div class="igs"><div class="ign">3</div><div>Selecciona <b>"A&ntilde;adir a pantalla de inicio"</b></div></div><div class="igs"><div class="ign">4</div><div>Toca <b>A&ntilde;adir</b></div></div><div class="ign2">&#10003; Funciona sin internet &middot; &#10003; Datos en el dispositivo</div></div></div>
-  <div class="sblk"><div class="sbt">SOBRE LOS AN&Aacute;LISIS</div><div style="font-size:11px;color:var(--w2);line-height:1.8"><div>&bull; Con clave de <b>FMP</b> configurada, los datos vienen de su API. Sin clave, se usan fuentes de respaldo.</div><div>&bull; Los an&aacute;lisis (Graham, Buffett, EV/FCF, t&eacute;cnico, veredicto, posici&oacute;n competitiva) los <b>calcula la app</b> con sus algoritmos.</div><div>&bull; Las etiquetas <b>EST</b> / <b>CONSENSO</b> marcan valores estimados o de terceros.</div><div>&bull; <b>No es asesoramiento financiero.</b> Verifica siempre antes de invertir.</div></div></div>
+  <div class="sblk"><div class="sbt">SONIDO DE FINALIZACI&Oacute;N</div><div class="sbs">Una nota suave cuando termina la actualizaci&oacute;n de precios o la resincronizaci&oacute;n.</div><label class="snd-tg"><input type="checkbox" id="snd-chk" onchange="setSoundEnabled(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Activado</span></label></div>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">INSTALAR EN iPHONE</span><span class="sbt-chev">▾</span></summary><div class="sbs" style="margin-bottom:14px">Sin App Store &middot; Icono en pantalla de inicio &middot; Funciona offline</div><div class="ig"><div class="igs"><div class="ign">1</div><div>Abre esta URL en <b>Safari</b> (no Chrome)</div></div><div class="igs"><div class="ign">2</div><div>Toca el bot&oacute;n <b>Compartir &#8673;</b> abajo</div></div><div class="igs"><div class="ign">3</div><div>Selecciona <b>"A&ntilde;adir a pantalla de inicio"</b></div></div><div class="igs"><div class="ign">4</div><div>Toca <b>A&ntilde;adir</b></div></div><div class="ign2">&#10003; Funciona sin internet &middot; &#10003; Datos en el dispositivo</div></div></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">SOBRE LOS AN&Aacute;LISIS</span><span class="sbt-chev">▾</span></summary><div style="font-size:11px;color:var(--w2);line-height:1.8"><div>&bull; Con clave de <b>FMP</b> configurada, los datos vienen de su API. Sin clave, se usan fuentes de respaldo.</div><div>&bull; Los an&aacute;lisis (Graham, Buffett, EV/FCF, t&eacute;cnico, veredicto, posici&oacute;n competitiva) los <b>calcula la app</b> con sus algoritmos.</div><div>&bull; Las etiquetas <b>EST</b> / <b>CONSENSO</b> marcan valores estimados o de terceros.</div><div>&bull; <b>No es asesoramiento financiero.</b> Verifica siempre antes de invertir.</div></div></details>
   <div class="ver">Mi Cartera v6.0 &middot; PWA &middot; Datos en el dispositivo</div>
 </section>
 
@@ -999,13 +1017,35 @@ function assetAnnualReturns(aid){
   const firstY=Math.min(...ops.map(o=>parseInt(o.dt.slice(0,4))));
   const years=activeYears().filter(y=>y>=firstY);
   return years.map((yr,i)=>{
-    const valEnd=unitsAtYearEnd(aid,yr)*priceAtYearEnd(aid,yr);
-    const valPrev=i>0?unitsAtYearEnd(aid,years[i-1])*priceAtYearEnd(aid,years[i-1]):0;
+    /* unidades y precio a fin de año */
+    const uEnd=unitsAtYearEnd(aid,yr);
+    let pEnd=priceAtYearEnd(aid,yr);
+    const uPrev=i>0?unitsAtYearEnd(aid,years[i-1]):0;
+    let pPrev=i>0?priceAtYearEnd(aid,years[i-1]):0;
+    /* coste medio para sanity check del precio */
+    const costEnd=positionAtDate(aid,yr+'-12-31').cost;
+    const avgEnd=uEnd>0?costEnd/uEnd:0;
+    /* salvaguarda: si el precio "histórico" supera 10× el coste medio,
+       casi seguro es un dato corrupto -> ignora ese precio, usa el coste */
+    if(uEnd>0&&pEnd>0&&avgEnd>0&&pEnd>avgEnd*10)pEnd=avgEnd;
+    if(uPrev>0&&pPrev>0){
+      const costPrev=positionAtDate(aid,years[i-1]+'-12-31').cost;
+      const avgPrev=uPrev>0?costPrev/uPrev:0;
+      if(avgPrev>0&&pPrev>avgPrev*10)pPrev=avgPrev;
+    }
+    const valEnd=uEnd*pEnd;
+    const valPrev=uPrev*pPrev;
     const flow=DB.ops.filter(o=>o.aid===aid&&o.dt.slice(0,4)===String(yr)).reduce((s,o)=>{
-      if(o.t==='C')return s+o.q*o.p+(o.f||0);if(o.t==='V')return s-(o.q*o.p-(o.f||0));return s;
+      if(o.t==='C')return s+o.q*o.p+(o.f||0);
+      if(o.t==='V')return s-(o.q*o.p-(o.f||0));return s;
     },0);
-    const gain=valEnd-valPrev-flow,base=valPrev+flow/2;
-    return {year:yr,rent:base>0?gain/base:0,valEnd};
+    const gain=valEnd-valPrev-flow;
+    const base=valPrev+flow/2;
+    let rent=base>0?gain/base:0;
+    /* última salvaguarda: capar a un máximo razonable para evitar disparates */
+    if(rent>3)rent=3;
+    if(rent<-1)rent=-1;
+    return {year:yr,rent,valEnd};
   });
 }
 function patrimonioHistory(){
@@ -2214,7 +2254,7 @@ async function mkPatr(){
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(34,211,238,.2)');g.addColorStop(1,'rgba(34,211,238,0)');
   const step=h.length>18?Math.ceil(h.length/12):1;
-  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Activos',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
+  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Activos',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false,axis:'x'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
 }
 /* Gráfica solo de acciones, fondos y ETFs (excluye cripto y otros) */
 async function mkEquity(){
@@ -2230,7 +2270,7 @@ async function mkEquity(){
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(52,232,158,.2)');g.addColorStop(1,'rgba(52,232,158,0)');
   const step=h.length>18?Math.ceil(h.length/12):1;
-  try{CH.eq=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Acciones/Fondos/ETFs',data:h.map(x=>x.val),borderColor:'#34e89e',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#34e89e',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
+  try{CH.eq=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Acciones/Fondos/ETFs',data:h.map(x=>x.val),borderColor:'#34e89e',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#34e89e',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false,axis:'x'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
 }
 function mkMulti(){
   dch('ml');if(!chartReady())return;
@@ -2240,7 +2280,11 @@ function mkMulti(){
   const ds=[];
   ds.push({label:'★ Cartera',data:an.map(x=>parseFloat((x.rent*100).toFixed(2))),borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.08)',borderWidth:3,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#22d3ee',pointBorderColor:'#07101f',pointBorderWidth:2,tension:.35,fill:false,hidden:hidS.has('__tot'),order:-1});
   DB.assets.forEach(a=>{
-    if(!DB.ops.some(o=>o.aid===a.id))return;
+    /* filtrar activos sin operaciones o cuyas operaciones suman cero (residuos) */
+    const ops=DB.ops.filter(o=>o.aid===a.id);
+    if(!ops.length)return;
+    const m=assetMetrics(a);
+    if(m.units<=1e-9&&Math.abs(m.realizedPL)<0.01&&m.inv<=0.01)return;
     const ar=assetAnnualReturns(a.id);if(!ar.length)return;
     const col=TC[a.type]||'#9aa8bd';
     const dm={};ar.forEach(r=>dm[r.year]=parseFloat((r.rent*100).toFixed(2)));
@@ -2252,7 +2296,10 @@ function buildToggles(){
   const row=G('tgl-row');if(!row)return;row.innerHTML='';
   const c0=mktgl('★ Total','#22d3ee',!hidS.has('__tot'));c0.onclick=()=>togS('__tot',c0);row.appendChild(c0);
   DB.assets.forEach(a=>{
-    if(!DB.ops.some(o=>o.aid===a.id))return;
+    const ops=DB.ops.filter(o=>o.aid===a.id);
+    if(!ops.length)return;
+    const m=assetMetrics(a);
+    if(m.units<=1e-9&&Math.abs(m.realizedPL)<0.01&&m.inv<=0.01)return;
     const c=mktgl(a.name.length>13?a.name.slice(0,12)+'…':a.name,TC[a.type]||'#9aa8bd',!hidS.has(a.id));
     c.onclick=()=>togS(a.id,c);row.appendChild(c);
   });
@@ -3092,6 +3139,8 @@ function renderSettings(){
     const b=G('finnhub-box');
     if(b)b.innerHTML='<div style="font-size:11px;color:var(--r)">No se pudo cargar la configuración de la fuente de datos.</div>';
   }
+  /* estado del toggle de sonido */
+  const chk=G('snd-chk');if(chk)chk.checked=isSoundEnabled();
   if(DB.assets.length){
     /* solo activos con posición abierta: los cerrados no influyen en el presente */
     const openAssets=DB.assets.filter(a=>{
@@ -3280,6 +3329,7 @@ async function resyncAll(){
   renderAll();
   renderDiagnostico();
   showToast('Resincronización completa ✓');
+  chime();
 }
 
 function updPrice(id,v){
@@ -4164,6 +4214,7 @@ async function doSync(){
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
     setText('sync-s','✓ Actualizado: '+DB.lastSync);
     renderAll();
+    chime();
   }catch(e){showToast('Error de conexión');setText('sync-s','Error al actualizar');}
   btn.classList.remove('spin');
 }
@@ -4181,6 +4232,39 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 let _tt;
 function showToast(msg){const t=G('toast');t.textContent=msg;t.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('on'),2800);}
+/* ── Sonido suave de "completado" (Web Audio, sin archivo) ──
+   Dos notas cortas tipo campana, agradables y muy breves. */
+let _audioCtx=null;
+function chime(){
+  if(localStorage.getItem('cv6_sound')==='0')return;        /* silenciado por el usuario */
+  try{
+    if(!_audioCtx){
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC)return;
+      _audioCtx=new AC();
+    }
+    /* algunos navegadores requieren reanudar el contexto tras interacción */
+    if(_audioCtx.state==='suspended')_audioCtx.resume();
+    const now=_audioCtx.currentTime;
+    /* dos notas: Sol5 (~784 Hz) y Do6 (~1046 Hz) */
+    [{f:783.99,t:0,d:0.18},{f:1046.5,t:0.12,d:0.22}].forEach(n=>{
+      const osc=_audioCtx.createOscillator();
+      const gain=_audioCtx.createGain();
+      osc.type='sine';osc.frequency.value=n.f;
+      gain.gain.setValueAtTime(0,now+n.t);
+      gain.gain.linearRampToValueAtTime(0.12,now+n.t+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+n.t+n.d);
+      osc.connect(gain).connect(_audioCtx.destination);
+      osc.start(now+n.t);osc.stop(now+n.t+n.d+0.05);
+    });
+  }catch(e){}
+}
+function setSoundEnabled(on){
+  localStorage.setItem('cv6_sound',on?'1':'0');
+  showToast(on?'Sonido activado':'Sonido desactivado');
+  if(on)chime();
+}
+function isSoundEnabled(){return localStorage.getItem('cv6_sound')!=='0';}
 function G(id){return document.getElementById(id);}
 function setText(id,v){const e=G(id);if(e)e.textContent=v;}
 function renderAll(){
