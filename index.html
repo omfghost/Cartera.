@@ -379,7 +379,7 @@ input,select,button,textarea{font-family:inherit}
 
 <section class="view active" id="v-dash">
   <div class="hero">
-    <div class="hlbl">PATRIMONIO TOTAL</div>
+    <div class="hlbl">ACTIVOS TOTALES</div>
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
     <div class="spkw"><canvas id="c-sp" height="50"></canvas></div>
@@ -442,7 +442,7 @@ input,select,button,textarea{font-family:inherit}
 </section>
 
 <section class="view" id="v-graficos">
-  <div class="sec">EVOLUCI&Oacute;N DEL PATRIMONIO</div>
+  <div class="sec">EVOLUCI&Oacute;N DE ACTIVOS</div>
   <div class="rng-row" id="patr-range">
     <button class="rng" data-r="6" onclick="setPatrRange(6)">6M</button>
     <button class="rng" data-r="12" onclick="setPatrRange(12)">1A</button>
@@ -763,28 +763,61 @@ function activeYears(){
 }
 function position(aid){
   const ops=DB.ops.filter(o=>o.aid===aid).sort((a,b)=>a.dt.localeCompare(b.dt));
-  let units=0,costBasis=0;
+  /* Total return: necesitamos todo el dinero invertido y todo el recibido.
+     - totalCost: suma de todas las compras (con comisiones).
+     - totalProceeds: dinero recibido en ventas (precio × unidades − comisiones).
+     - units / costBasis: posición abierta actual (para valor no realizado). */
+  let units=0,costBasis=0;          /* posición abierta */
+  let totalCost=0,totalProceeds=0;  /* histórico para total return */
   ops.forEach(o=>{
-    if(o.t==='C'){units+=o.q;costBasis+=o.q*o.p+(o.f||0);}
-    else if(o.t==='V'){const avg=units>0?costBasis/units:0;const sold=Math.min(o.q,units);units-=sold;costBasis-=sold*avg;}
+    if(o.t==='C'){
+      units+=o.q;
+      costBasis+=o.q*o.p+(o.f||0);
+      totalCost+=o.q*o.p+(o.f||0);
+    }else if(o.t==='V'){
+      const avg=units>0?costBasis/units:0;
+      const sold=Math.min(o.q,units);
+      units-=sold;costBasis-=sold*avg;
+      totalProceeds+=o.q*o.p-(o.f||0);
+    }
   });
   if(units<1e-9){units=0;costBasis=0;}
-  return {units,costBasis,costAvg:units>0?costBasis/units:0};
+  return {units,costBasis,costAvg:units>0?costBasis/units:0,totalCost,totalProceeds};
 }
+
 function assetMetrics(a){
   const pos=position(a.id);
-  /* el precio de mercado (a.price) está en la moneda nativa del activo;
-     se convierte a EUR para poder compararlo con el coste, que ya está en EUR.
-     Las operaciones importadas de Trade Republic vienen en EUR. */
   const cur=assetCurrency(a);
   const priceEUR=toEUR(a.price||0,cur);
-  const inv=pos.costBasis,val=pos.units*priceEUR,gain=val-inv;
-  return {units:pos.units,costAvg:pos.costAvg,inv,val,gain,pct:inv>0?gain/inv:0,curr:cur,priceEUR};
+  /* Total return del activo:
+     - inv (coste invertido total)     = TODO lo gastado en compras
+     - val (valor actual + realizado)  = valor de la posición abierta + ventas pasadas
+     - gain                            = val - inv (total return en €)
+     - pct                             = gain / inv (total return en %) */
+  const inv=pos.totalCost;
+  const valOpen=pos.units*priceEUR;
+  const val=valOpen+pos.totalProceeds;
+  const gain=val-inv;
+  return {
+    units:pos.units,costAvg:pos.costAvg,
+    inv,val,gain,
+    pct:inv>0?gain/inv:0,
+    curr:cur,priceEUR,
+    /* desglose: útil para mostrar la composición */
+    valOpen,                  /* lo que vale hoy lo que aún tienes */
+    realized:pos.totalProceeds,/* lo recibido por ventas pasadas */
+    openCost:pos.costBasis,   /* coste de las unidades que aún tienes */
+  };
 }
+
 function portfolioTotals(){
-  let inv=0,val=0;
-  DB.assets.forEach(a=>{const m=assetMetrics(a);inv+=m.inv;val+=m.val;});
-  return {inv,val,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
+  /* Total return de toda la cartera */
+  let inv=0,val=0,valOpen=0,realized=0;
+  DB.assets.forEach(a=>{
+    const m=assetMetrics(a);
+    inv+=m.inv;val+=m.val;valOpen+=m.valOpen;realized+=m.realized;
+  });
+  return {inv,val,valOpen,realized,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
 }
 function unitsAtYearEnd(aid,year){
   const cut=year+'-12-31';let units=0;
@@ -822,27 +855,85 @@ function priceAtYearEnd(aid,year){
   const conv=(typeof toEUR==='function')?toEUR(a.price||0,cur):(a.price||0);
   return conv;
 }
+/* Coste medio acumulado y unidades hasta una fecha dada (inclusive).
+   Robusto frente a borrados parciales: si quedan ventas sin compra, las
+   unidades nunca bajan de cero. Devuelve {units, costBasis} en EUR. */
+function positionAtDate(aid,dateStr){
+  let units=0,cost=0;
+  DB.ops.filter(o=>o.aid===aid&&o.dt<=dateStr).sort((a,b)=>a.dt.localeCompare(b.dt)).forEach(o=>{
+    if(o.t==='C'){units+=o.q;cost+=o.q*o.p+(o.f||0);}
+    else if(o.t==='V'){
+      if(units>1e-9){
+        const avg=cost/units;
+        const sold=Math.min(o.q,units);
+        cost-=sold*avg;units-=sold;
+      }
+      /* si no quedan unidades para vender, la venta se ignora (datos rotos) */
+    }
+  });
+  if(units<1e-9){units=0;cost=0;}
+  return {units,cost};
+}
+
+/* Valor de la cartera a fin de año en EUR.
+   Usa el coste a esa fecha para precios faltantes -> consistente con datos cortados. */
 function portfolioValueAtYearEnd(year){
   let total=0;
-  DB.assets.forEach(a=>{const u=unitsAtYearEnd(a.id,year);if(u>0)total+=u*priceAtYearEnd(a.id,year);});
+  const cut=year+'-12-31';
+  DB.assets.forEach(a=>{
+    const pos=positionAtDate(a.id,cut);
+    if(pos.units<=0)return;
+    const px=priceAtYearEnd(a.id,year);
+    /* si no hay precio histórico fiable, usa el coste medio (peor caso: rent.=0) */
+    const eff=px>0?px:(pos.cost/pos.units);
+    total+=pos.units*eff;
+  });
   return total;
 }
+
+/* Coste base agregado de la cartera a una fecha. Lo que has invertido neto
+   en activos que aún conservas. */
+function portfolioCostAtDate(dateStr){
+  let total=0;
+  DB.assets.forEach(a=>{total+=positionAtDate(a.id,dateStr).cost;});
+  return total;
+}
+
 function netFlowInYear(year){
   let net=0;
-  DB.ops.filter(o=>o.dt.slice(0,4)===String(year)).forEach(o=>{
-    if(o.t==='C')net+=o.q*o.p+(o.f||0);else if(o.t==='V')net-=(o.q*o.p-(o.f||0));
+  DB.ops.filter(o=>o.dt&&o.dt.slice(0,4)===String(year)).forEach(o=>{
+    if(o.t==='C')net+=o.q*o.p+(o.f||0);
+    else if(o.t==='V')net-=(o.q*o.p-(o.f||0));
   });
   return net;
 }
+
 function annualReturns(){
-  const years=activeYears();const curYear=new Date().getFullYear();
+  const years=activeYears();
+  const curYear=new Date().getFullYear();
+  /* Time-weighted return por año:
+     gain del año = valFin - valIni - flujo_neto_del_año
+     rent del año = gain / (valIni + flujo/2)
+     Si valIni sale inconsistente (ej. usuario borró años), marcamos el dato
+     como parcial para no inflar la rentabilidad. */
   return years.map((yr,i)=>{
+    const valFin=yr>=curYear?portfolioTotals().valOpen:portfolioValueAtYearEnd(yr);
     const valIni=i===0?0:portfolioValueAtYearEnd(years[i-1]);
-    const valFin=yr>=curYear?portfolioTotals().val:portfolioValueAtYearEnd(yr);
     const flow=netFlowInYear(yr);
     const gain=valFin-valIni-flow;
+    /* base para % */
     const base=valIni+flow/2;
-    return {year:yr,valIni,valFin,flow,gain,rent:base>0?gain/base:0,isCurrent:yr>=curYear};
+    /* salvaguarda: si la base es muy pequeña pero la ganancia enorme,
+       hay un hueco en los datos -> marcamos como parcial */
+    let rent=base>0?gain/base:0;
+    const partial=valIni===0&&i>0;       /* primer año disponible no es realmente el primero */
+    /* si parcial, limitamos a una rentabilidad razonable basada en coste real */
+    if(partial||Math.abs(rent)>5){
+      /* fallback robusto: ganancia frente a lo invertido neto en el año */
+      const investedNet=Math.max(Math.abs(flow),valIni||0,1);
+      rent=gain/investedNet;
+    }
+    return {year:yr,valIni,valFin,flow,gain,rent,partial,isCurrent:yr>=curYear};
   });
 }
 function calcCAGR(){
@@ -858,18 +949,30 @@ function currentYearReturn(){
   const years=activeYears();
   if(!years.length)return{valIni:0,valAct:0,gain:0,rent:0,year:new Date().getFullYear()};
   const curYear=years[years.length-1];
-  const valIni=years.length>1?portfolioValueAtYearEnd(years[years.length-2]):0;
-  const valAct=portfolioTotals().val;
+  /* Rent. del año en curso: time-weighted return.
+     valIni = activos al 31-dic del año anterior
+     valAct = activos hoy (valor abierto, no incluye ventas pasadas) */
+  const valIni=portfolioValueAtYearEnd(curYear-1);
+  const valAct=portfolioTotals().valOpen;
   const flow=netFlowInYear(curYear);
-  const gain=valAct-valIni-flow,base=valIni+flow/2;
-  return {valIni,valAct,gain,rent:base>0?gain/base:0,year:curYear};
+  const gain=valAct-valIni-flow;
+  const base=valIni+flow/2;
+  let rent=base>0?gain/base:0;
+  const partial=valIni===0&&years.length>1;
+  if(partial||Math.abs(rent)>5){
+    const investedNet=Math.max(Math.abs(flow),valIni||0,1);
+    rent=gain/investedNet;
+  }
+  return {valIni,valAct,gain,rent,year:curYear,partial};
 }
 function distribution(){
-  const tot=portfolioTotals().val,m={};
+  /* Distribución por tipo: usa el VALOR DE LA POSICIÓN ABIERTA actual
+     (lo que tienes hoy), no incluye lo ya vendido. */
+  const tot=portfolioTotals().valOpen,m={};
   DB.assets.forEach(a=>{
-    const mm=assetMetrics(a);if(mm.val<=0)return;
+    const mm=assetMetrics(a);if(mm.valOpen<=0)return;
     if(!m[a.type])m[a.type]={val:0,inv:0};
-    m[a.type].val+=mm.val;m[a.type].inv+=mm.inv;
+    m[a.type].val+=mm.valOpen;m[a.type].inv+=mm.openCost;
   });
   return Object.entries(m).map(([tp,d])=>({
     type:tp,val:d.val,inv:d.inv,pct:tot>0?d.val/tot:0,
@@ -2087,7 +2190,7 @@ async function mkPatr(){
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(34,211,238,.2)');g.addColorStop(1,'rgba(34,211,238,0)');
   const step=h.length>18?Math.ceil(h.length/12):1;
-  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Patrimonio',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
+  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Activos',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
 }
 /* Gráfica solo de acciones, fondos y ETFs (excluye cripto y otros) */
 async function mkEquity(){
@@ -2191,17 +2294,20 @@ function navTo(v){
 /* ════ DASHBOARD ════ */
 function renderDash(){
   const T=portfolioTotals(),cg=calcCAGR(),cy=currentYearReturn(),an=annualReturns();
-  setText('h-amt',fe(T.val));
-  const ge=G('h-gain');ge.textContent=(T.gain>=0?'+':'-')+fe(T.gain);ge.className='hg '+(T.gain>=0?'pos':'neg');
+  /* ACTIVOS TOTALES = lo que vale hoy lo que tienes (no incluye ventas pasadas) */
+  setText('h-amt',fe(T.valOpen));
+  /* GANANCIA / RENT = TOTAL RETURN (incluye realizado + no realizado vs invertido total) */
+  const ge=G('h-gain');ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg '+(T.gain>=0?'pos':'neg');
   setText('h-pct',fp(T.pct));setText('h-cagr','CAGR '+fp(cg,false));
-  setText('s-inv',fe(T.inv,true));
-  const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(T.gain,true);sg.className='sv '+(T.gain>=0?'g':'r');
+  setText('s-inv',fe(T.inv));
+  const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv '+(T.gain>=0?'g':'r');
   setText('s-cagr',fp(cg,false));
   const sy=G('s-yr');sy.textContent=fp(cy.rent);sy.className='sv '+(cy.rent>=0?'gold':'r');
   setText('yr-label',cy.year);
-  setText('yb-ini',fe(cy.valIni,true));setText('yb-act',fe(cy.valAct,true));
+  /* INICIO AÑO = valor a 31-dic del año anterior */
+  setText('yb-ini',fe(cy.valIni));setText('yb-act',fe(cy.valAct));
   const yr=G('yb-rent');yr.textContent=fp(cy.rent);yr.className='ybv lg '+(cy.rent>=0?'g':'r');
-  setText('dn-t',fe(T.val,true));
+  setText('dn-t',fe(T.valOpen));
   const dr=distribution();
   if(dr.length){
     G('dist-rows').innerHTML=dr.map(d=>`<div class="dr"><div class="ddot" style="background:${d.color}"></div><div class="dnm">${d.type}</div><div class="dpc" style="color:${d.color}">${(d.pct*100).toFixed(0)}%</div><div class="dvl hide-val sm">${fe(d.val,true)}</div><div class="drt ${pc(d.rent)}">${fp(d.rent)}</div></div><div style="margin:-2px 0 6px;padding:0 0 0 24px"><div style="height:2px;background:var(--line);border-radius:2px;overflow:hidden"><div style="height:100%;width:${(d.pct*100).toFixed(1)}%;background:${d.color};border-radius:2px;transition:width .7s ease"></div></div></div>`).join('');
@@ -2241,6 +2347,7 @@ function setPosTab(t){
 function onCarteraSearch(v){carteraSearch=v.toLowerCase();renderPositions();}
 function renderPositions(){
   const tot=portfolioTotals().val;
+  const totOpen=portfolioTotals().valOpen;
   let items=DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id));
   items=items.filter(a=>{
     const mt=carteraFilter==='Todos'||a.type===carteraFilter;
@@ -2264,14 +2371,20 @@ function renderPositions(){
     return;
   }
   list.innerHTML=items.map(a=>{
-    const m=assetMetrics(a),peso=tot>0?m.val/tot:0,col=TC[a.type]||'#9aa8bd',closed=m.units<=0;
+    const m=assetMetrics(a),col=TC[a.type]||'#9aa8bd',closed=m.units<=0;
+    /* peso dentro de la cartera basado en el valor ABIERTO (lo que vale hoy lo que tienes) */
+    const peso=totOpen>0?m.valOpen/totOpen:0;
+    /* tarjeta:
+       - Valor = lo que vale hoy la posición abierta
+       - Invertido = coste de las unidades que aún tienes (lo que sigue "puesto")
+       - Ganancia / Rent. = TOTAL RETURN (incluye ventas pasadas si las hay) */
     return `<div class="acard" onclick="showAssetDetail('${a.id}')">
       <div class="atop"><div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div><div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div></div>
       <div class="ams">
-        <div><div class="aml">Valor</div><div class="amv" style="color:${col}">${fe(m.val,true)}</div></div>
-        <div><div class="aml">Invertido</div><div class="amv">${fe(m.inv,true)}</div></div>
-        <div><div class="aml">Rent.</div><div class="amv ${pc(m.pct)}">${m.inv>0?fp(m.pct):'—'}</div></div>
-        <div><div class="aml">Ganancia</div><div class="amv ${pc(m.gain)}">${m.gain>=0?'+':'-'}${fe(m.gain,true)}</div></div>
+        <div><div class="aml">Valor</div><div class="amv" style="color:${col}">${fe(m.valOpen)}</div></div>
+        <div><div class="aml">Invertido</div><div class="amv">${fe(m.openCost)}</div></div>
+        <div><div class="aml">Rent. total</div><div class="amv ${pc(m.pct)}">${m.inv>0?fp(m.pct):'—'}</div></div>
+        <div><div class="aml">Ganancia total</div><div class="amv ${pc(m.gain)}">${m.gain>=0?'+':'-'}${fe(Math.abs(m.gain))}</div></div>
         <div><div class="aml">Unidades</div><div class="amv">${fn(m.units)}</div></div>
         <div><div class="aml">Peso</div><div class="amv" style="color:var(--gold)">${(peso*100).toFixed(1)}%</div></div>
       </div>
@@ -2369,9 +2482,9 @@ function confirmDelAllOps(){DB.ops=[];DB.assets=[];saveDB();closeSheet();renderA
 function showAssetDetail(id){
   const a=DB.assets.find(x=>x.id===id);if(!a)return;
   const m=assetMetrics(a),ar=assetAnnualReturns(id),col=TC[a.type]||'#9aa8bd';
-  const grid=[['Valor actual',fe(m.val),col],['Invertido',fe(m.inv),'var(--w)'],
-    ['Ganancia',(m.gain>=0?'+':'-')+fe(m.gain),m.gain>=0?'var(--g)':'var(--r)'],
-    ['Rentabilidad',m.inv>0?fp(m.pct):'—',m.pct>=0?'var(--g)':'var(--r)'],
+  const grid=[['Valor actual',fe(m.valOpen),col],['Invertido (abierta)',fe(m.openCost),'var(--w)'],
+    ['Ganancia total',(m.gain>=0?'+':'-')+fe(Math.abs(m.gain)),m.gain>=0?'var(--g)':'var(--r)'],
+    ['Rent. total',m.inv>0?fp(m.pct):'—',m.pct>=0?'var(--g)':'var(--r)'],
     ['Precio actual',fe(a.price),'var(--c)'],['Unidades',fn(m.units),'var(--w)']];
   const annHtml=ar.length?ar.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--gold)">${r.year}</span><span style="font-size:11px;color:var(--w2)">${fe(r.valEnd,true)}</span><span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600" class="${pc(r.rent)}">${fp(r.rent)}</span></div>`).join(''):'<div style="font-size:12px;color:var(--w2);padding:8px 0">Sin años completos todavía.</div>';
   openSheet(`<div class="shttl" style="color:${col}">${a.name}</div>
@@ -3272,7 +3385,7 @@ function explainCAGR(){
       <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--c);line-height:1.7">CAGR = (Valor final / Capital invertido)<sup>1/años</sup> − 1</div>
     </div>
     <div class="shp">En tu cartera, el CAGR actual es <b style="color:var(--c2)">${fp(cg,false)}</b>.</div>
-    <div class="shp" style="font-size:12px;color:var(--w3)">Ejemplo: un CAGR del 10% significa que tu patrimonio ha crecido de media un 10% cada año desde tu primera operación.</div>
+    <div class="shp" style="font-size:12px;color:var(--w3)">Ejemplo: un CAGR del 10% significa que tus activos han crecido de media un 10% cada año desde tu primera operación.</div>
     <div class="shrow"><button class="bok" onclick="closeSheet()">Entendido</button></div>`);
 }
 function exportJSON(){
