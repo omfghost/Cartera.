@@ -167,7 +167,7 @@ input,select,button,textarea{font-family:inherit}
    En PWA standalone: 110px (62px botones + 48px área home indicator).
    Los botones (.nb) usan justify-content para alinearse al centro vertical
    del nav, dejando espacio abajo para que la barra "baje" hasta el borde. */
-.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box}
+.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box;align-items:flex-start}
 /* En PWA: incrementar la variable hace que el nav sea más alto */
 body.pwa{--nav:110px}
 @media all and (display-mode:standalone){
@@ -176,11 +176,12 @@ body.pwa{--nav:110px}
 @media all and (display-mode:fullscreen){
   body{--nav:110px}
 }
-/* Los botones se alinean a la parte superior del nav (donde se ven),
-   dejando el espacio inferior libre para la home indicator. */
-body.pwa .bnav .nb{align-self:flex-start;height:62px}
+/* Los botones se quedan a 62px arriba del nav, dejando el espacio inferior
+   (los 48px) libre para la home indicator. Esto resuelve que el contenido
+   del nav se centraba verticalmente cuando el nav era de 110px. */
+body.pwa .bnav .nb{height:62px;flex:1;max-height:62px}
 @media all and (display-mode:standalone){
-  .bnav .nb{align-self:flex-start;height:62px}
+  .bnav .nb{height:62px;flex:1;max-height:62px}
 }
 /* sb-fill ya no es necesario, lo dejamos invisible */
 .sb-fill{display:none}
@@ -467,7 +468,6 @@ body.pwa .bnav .nb{align-self:flex-start;height:62px}
     </div>
   </div>
   <div class="sync-s" id="sync-s">Toca &#8635; para actualizar precios online</div>
-  <div id="diag-bar" style="padding:0 18px 4px;font-size:9.5px;color:var(--c2);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;opacity:.7"></div>
 </header>
 <main class="main" id="main">
 
@@ -578,6 +578,7 @@ body.pwa .bnav .nb{align-self:flex-start;height:62px}
 <section class="view" id="v-ajustes">
   <details class="sblk sblk-coll" open><summary class="sbt-sum"><span class="sbt">FUENTE DE DATOS &middot; FMP</span><span class="sbt-chev">▾</span></summary><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></details>
   <details class="sblk sblk-coll" open ontoggle="if(this.open)renderDiagnostico()"><summary class="sbt-sum"><span class="sbt">DIAGN&Oacute;STICO DE PRECIOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></details>
+  <details class="sblk sblk-coll" ontoggle="if(this.open)renderTechDiag()"><summary class="sbt-sum"><span class="sbt">DIAGN&Oacute;STICO T&Eacute;CNICO</span><span class="sbt-chev">▾</span></summary><div class="sbs">Informaci&oacute;n del modo en que est&aacute; corriendo la app: PWA standalone vs navegador, dimensiones del viewport y &aacute;rea segura. &Uacute;til para diagnosticar problemas de interfaz.</div><div id="tech-diag-out" style="font-size:11px;color:var(--w2);font-family:'JetBrains Mono',monospace;line-height:1.7;margin-top:8px"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS ACTUALES</span><span class="sbt-chev">▾</span></summary><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">EDITAR ACTIVOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Pulsa un activo para editar su nombre, tipo y ticker. &Uacute;til si la importaci&oacute;n asign&oacute; mal el tipo o si necesitas corregir el ticker para que se sincronicen los precios.</div><div id="cat-rows"></div></details>
@@ -753,7 +754,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v7.13';      /* visible en header y Ajustes */
+const APP_VERSION='v7.15';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3427,6 +3428,44 @@ function parseNum(v){
 /* ════ DIAGNÓSTICO DE PRECIOS ════
    Muestra los datos crudos guardados de cada activo para encontrar
    monedas o precios mal guardados que distorsionen los cálculos. */
+/* Diagnóstico técnico de entorno: detalles del runtime para identificar
+   problemas de interfaz (modo PWA, dimensiones del viewport, área segura). */
+function renderTechDiag(){
+  const box=G('tech-diag-out');if(!box)return;
+  try{
+    const isPWA = window.navigator.standalone===true
+      || window.matchMedia('(display-mode:standalone)').matches
+      || window.matchMedia('(display-mode:fullscreen)').matches;
+    const dvh=window.innerHeight;
+    const screenH=window.screen?window.screen.height:0;
+    /* Leer env(safe-area-inset-bottom) con un div sonda */
+    const probe=document.createElement('div');
+    probe.style.cssText='position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none';
+    document.body.appendChild(probe);
+    const safeBot=probe.offsetHeight;
+    probe.remove();
+    const probeT=document.createElement('div');
+    probeT.style.cssText='position:fixed;top:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';
+    document.body.appendChild(probeT);
+    const safeTop=probeT.offsetHeight;
+    probeT.remove();
+    const nav=document.querySelector('.bnav');
+    const navHpx=nav?nav.offsetHeight:0;
+    const ua=(navigator.userAgent||'').slice(0,80);
+    box.innerHTML=`
+      <div><span style="color:var(--c2)">Modo PWA:</span> ${isPWA?'sí (standalone)':'no (navegador)'}</div>
+      <div><span style="color:var(--c2)">Alto ventana:</span> ${dvh}px</div>
+      <div><span style="color:var(--c2)">Alto pantalla:</span> ${screenH}px</div>
+      <div><span style="color:var(--c2)">Área segura superior:</span> ${safeTop}px</div>
+      <div><span style="color:var(--c2)">Área segura inferior:</span> ${safeBot}px</div>
+      <div><span style="color:var(--c2)">Alto barra navegación:</span> ${navHpx}px</div>
+      <div style="margin-top:8px;color:var(--w3);font-size:10px">${ua}</div>
+    `;
+  }catch(e){
+    box.textContent='Error al leer datos de entorno.';
+  }
+}
+
 function renderDiagnostico(){
   const out=G('diag-out');
   if(!out)return;
@@ -4725,38 +4764,19 @@ document.addEventListener('DOMContentLoaded',()=>{
         || window.matchMedia('(display-mode:fullscreen)').matches;
       if(isPWA){
         document.body.classList.add('pwa');
-        /* fuerza la variable --nav a 110px sobreescribiendo CSS:root.
-           Esto es a prueba de balas: no depende de media queries que
-           iOS puede ignorar. */
+        /* fuerza la variable --nav a 110px y aplica al nav directamente */
         document.documentElement.style.setProperty('--nav','110px');
-        /* y, por si acaso, también aplico la altura directamente al nav */
         const nav=document.querySelector('.bnav');
         if(nav){
           nav.style.height='110px';
-          /* alinear los botones arriba del nav */
+          nav.style.alignItems='flex-start';
           nav.querySelectorAll('.nb').forEach(b=>{
-            b.style.alignSelf='flex-start';
             b.style.height='62px';
+            b.style.maxHeight='62px';
+            b.style.flex='1';
           });
         }
       }
-      /* diagnóstico visible para confirmar qué detecta */
-      const showDiag=()=>{
-        const bar=document.getElementById('diag-bar');
-        if(!bar)return;
-        const dvh=window.innerHeight;
-        const probe=document.createElement('div');
-        probe.style.cssText='position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden';
-        document.body.appendChild(probe);
-        const safeBot=probe.offsetHeight;
-        probe.remove();
-        const navH=document.querySelector('.bnav');
-        const navHpx=navH?navH.offsetHeight:0;
-        bar.textContent=`PWA:${isPWA?'sí':'NO'} · innerH:${dvh} · safeBot:${safeBot}px · navH:${navHpx}px`;
-      };
-      showDiag();
-      setTimeout(showDiag,200);
-      window.addEventListener('resize',showDiag);
     }catch(e){}
     if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }catch(err){
