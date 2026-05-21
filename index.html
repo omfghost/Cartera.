@@ -154,7 +154,16 @@ input,select,button,textarea{font-family:inherit}
 .igs b{color:var(--w)}
 .ign2{margin-top:6px;font-size:11px;color:var(--g);background:rgba(52,232,158,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(52,232,158,.16)}
 .ver{text-align:center;font-size:10px;color:var(--w2);padding:18px 0 6px;letter-spacing:.07em}
-.bnav{flex-shrink:0;display:flex;height:calc(var(--nav) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box}
+/* Nav inferior: en el navegador (Safari) NO añadimos safe-area extra porque
+   Safari ya tiene su barra inferior nativa. En modo standalone (PWA en
+   pantalla de inicio) sí lo añadimos para llegar al borde del iPhone. */
+.bnav{flex-shrink:0;display:flex;height:var(--nav);padding-bottom:0;background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box}
+@media all and (display-mode:standalone){
+  .bnav{height:calc(var(--nav) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+}
+@media all and (display-mode:fullscreen){
+  .bnav{height:calc(var(--nav) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+}
 .bnav .nb{height:var(--nav)}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--w3);cursor:pointer;padding:4px 0;transition:color .15s}
 .nb span{font-size:9.5px;letter-spacing:.02em}
@@ -176,7 +185,10 @@ input,select,button,textarea{font-family:inherit}
 .bok{flex:2;padding:14px;background:linear-gradient(135deg,var(--c),var(--c2));border:none;border-radius:var(--rs);color:var(--bg);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 .bok:active{opacity:.85}
 .bcancel{flex:1;padding:14px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--w2);font-size:13px;cursor:pointer}
-.toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+@media all and (display-mode:standalone){
+  .toast{bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 14px)}
+}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--w2);padding:40px 20px;font-size:13px;line-height:1.6}
 .empty .ei{font-size:32px;margin-bottom:10px;opacity:.5}
@@ -385,6 +397,29 @@ input,select,button,textarea{font-family:inherit}
 .ex-a{font-size:13px;color:var(--w);line-height:1.55;margin-bottom:4px}
 .ex-a b{color:var(--c2)}
 .ex-note{font-size:11.5px;color:var(--w2);line-height:1.5;margin-top:12px;padding:8px 10px;background:var(--bg2);border-left:2px solid var(--c2);border-radius:6px}
+/* ── Mini-resumen de cartera ── */
+.cart-sum{margin-bottom:12px}
+.csum-card{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:linear-gradient(135deg,rgba(34,150,235,.08),rgba(52,232,158,.05));border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.csum-l{display:flex;flex-direction:column;gap:3px}
+.csum-lbl{font-size:9.5px;color:var(--w3);letter-spacing:.04em;font-weight:600}
+.csum-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--w)}
+.csum-val.g{color:var(--g)}.csum-val.r{color:var(--r)}
+/* FAB flotante para "Añadir operación" en Cartera */
+.fab-fixed{position:fixed;bottom:calc(var(--nav) + 16px);left:50%;transform:translateX(-50%);width:auto;padding:11px 22px;border-radius:24px;font-weight:700;background:var(--c);color:var(--bg);border:none;box-shadow:0 6px 20px rgba(34,150,235,.45);z-index:30;cursor:pointer;font-size:13.5px}
+@media all and (display-mode:standalone){
+  .fab-fixed{bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 16px)}
+}
+.fab-fixed:active{transform:translateX(-50%) scale(0.96)}
+/* Botón hero "ver evolución" */
+.hero-evo-btn{display:block;width:100%;margin-top:14px;background:rgba(34,150,235,.12);border:1px solid rgba(34,150,235,.3);border-radius:10px;padding:11px;color:var(--c2);font-size:12.5px;font-weight:600;cursor:pointer;letter-spacing:.02em}
+.hero-evo-btn:active{background:rgba(34,150,235,.22)}
+/* ── Menú de tipos de activos en Ajustes ── */
+.cat-grp{margin-bottom:10px}
+.cat-grp-h{display:flex;align-items:center;justify-content:space-between;padding:6px 0 6px 9px;font-size:11px;letter-spacing:.05em;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+.cat-grp-cnt{font-size:10px;color:var(--w3);background:var(--bg2);padding:1px 7px;border-radius:8px;font-weight:600}
+.cat-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin-bottom:5px}
+.cat-nm{font-size:12.5px;color:var(--w);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-sel{background:var(--bg);color:var(--w);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:11px;font-family:inherit;cursor:pointer;outline:none;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -408,6 +443,7 @@ input,select,button,textarea{font-family:inherit}
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
     <div class="spkw"><canvas id="c-sp" height="50"></canvas></div>
+    <button class="hero-evo-btn" onclick="openEvolutionChart()">📈 Ver evolución de activos &#8250;</button>
   </div>
   <div class="sgrid">
     <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div></div>
@@ -434,6 +470,7 @@ input,select,button,textarea{font-family:inherit}
   <div class="sec">RENTABILIDAD ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-anual')">?</span></div>
   <div class="cc" style="padding:16px 8px 8px"><canvas id="c-ab" height="220"></canvas></div>
   <div id="ann-rows"></div>
+  <button class="hero-evo-btn" style="margin-top:10px" onclick="openMultiAssetChart()">📊 Comparar rentabilidad por activo &#8250;</button>
 </section>
 
 <section class="view" id="v-cartera">
@@ -442,7 +479,8 @@ input,select,button,textarea{font-family:inherit}
     <button class="subtab" id="ct-ops" onclick="setCarteraTab('ops')">Operaciones</button>
   </div>
   <div class="subview on" id="sv-posiciones">
-    <button class="fab" onclick="openAddOp()">+ A&ntilde;adir operaci&oacute;n</button>
+    <!-- mini-resumen de cartera siempre visible arriba -->
+    <div class="cart-sum" id="cart-sum"></div>
     <div class="sw2">
       <svg class="sic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input class="si" type="search" placeholder="Buscar activo..." oninput="onCarteraSearch(this.value)">
@@ -453,6 +491,7 @@ input,select,button,textarea{font-family:inherit}
       <button class="pos-tab" id="ptab-clo" onclick="setPosTab('clo')">Cerradas</button>
     </div>
     <div id="positions-list"></div>
+    <button class="fab fab-fixed" onclick="openAddOp()">+ A&ntilde;adir operaci&oacute;n</button>
   </div>
   <div class="subview" id="sv-ops">
     <div class="btn-pair">
@@ -468,24 +507,14 @@ input,select,button,textarea{font-family:inherit}
   </div>
 </section>
 
-<section class="view" id="v-graficos">
-  <div class="sec">EVOLUCI&Oacute;N DE ACTIVOS<span class="note-ic" onclick="event.stopPropagation();explain('evolucion')">?</span></div>
-  <div class="rng-row" id="patr-range">
+<section class="view" id="v-graficos" style="display:none">
+  <!-- canvas reutilizados desde el Panel mediante modales -->
+  <div class="rng-row" id="patr-range" style="display:none">
     <button class="rng" data-r="6" onclick="setPatrRange(6)">6M</button>
     <button class="rng" data-r="12" onclick="setPatrRange(12)">1A</button>
     <button class="rng" data-r="24" onclick="setPatrRange(24)">2A</button>
     <button class="rng on" data-r="0" onclick="setPatrRange(0)">Todo</button>
   </div>
-  <div class="cc"><canvas id="c-pt" height="230"></canvas></div>
-  <div class="sec">HIST&Oacute;RICO &mdash; ACCIONES, FONDOS Y ETFs</div>
-  <div class="cc"><canvas id="c-eq" height="230"></canvas></div>
-  <div class="sec">RENTABILIDAD ANUAL POR ACTIVO</div>
-  <div class="trow" id="tgl-row"></div>
-  <div class="cc" style="padding:16px 8px 8px"><canvas id="c-ml" height="280"></canvas></div>
-  <div class="sec">RENTABILIDAD ACUMULADA</div>
-  <div class="cc"><canvas id="c-cm" height="230"></canvas></div>
-  <div class="sec">DISTRIBUCI&Oacute;N</div>
-  <div class="cc"><canvas id="c-p2" height="260"></canvas></div>
 </section>
 
 <section class="view" id="v-explorar">
@@ -513,15 +542,25 @@ input,select,button,textarea{font-family:inherit}
 
 
 <section class="view" id="v-ajustes">
-  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">FUENTE DE DATOS &middot; FMP</span><span class="sbt-chev">▾</span></summary><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></details>
+  <details class="sblk sblk-coll" open><summary class="sbt-sum"><span class="sbt">FUENTE DE DATOS &middot; FMP</span><span class="sbt-chev">▾</span></summary><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></details>
+  <details class="sblk sblk-coll" open ontoggle="if(this.open)renderDiagnostico()"><summary class="sbt-sum"><span class="sbt">DIAGN&Oacute;STICO DE PRECIOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS ACTUALES</span><span class="sbt-chev">▾</span></summary><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></details>
-  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">DIAGN&Oacute;STICO DE PRECIOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si las cuentas anuales no cuadran, mira aqu&iacute; los datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="renderDiagnostico()">&#128270; Ver diagn&oacute;stico</button><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></details>
-  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">COPIA DE SEGURIDAD</span><span class="sbt-chev">▾</span></summary><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">TIPOS DE ACTIVOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Reclasifica un activo si la app lo cre&oacute; con el tipo equivocado (p.ej. un ETF importado como Acci&oacute;n).</div><div id="cat-rows"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">IMPORTAR OPERACIONES DE BROKER</span><span class="sbt-chev">▾</span></summary><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">COPIA DE SEGURIDAD</span><span class="sbt-chev">▾</span></summary><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">SONIDO DE FINALIZACI&Oacute;N</span><span class="sbt-chev">▾</span></summary><div class="sbs">Una nota suave cuando termina la actualizaci&oacute;n de precios o la resincronizaci&oacute;n.</div><label class="snd-tg"><input type="checkbox" id="snd-chk" onchange="setSoundEnabled(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Activado</span></label></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">INSTALAR EN iPHONE</span><span class="sbt-chev">▾</span></summary><div class="sbs" style="margin-bottom:14px">Sin App Store &middot; Icono en pantalla de inicio &middot; Funciona offline</div><div class="ig"><div class="igs"><div class="ign">1</div><div>Abre esta URL en <b>Safari</b> (no Chrome)</div></div><div class="igs"><div class="ign">2</div><div>Toca el bot&oacute;n <b>Compartir &#8673;</b> abajo</div></div><div class="igs"><div class="ign">3</div><div>Selecciona <b>"A&ntilde;adir a pantalla de inicio"</b></div></div><div class="igs"><div class="ign">4</div><div>Toca <b>A&ntilde;adir</b></div></div><div class="ign2">&#10003; Funciona sin internet &middot; &#10003; Datos en el dispositivo</div></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt">SOBRE LOS AN&Aacute;LISIS</span><span class="sbt-chev">▾</span></summary><div style="font-size:11px;color:var(--w2);line-height:1.8"><div>&bull; Con clave de <b>FMP</b> configurada, los datos vienen de su API. Sin clave, se usan fuentes de respaldo.</div><div>&bull; Los an&aacute;lisis (Graham, Buffett, EV/FCF, t&eacute;cnico, veredicto, posici&oacute;n competitiva) los <b>calcula la app</b> con sus algoritmos.</div><div>&bull; Las etiquetas <b>EST</b> / <b>CONSENSO</b> marcan valores estimados o de terceros.</div><div>&bull; <b>No es asesoramiento financiero.</b> Verifica siempre antes de invertir.</div></div></details>
+  
+  
+  
+  
+  
+  
+  
+  
+  
   <div class="ver" id="ver-tag">Mi Cartera &middot; PWA &middot; Datos en el dispositivo</div>
 </section>
 
@@ -529,7 +568,6 @@ input,select,button,textarea{font-family:inherit}
 <nav class="bnav">
   <button class="nb on" id="nb-dash" onclick="navTo('dash')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Panel</span></button>
   <button class="nb" id="nb-cartera" onclick="navTo('cartera')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Cartera</span></button>
-  <button class="nb" id="nb-graficos" onclick="navTo('graficos')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Gr&aacute;ficos</span></button>
   <button class="nb" id="nb-explorar" onclick="navTo('explorar')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Explorar</span></button>
   <button class="nb" id="nb-ajustes" onclick="navTo('ajustes')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Ajustes</span></button>
 </nav>
@@ -680,7 +718,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v7.7';      /* visible en header y Ajustes */
+const APP_VERSION='v7.8';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -745,15 +783,21 @@ function saveDB(){try{localStorage.setItem('cv6',JSON.stringify(DB));}catch(e){}
 function loadDB(){try{const r=localStorage.getItem('cv6');if(r){DB=JSON.parse(r);return true;}}catch(e){}return false;}
 function initDB(){
   if(!loadDB()){
-    /* arranca solo con las operaciones de ejemplo; los activos se materializan desde el catálogo */
     DB.assets=[];DB.ops=JSON.parse(JSON.stringify(DEF_OPS));DB.hist={};DB.lastSync=null;
-    /* materializar los activos usados por las ops de ejemplo */
     syncAssetsFromOps();
     saveDB();
   }
   if(!DB.hist)DB.hist={};
   if(!DB.assets)DB.assets=[];
   if(!DB.ops)DB.ops=[];
+  /* normalizar tipos antiguos importados con singular/inconsistente */
+  let fixed=0;
+  DB.assets.forEach(a=>{
+    if(a.type==='Fondo'){a.type='Fondos';fixed++;}
+    if(a.type==='Cripto'||a.type==='Criptomonedas'){a.type='Criptomoneda';fixed++;}
+    if(!TYPES.includes(a.type)){a.type='Acciones';fixed++;}
+  });
+  if(fixed>0)saveDB();
 }
 function resetDB(){
   DB={assets:[],ops:JSON.parse(JSON.stringify(DEF_OPS)),hist:{},lastSync:null};
@@ -1060,7 +1104,7 @@ function assetAnnualReturns(aid){
     const base=valPrev+flow/2;
     let rent=base>0?gain/base:0;
     /* capa final razonable */
-    if(rent>2)rent=2;
+    if(rent>1)rent=1;       /* nadie hace +100% sostenido al año */
     if(rent<-0.95)rent=-0.95;
     return {year:yr,rent,valEnd};
   });
@@ -2391,13 +2435,13 @@ function mkExploreChart(series,times,up){
 }
 
 /* ════ NAVEGACIÓN ════ */
-const VIEWS=['dash','cartera','graficos','explorar','ajustes'];
+const VIEWS=['dash','cartera','explorar','ajustes'];
 let curView='dash';
 function navTo(v){
   VIEWS.forEach(x=>{G('v-'+x)?.classList.remove('active');G('nb-'+x)?.classList.remove('on');});
   G('v-'+v)?.classList.add('active');G('nb-'+v)?.classList.add('on');
   G('main').scrollTo(0,0);curView=v;
-  if(v==='graficos')setTimeout(()=>{mkPatr();mkEquity();buildToggles();mkMulti();mkCum();mkPie2();},80);
+  /* sección Gráficos eliminada: sus gráficas viven ahora en modales del Panel */
 }
 
 /* ════ DASHBOARD ════ */
@@ -2431,7 +2475,7 @@ function renderDash(){
   if(an.length){
     G('ann-rows').innerHTML=an.map(a=>`<div class="arow arow-tap" onclick="openYearDetail(${a.year})"><div class="ayr">${a.year}${a.isCurrent?'<span style="font-size:9px;color:var(--w2)"> curso</span>':''}</div><div class="afin hide-val sm">${fe(a.valFin)}</div><div class="agn hide-val sm ${pc(a.gain)}">${a.gain>=0?'+':'-'}${fe(Math.abs(a.gain))}</div><div class="apc ${pc(a.rent)}">${fp(a.rent)}</div><div class="achev">›</div></div>`).join('');
   }else G('ann-rows').innerHTML='<div class="empty"><div class="ei">○</div>Aún no hay años con operaciones.</div>';
-  setText('sync-s',(DB.lastSync?'Actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online')+' · '+APP_VERSION);
+  setText('sync-s',(DB.lastSync?'Actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online'));
   mkSparkline();mkDonut();mkDonutAcc();mkAnnBar();
 }
 
@@ -2448,11 +2492,33 @@ let carteraFilter='Todos',carteraSearch='',posTab='act';
 let opsSelectMode=false;
 const opsSelected=new Set();
 function renderCartera(){
+  /* mini-resumen arriba */
+  const T=portfolioTotals();
+  const actCount=DB.assets.filter(a=>{
+    const m=assetMetrics(a);return m.units>1e-9;
+  }).length;
+  const cs=G('cart-sum');
+  if(cs){
+    const cls=T.pct>=0?'g':'r';
+    const sign=T.gain>=0?'+':'-';
+    cs.innerHTML=`<div class="csum-card">
+      <div class="csum-l"><div class="csum-lbl">Valor</div><div class="csum-val hide-val sm">${fe(T.valOpen)}</div></div>
+      <div class="csum-l"><div class="csum-lbl">Posiciones</div><div class="csum-val">${actCount}</div></div>
+      <div class="csum-l"><div class="csum-lbl">Rent. total</div><div class="csum-val ${cls}">${fp(T.pct)}</div></div>
+    </div>`;
+  }
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
   G('cartera-chips').innerHTML=types.map(t=>`<button class="chip${t===carteraFilter?' on':''}" onclick="setCF('${t}')">${t}</button>`).join('');
   renderPositions();renderOpsList();
 }
-function setCF(t){carteraFilter=t;renderPositions();}
+function setCF(t){
+  carteraFilter=t;
+  /* re-pintar los chips para que el resaltado refleje el seleccionado */
+  const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
+  const el=G('cartera-chips');
+  if(el)el.innerHTML=types.map(x=>`<button class="chip${x===carteraFilter?' on':''}" onclick="setCF('${x}')">${x}</button>`).join('');
+  renderPositions();
+}
 function setPosTab(t){
   posTab=t;
   const a=G('ptab-act'),c=G('ptab-clo');
@@ -3181,6 +3247,10 @@ function renderSettings(){
   const chk=G('snd-chk');if(chk)chk.checked=isSoundEnabled();
   /* versión visible */
   const v=G('ver-tag');if(v)v.textContent='Mi Cartera '+APP_VERSION+' · PWA · Datos en el dispositivo';
+  /* listado de activos con su tipo para reclasificar */
+  renderCategoryRows();
+  /* diagnóstico arranca abierto -> rellenarlo automáticamente */
+  try{renderDiagnostico();}catch(e){}
   if(DB.assets.length){
     /* solo activos con posición abierta: los cerrados no influyen en el presente */
     const openAssets=DB.assets.filter(a=>{
@@ -3371,6 +3441,37 @@ async function resyncAll(){
   renderDiagnostico();
   showToast('Resincronización completa ✓');
   chime();
+}
+
+/* ── Tipos de activos: lista de la cartera con un selector de tipo ── */
+function renderCategoryRows(){
+  const box=G('cat-rows');if(!box)return;
+  const used=DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id));
+  if(!used.length){box.innerHTML='<div style="font-size:11px;color:var(--w3);padding:8px 0">Sin activos.</div>';return;}
+  /* agrupar por tipo para mostrar como secciones */
+  const byType={};
+  used.forEach(a=>{(byType[a.type]||(byType[a.type]=[])).push(a);});
+  /* orden: tipos del catálogo primero, luego cualquier extra */
+  const order=[...TYPES,...Object.keys(byType).filter(t=>!TYPES.includes(t))];
+  let html='';
+  order.forEach(tp=>{
+    const list=byType[tp];if(!list||!list.length)return;
+    const col=TC[tp]||'#9aa8bd';
+    html+=`<div class="cat-grp"><div class="cat-grp-h" style="border-left:3px solid ${col}"><span style="color:${col}">${tp}</span><span class="cat-grp-cnt">${list.length}</span></div>`;
+    list.forEach(a=>{
+      const sel=TYPES.map(t=>`<option value="${t}"${t===a.type?' selected':''}>${t}</option>`).join('');
+      html+=`<div class="cat-row"><span class="cat-nm">${a.name}</span><select class="cat-sel" onchange="changeAssetType('${a.id}',this.value)">${sel}</select></div>`;
+    });
+    html+='</div>';
+  });
+  box.innerHTML=html;
+}
+function changeAssetType(id,newType){
+  const a=DB.assets.find(x=>x.id===id);if(!a)return;
+  if(!TYPES.includes(newType)){showToast('Tipo no válido');return;}
+  a.type=newType;
+  saveDB();renderAll();
+  showToast(a.name+' → '+newType);
 }
 
 function updPrice(id,v){
@@ -4070,7 +4171,7 @@ function parseBrokerCSV(text){
         const dt=normalizeDate(c[iFecha]);
         if(!qty||isNaN(qty)||qty<=0||!p||isNaN(p)||!dt)continue;
         /* MyInvestor es sobre todo fondos */
-        ops.push({broker,name:nm,symbol:(iIsin>=0?c[iIsin]:'')||nm,type:'Fondo',
+        ops.push({broker,name:nm,symbol:(iIsin>=0?c[iIsin]:'')||nm,type:'Fondos',
           t,q:Math.abs(qty),p:Math.abs(p),f:0,dt});
       }
     }
@@ -4349,7 +4450,7 @@ async function doSync(){
     if(typeof loadFxRates==='function')await loadFxRates();
     const r=await fetchAllPrices();
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
-    setText('sync-s','✓ Actualizado: '+DB.lastSync+' · '+APP_VERSION);
+    setText('sync-s','✓ Actualizado: '+DB.lastSync);
     renderAll();
     chime();
   }catch(e){showToast('Error de conexión');setText('sync-s','Error al actualizar');}
@@ -4359,6 +4460,30 @@ async function doSync(){
 /* ── MODAL ── */
 function openSheet(html){G('sbody').innerHTML=html;G('overlay').classList.add('on');G('sheet').classList.add('on');}
 function closeSheet(){G('overlay').classList.remove('on');G('sheet').classList.remove('on');}
+/* ── Modales que muestran las gráficas pesadas (evolución y multi-activo) ──
+   Reutilizan los canvases del DOM moviéndolos temporalmente dentro del sheet. */
+function openEvolutionChart(){
+  openSheet(`<div class="shttl">📈 Evolución de activos</div>
+    <div class="rng-row">
+      <button class="rng" data-r="6" onclick="setPatrRange(6)">6M</button>
+      <button class="rng" data-r="12" onclick="setPatrRange(12)">1A</button>
+      <button class="rng" data-r="24" onclick="setPatrRange(24)">2A</button>
+      <button class="rng on" data-r="0" onclick="setPatrRange(0)">Todo</button>
+    </div>
+    <div class="cc" style="height:260px"><canvas id="c-pt" height="260"></canvas></div>
+    <div style="font-size:11px;color:var(--w3);text-align:center;margin-top:6px">Pulsa la línea para ver el valor exacto en cada momento</div>
+    <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
+  /* dibujar tras render */
+  setTimeout(()=>{if(typeof mkPatr==='function')mkPatr();},80);
+}
+function openMultiAssetChart(){
+  openSheet(`<div class="shttl">📊 Rentabilidad por activo</div>
+    <div class="trow" id="tgl-row"></div>
+    <div class="cc" style="padding:16px 8px 8px;height:300px"><canvas id="c-ml" height="280"></canvas></div>
+    <div style="font-size:11px;color:var(--w3);text-align:center;margin-top:6px">Pulsa los activos arriba para ocultar/mostrar</div>
+    <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
+  setTimeout(()=>{if(typeof buildToggles==='function')buildToggles();if(typeof mkMulti==='function')mkMulti();},80);
+}
 let _sy=0;
 document.addEventListener('DOMContentLoaded',()=>{
   const sh=G('sheet');
@@ -4422,7 +4547,6 @@ function G(id){return document.getElementById(id);}
 function setText(id,v){const e=G(id);if(e)e.textContent=v;}
 function renderAll(){
   renderDash();renderCartera();renderSettings();
-  if(curView==='graficos')setTimeout(()=>{mkPatr();mkEquity();buildToggles();mkMulti();mkCum();mkPie2();},60);
 }
 /* ── MODO PRIVACIDAD: ocultar/mostrar valores ── */
 function togglePrivacy(){
@@ -4473,7 +4597,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           return (typeof preloadHistory==='function')?preloadHistory():null;
         }).then(()=>{
           if(btn)btn.classList.remove('spin');
-          setText('sync-s','✓ Actualizado: '+DB.lastSync+' · '+APP_VERSION);
+          setText('sync-s','✓ Actualizado: '+DB.lastSync);
           renderAll();
         }).catch(()=>{if(btn)btn.classList.remove('spin');renderAll();});
       },900);
