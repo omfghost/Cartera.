@@ -25,12 +25,19 @@
   --ok:#34e89e;--warn:#ffb74d;--bad:#ff6b7a;
   --nav:62px;--rad:14px;--rs:9px;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:var(--bg);-webkit-font-smoothing:antialiased}
-body{font-family:'JetBrains Mono',monospace;color:var(--w)}
+html,body{height:100%;overflow:hidden;background:var(--bg);-webkit-font-smoothing:antialiased;margin:0}
+body{font-family:'JetBrains Mono',monospace;color:var(--w);height:100dvh}
 input,select,button,textarea{font-family:inherit}
 .st{height:env(safe-area-inset-top,44px);background:var(--bg);flex-shrink:0}
 .sb{height:env(safe-area-inset-bottom,20px);background:var(--bg);flex-shrink:0}
-#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+/* IMPORTANTE: 100dvh es la altura del viewport dinámico que SÍ incluye
+   el área segura inferior (home indicator del iPhone). 100vh la excluye
+   en iOS, dejando un hueco invisible debajo. Necesitamos llegar al borde
+   físico para que el padding-bottom de la nav se vea. */
+#app{display:flex;flex-direction:column;height:100dvh;min-height:100dvh;overflow:hidden}
+@supports not (height:100dvh){
+  #app{height:100vh}    /* respaldo para navegadores muy antiguos */
+}
 .hdr{flex-shrink:0;background:rgba(7,16,31,.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--line);z-index:50}
 .hdr-in{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 6px}
 .hdr-brand{display:flex;align-items:center;gap:9px}
@@ -154,21 +161,16 @@ input,select,button,textarea{font-family:inherit}
 .igs b{color:var(--w)}
 .ign2{margin-top:6px;font-size:11px;color:var(--g);background:rgba(52,232,158,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(52,232,158,.16)}
 .ver{text-align:center;font-size:10px;color:var(--w2);padding:18px 0 6px;letter-spacing:.07em}
-/* Nav inferior.
-   En modo navegador: altura normal (Safari ya tiene barra propia debajo).
-   En modo standalone (PWA en pantalla de inicio): añade ~48px abajo para
-   que la barra quede más cerca del borde físico del iPhone. */
-.bnav{flex-shrink:0;display:flex;height:var(--nav);padding-bottom:0;background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:content-box;align-items:stretch}
-/* Vía media query (funciona en Android y algunos iOS) */
+/* Nav inferior simple, sin padding-bottom.
+   El área segura inferior se cubre con un div separado debajo del nav. */
+.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box;align-items:stretch}
+/* Filler que cubre el área de la home indicator del iPhone con el mismo
+   color del nav, dando sensación de continuidad. En navegador no se ve. */
+.sb-fill{flex-shrink:0;height:0;background:rgba(7,16,31,.97);z-index:50}
+body.pwa .sb-fill{height:48px}
 @media all and (display-mode:standalone){
-  .bnav{padding-bottom:max(48px,env(safe-area-inset-bottom,48px))}
+  .sb-fill{height:max(48px,env(safe-area-inset-bottom,48px))}
 }
-@media all and (display-mode:fullscreen){
-  .bnav{padding-bottom:max(48px,env(safe-area-inset-bottom,48px))}
-}
-/* Vía clase JS body.pwa (failsafe para iOS donde la media query a veces no
-   se activa). Detectada por navigator.standalone al arrancar. */
-body.pwa .bnav{padding-bottom:max(48px,env(safe-area-inset-bottom,48px))}
 .bnav .nb{height:var(--nav)}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--w3);cursor:pointer;padding:4px 0;transition:color .15s}
 .nb span{font-size:9.5px;letter-spacing:.02em}
@@ -597,6 +599,7 @@ body.pwa .fab-fixed{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom
   <button class="nb" id="nb-explorar" onclick="navTo('explorar')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Explorar</span></button>
   <button class="nb" id="nb-ajustes" onclick="navTo('ajustes')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Ajustes</span></button>
 </nav>
+<div class="sb-fill"></div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet"><div class="spill"></div><div class="sbody" id="sbody"></div></div>
 <div class="toast" id="toast"></div>
@@ -744,7 +747,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v7.11';      /* visible en header y Ajustes */
+const APP_VERSION='v7.12';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
