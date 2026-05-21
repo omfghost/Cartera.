@@ -161,16 +161,29 @@ input,select,button,textarea{font-family:inherit}
 .igs b{color:var(--w)}
 .ign2{margin-top:6px;font-size:11px;color:var(--g);background:rgba(52,232,158,.08);border-radius:8px;padding:8px 12px;border:1px solid rgba(52,232,158,.16)}
 .ver{text-align:center;font-size:10px;color:var(--w2);padding:18px 0 6px;letter-spacing:.07em}
-/* Nav inferior simple, sin padding-bottom.
-   El área segura inferior se cubre con un div separado debajo del nav. */
-.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box;align-items:stretch}
-/* Filler que cubre el área de la home indicator del iPhone con el mismo
-   color del nav, dando sensación de continuidad. En navegador no se ve. */
-.sb-fill{flex-shrink:0;height:0;background:rgba(7,16,31,.97);z-index:50}
-body.pwa .sb-fill{height:48px}
+/* Nav inferior.
+   ESTRATEGIA: usar la variable --nav para definir la altura total.
+   En navegador: 62px (sin extra).
+   En PWA standalone: 110px (62px botones + 48px área home indicator).
+   Los botones (.nb) usan justify-content para alinearse al centro vertical
+   del nav, dejando espacio abajo para que la barra "baje" hasta el borde. */
+.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box}
+/* En PWA: incrementar la variable hace que el nav sea más alto */
+body.pwa{--nav:110px}
 @media all and (display-mode:standalone){
-  .sb-fill{height:max(48px,env(safe-area-inset-bottom,48px))}
+  body{--nav:110px}
 }
+@media all and (display-mode:fullscreen){
+  body{--nav:110px}
+}
+/* Los botones se alinean a la parte superior del nav (donde se ven),
+   dejando el espacio inferior libre para la home indicator. */
+body.pwa .bnav .nb{align-self:flex-start;height:62px}
+@media all and (display-mode:standalone){
+  .bnav .nb{align-self:flex-start;height:62px}
+}
+/* sb-fill ya no es necesario, lo dejamos invisible */
+.sb-fill{display:none}
 .bnav .nb{height:var(--nav)}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--w3);cursor:pointer;padding:4px 0;transition:color .15s}
 .nb span{font-size:9.5px;letter-spacing:.02em}
@@ -193,10 +206,6 @@ body.pwa .sb-fill{height:48px}
 .bok:active{opacity:.85}
 .bcancel{flex:1;padding:14px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--rs);color:var(--w2);font-size:13px;cursor:pointer}
 .toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--w);color:var(--bg);padding:9px 20px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
-@media all and (display-mode:standalone){
-  .toast{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom,48px)) + 14px)}
-}
-body.pwa .toast{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom,48px)) + 14px)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;color:var(--w2);padding:40px 20px;font-size:13px;line-height:1.6}
 .empty .ei{font-size:32px;margin-bottom:10px;opacity:.5}
@@ -415,10 +424,6 @@ body.pwa .toast{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom,48p
 /* FAB flotante para "Añadir operación" en Cartera */
 /* FAB circular pequeño en esquina inferior derecha para "Añadir operación" */
 .fab-fixed{position:fixed;bottom:calc(var(--nav) + 16px);right:18px;left:auto;transform:none;width:52px;height:52px;padding:0;border-radius:50%;font-weight:300;font-size:28px;line-height:52px;background:var(--c);color:var(--bg);border:none;box-shadow:0 6px 18px rgba(34,150,235,.5);z-index:30;cursor:pointer;display:flex;align-items:center;justify-content:center}
-@media all and (display-mode:standalone){
-  .fab-fixed{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom,48px)) + 16px)}
-}
-body.pwa .fab-fixed{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom,48px)) + 16px)}
 .fab-fixed:active{transform:scale(0.92)}
 /* Botón discreto en esquina superior derecha del hero ACTIVOS TOTALES */
 .hero-evo-mini{position:absolute;top:13px;right:13px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(34,150,235,.13);border:1px solid rgba(34,150,235,.32);border-radius:9px;font-size:15px;cursor:pointer;padding:0;line-height:1;color:var(--c2);z-index:2;transition:background .15s}
@@ -462,6 +467,7 @@ body.pwa .fab-fixed{bottom:calc(var(--nav) + max(48px,env(safe-area-inset-bottom
     </div>
   </div>
   <div class="sync-s" id="sync-s">Toca &#8635; para actualizar precios online</div>
+  <div id="diag-bar" style="padding:0 18px 4px;font-size:9.5px;color:var(--c2);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;opacity:.7"></div>
 </header>
 <main class="main" id="main">
 
@@ -747,7 +753,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v7.12';      /* visible en header y Ajustes */
+const APP_VERSION='v7.13';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -4712,14 +4718,45 @@ document.addEventListener('DOMContentLoaded',()=>{
         }).catch(()=>{if(btn)btn.classList.remove('spin');renderAll();});
       },900);
     }
-    /* Detección robusta de modo "instalada en pantalla de inicio".
-       iOS usa navigator.standalone; otros navegadores la media query CSS.
-       Marcamos el body para que el CSS aplique los ajustes correctos. */
+    /* Detección robusta de modo "instalada en pantalla de inicio". */
     try{
       const isPWA = window.navigator.standalone===true
         || window.matchMedia('(display-mode:standalone)').matches
         || window.matchMedia('(display-mode:fullscreen)').matches;
-      if(isPWA)document.body.classList.add('pwa');
+      if(isPWA){
+        document.body.classList.add('pwa');
+        /* fuerza la variable --nav a 110px sobreescribiendo CSS:root.
+           Esto es a prueba de balas: no depende de media queries que
+           iOS puede ignorar. */
+        document.documentElement.style.setProperty('--nav','110px');
+        /* y, por si acaso, también aplico la altura directamente al nav */
+        const nav=document.querySelector('.bnav');
+        if(nav){
+          nav.style.height='110px';
+          /* alinear los botones arriba del nav */
+          nav.querySelectorAll('.nb').forEach(b=>{
+            b.style.alignSelf='flex-start';
+            b.style.height='62px';
+          });
+        }
+      }
+      /* diagnóstico visible para confirmar qué detecta */
+      const showDiag=()=>{
+        const bar=document.getElementById('diag-bar');
+        if(!bar)return;
+        const dvh=window.innerHeight;
+        const probe=document.createElement('div');
+        probe.style.cssText='position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden';
+        document.body.appendChild(probe);
+        const safeBot=probe.offsetHeight;
+        probe.remove();
+        const navH=document.querySelector('.bnav');
+        const navHpx=navH?navH.offsetHeight:0;
+        bar.textContent=`PWA:${isPWA?'sí':'NO'} · innerH:${dvh} · safeBot:${safeBot}px · navH:${navHpx}px`;
+      };
+      showDiag();
+      setTimeout(showDiag,200);
+      window.addEventListener('resize',showDiag);
     }catch(e){}
     if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }catch(err){
