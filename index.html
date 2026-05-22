@@ -897,7 +897,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.7';      /* visible en header y Ajustes */
+const APP_VERSION='v8.8';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2855,7 +2855,7 @@ function renderHeroFilter(){
     <span class="hfsel-chev">▾</span>
   </button>
   <div class="hfsel-menu" id="hfsel-menu">
-    ${types.map(t=>`<button class="hfsel-opt${t===heroFilter?' on':''}" onclick="event.stopPropagation();setHeroFilter('${t}');toggleHeroSel()">${t}</button>`).join('')}
+    ${types.map(t=>`<button class="hfsel-opt${t===heroFilter?' on':''}" onclick="event.stopPropagation();setHeroFilter('${t}')">${t}</button>`).join('')}
   </div>`;
 }
 function toggleHeroSel(ev){
@@ -2944,7 +2944,7 @@ function renderCartera(){
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
   const cur=G('fb-sel-cur');if(cur)cur.textContent=carteraFilter;
   const menu=G('fb-sel-menu');
-  if(menu)menu.innerHTML=types.map(t=>`<button class="fb-sel-opt${t===carteraFilter?' on':''}" onclick="event.stopPropagation();setCF('${t}');toggleCarteraSel()">${t}</button>`).join('');
+  if(menu)menu.innerHTML=types.map(t=>`<button class="fb-sel-opt${t===carteraFilter?' on':''}" onclick="event.stopPropagation();setCF('${t}')">${t}</button>`).join('');
   renderPositions();renderOpsList();
 }
 function setCF(t){
@@ -2953,7 +2953,7 @@ function setCF(t){
   /* repintar opciones del menú para reflejar selección */
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
   const menu=G('fb-sel-menu');
-  if(menu)menu.innerHTML=types.map(x=>`<button class="fb-sel-opt${x===carteraFilter?' on':''}" onclick="event.stopPropagation();setCF('${x}');toggleCarteraSel()">${x}</button>`).join('');
+  if(menu)menu.innerHTML=types.map(x=>`<button class="fb-sel-opt${x===carteraFilter?' on':''}" onclick="event.stopPropagation();setCF('${x}')">${x}</button>`).join('');
   renderPositions();
 }
 function toggleCarteraSel(){
