@@ -897,7 +897,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.6';      /* visible en header y Ajustes */
+const APP_VERSION='v8.7';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2477,23 +2477,30 @@ const CH={};
 const TT={backgroundColor:'#16263d',borderColor:'#243752',borderWidth:1,titleColor:'#f4f8ff',bodyColor:'#aebfd4',padding:10,cornerRadius:8};
 function dch(k){if(CH[k]){try{CH[k].destroy();}catch(e){}delete CH[k];}}
 function chartReady(){return typeof Chart!=='undefined';}
-/* Habilita "tap-to-toggle" del tooltip de Chart.js.
-   Filosofía: cualquier tap que NO sea sobre un punto distinto del activo,
-   cierra el tooltip. Eso cubre clicks sobre la propia ventana del tooltip
-   (que en Chart.js v4 se dibuja dentro del canvas).
-   Para máxima fiabilidad en iOS Safari/PWA: usamos pointerup además de
-   click, mantenemos una variable propia `isOpen` (sin depender del estado
-   interno del tooltip), y actualizamos sin animación para evitar residuos. */
+/* ── Tap-to-toggle de tooltips de Chart.js en iOS PWA ──
+   Tres mecanismos combinados para garantizar el cierre:
+   1) touchend en el canvas: tap sobre la línea o sobre el propio tooltip.
+   2) click como fallback para escritorio.
+   3) Listener global en el document: cualquier tap fuera del canvas
+      cierra el tooltip activo. Esto cubre el caso "pulsar las tarjetas
+      o cualquier zona de la app debajo del gráfico". */
+const _openCharts=new Set();   /* charts con tooltip abierto, para cierre global */
 function attachToggleTooltip(chart){
   if(!chart||!chart.canvas)return;
-  let isOpen=false,lastIdx=-1;
-  const closeTip=()=>{
+  let isOpen=false,lastIdx=-1,startX=0,startY=0;
+  const forceClose=()=>{
     try{
       chart.setActiveElements([]);
-      chart.tooltip.setActiveElements([],{x:0,y:0});
+      if(chart.tooltip){
+        chart.tooltip.setActiveElements([],{x:0,y:0});
+        /* limpieza interna: vaciar el estado activo del tooltip */
+        chart.tooltip._active=[];
+        chart.tooltip.opacity=0;
+      }
       chart.update('none');
     }catch(e){}
     isOpen=false;lastIdx=-1;
+    _openCharts.delete(chart);
   };
   const showAt=(points,x,y)=>{
     try{
@@ -2504,42 +2511,81 @@ function attachToggleTooltip(chart){
       chart.update();
       isOpen=true;
       lastIdx=points[0].index;
+      _openCharts.add(chart);
     }catch(e){}
   };
-  const handler=(ev)=>{
+  const processTap=(clientX,clientY)=>{
     try{
       const rect=chart.canvas.getBoundingClientRect();
-      const clientX=ev.clientX!=null?ev.clientX:(ev.changedTouches?.[0]?.clientX);
-      const clientY=ev.clientY!=null?ev.clientY:(ev.changedTouches?.[0]?.clientY);
-      if(clientX==null||clientY==null)return;
       const cx=clientX-rect.left,cy=clientY-rect.top;
-      const fakeEv={x:cx,y:cy,native:ev,type:'click'};
+      const fakeEv={x:cx,y:cy,type:'click'};
       const points=chart.getElementsAtEventForMode(fakeEv,'index',{intersect:false},false);
       if(isOpen){
-        /* Tooltip abierto: SIEMPRE cerrar primero. Después, si el click
-           cayó sobre un punto DISTINTO al antiguo, abrir ese nuevo punto.
-           Si no, queda cerrado (cubre cualquier toque sobre la ventana
-           del tooltip o el mismo punto). */
-        const prevIdx=lastIdx;
-        closeTip();
-        if(points.length&&points[0].index!==prevIdx){
+        /* SIEMPRE cerrar primero. Si el tap fue sobre un punto NUEVO, reabrir. */
+        const prev=lastIdx;
+        forceClose();
+        if(points.length&&points[0].index!==prev){
           showAt(points,cx,cy);
         }
       }else{
-        /* Tooltip cerrado: si el click cae sobre algún punto, abrirlo ahí. */
         if(points.length)showAt(points,cx,cy);
       }
     }catch(e){}
   };
-  /* pointerup es más fiable en iOS Safari que click (no tiene el delay
-     de 300ms ni se pierde en interacciones rápidas) */
-  chart.canvas.addEventListener('pointerup',handler);
-  /* Fallback con click por si pointerup no está disponible */
+  /* touchstart: registrar posición inicial para detectar si es tap o scroll */
+  chart.canvas.addEventListener('touchstart',(ev)=>{
+    if(ev.touches&&ev.touches[0]){
+      startX=ev.touches[0].clientX;
+      startY=ev.touches[0].clientY;
+    }
+  },{passive:true});
+  /* touchend: si no se movió el dedo (no scroll), procesar tap */
+  chart.canvas.addEventListener('touchend',(ev)=>{
+    if(!ev.changedTouches||!ev.changedTouches[0])return;
+    const t=ev.changedTouches[0];
+    const dx=Math.abs(t.clientX-startX),dy=Math.abs(t.clientY-startY);
+    if(dx>12||dy>12)return;        /* fue scroll/swipe */
+    processTap(t.clientX,t.clientY);
+  },{passive:true});
+  /* click como fallback para ratón / escritorio. Filtramos clicks
+     sintéticos que iOS dispara tras touchend (detail==0 en algunos navegadores). */
+  let lastTouchTime=0;
+  chart.canvas.addEventListener('touchend',()=>{lastTouchTime=Date.now();},{passive:true});
   chart.canvas.addEventListener('click',(ev)=>{
-    /* Evitar doble disparo cuando pointerup ya ha procesado */
-    if(ev.detail===0)return;  /* sintético: ignorar */
+    if(Date.now()-lastTouchTime<500)return;  /* ya procesado por touchend */
+    processTap(ev.clientX,ev.clientY);
   });
 }
+/* Listener global: cualquier tap/click fuera de un canvas con tooltip
+   abierto, lo cierra. Esto cubre el caso de tocar las tarjetas, el fondo,
+   los chips, etc. mientras el tooltip está abierto. */
+function _setupGlobalTipCloser(){
+  if(window._tipCloserInstalled)return;
+  window._tipCloserInstalled=true;
+  const close=(ev)=>{
+    if(!_openCharts.size)return;
+    _openCharts.forEach(c=>{
+      try{
+        /* Si el tap fue sobre ESTE canvas, dejar que su handler decida. */
+        if(ev.target===c.canvas)return;
+        /* Tap fuera del canvas: cerrar */
+        c.setActiveElements([]);
+        if(c.tooltip){
+          c.tooltip.setActiveElements([],{x:0,y:0});
+          c.tooltip._active=[];
+          c.tooltip.opacity=0;
+        }
+        c.update('none');
+        _openCharts.delete(c);
+      }catch(e){}
+    });
+  };
+  document.addEventListener('touchend',close,{passive:true,capture:true});
+  document.addEventListener('click',close,{capture:true});
+}
+/* instalar al cargar */
+document.addEventListener('DOMContentLoaded',_setupGlobalTipCloser);
+if(document.readyState!=='loading')_setupGlobalTipCloser();
 function initChartDefaults(){
   if(!chartReady())return;
   Chart.defaults.color='#aebfd4';Chart.defaults.borderColor='#243752';
@@ -2860,7 +2906,7 @@ function renderDash(){
   if(an.length){
     G('ann-rows').innerHTML=an.map(a=>`<div class="arow arow-tap" onclick="openYearDetail(${a.year})"><div class="ayr">${a.year}${a.isCurrent?'<span style="font-size:9px;color:var(--w2)"> curso</span>':''}</div><div class="afin hide-val sm">${fe(a.valFin)}</div><div class="agn hide-val sm ${pc(a.gain)}">${a.gain>=0?'+':'-'}${fe(Math.abs(a.gain))}</div><div class="apc ${pc(a.rent)}">${fp(a.rent)}</div><div class="achev">›</div></div>`).join('');
   }else G('ann-rows').innerHTML='<div class="empty"><div class="ei">○</div>Aún no hay años con operaciones.</div>';
-  setText('sync-s',(DB.lastSync?'Actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online'));
+  setText('sync-s',(DB.lastSync?'Precio actualizado: '+DB.lastSync:'Toca ↺ para actualizar precios online'));
   mkSparkline();mkDonut();mkDonutAcc();mkAnnBar();
 }
 
@@ -5075,7 +5121,7 @@ async function doSync(){
     if(typeof loadFxRates==='function')await loadFxRates();
     const r=await fetchAllPrices();
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
-    setText('sync-s','✓ Actualizado: '+DB.lastSync);
+    setText('sync-s','✓ Precio actualizado: '+DB.lastSync);
     renderAll();
     chime();
   }catch(e){showToast('Error de conexión');setText('sync-s','Error al actualizar');}
@@ -5225,7 +5271,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           return (typeof preloadHistory==='function')?preloadHistory():null;
         }).then(()=>{
           if(btn)btn.classList.remove('spin');
-          setText('sync-s','✓ Actualizado: '+DB.lastSync);
+          setText('sync-s','✓ Precio actualizado: '+DB.lastSync);
           renderAll();
         }).catch(()=>{if(btn)btn.classList.remove('spin');renderAll();});
       },900);
