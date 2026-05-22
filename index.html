@@ -920,7 +920,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.9';      /* visible en header y Ajustes */
+const APP_VERSION='v9.0';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2382,23 +2382,50 @@ async function buildPatrimonyTimeline(filterTypes){
     const ts=Math.floor(cur.getTime()/1000);
     const dStr=cur.toISOString().slice(0,10);
     let total=0;
+    /* coste base de las unidades aún abiertas en ese momento (FIFO).
+       Lo necesitamos para calcular el % de rentabilidad por punto. */
+    let costBasis=0;
     assets.forEach(a=>{
-      let units=0;
-      DB.ops.filter(o=>o.aid===a.id&&o.dt<=dStr).forEach(o=>{
-        if(o.t==='C')units+=o.q;else if(o.t==='V')units-=o.q;
+      /* reconstruir lotes FIFO hasta esa fecha */
+      const ops=DB.ops.filter(o=>o.aid===a.id&&o.dt<=dStr).sort((x,y)=>x.dt.localeCompare(y.dt));
+      const lots=[];
+      ops.forEach(o=>{
+        if(o.t==='C')lots.push({units:o.q,cost:o.p*o.q});
+        else if(o.t==='V'){
+          let toSell=o.q;
+          while(toSell>1e-9&&lots.length){
+            const L=lots[0];
+            if(L.units<=toSell+1e-9){toSell-=L.units;lots.shift();}
+            else{const r=toSell/L.units;L.cost-=L.cost*r;L.units-=toSell;toSell=0;}
+          }
+        }
       });
+      const units=lots.reduce((s,L)=>s+L.units,0);
       if(units<=1e-9)return;
+      const lotsCost=lots.reduce((s,L)=>s+L.cost,0);
+      costBasis+=lotsCost;
       const h=histById[a.id];
       const pxNative=priceOnDate(h.series,h.times,ts);
       if(pxNative!=null)total+=units*toEUR(pxNative,h.cur);
     });
-    points.push({date:dStr,label:cur.toLocaleDateString('es-ES',{month:'short',year:'2-digit'}),val:total});
+    const pct=costBasis>0?(total-costBasis)/costBasis:0;
+    points.push({date:dStr,label:cur.toLocaleDateString('es-ES',{month:'short',year:'2-digit'}),val:total,pct,cost:costBasis});
     cur.setMonth(cur.getMonth()+1);
   }
-  /* punto final = hoy con el valor actual exacto */
-  let totalNow=0;
-  assets.forEach(a=>{totalNow+=assetMetrics(a).val;});
-  if(points.length)points[points.length-1].val=totalNow;
+  /* punto final = hoy con el valor abierto exacto (lo que vale lo que tienes hoy).
+     NO uses .val: eso incluye totalProceeds (ventas pasadas acumuladas) y dispara
+     el último punto. La gráfica de evolución muestra el patrimonio actual real. */
+  let totalNow=0,costNow=0;
+  assets.forEach(a=>{
+    const m=assetMetrics(a);
+    totalNow+=m.valOpen;
+    costNow+=m.openCost;
+  });
+  if(points.length){
+    points[points.length-1].val=totalNow;
+    points[points.length-1].cost=costNow;
+    points[points.length-1].pct=costNow>0?(totalNow-costNow)/costNow:0;
+  }
   return points;
 }
 
@@ -2626,23 +2653,28 @@ async function mkSparkline(){
   }
   if(h.length<2){ctx.style.display='none';return;}
   ctx.style.display='';
-  /* Calcular cambio porcentual del primer valor>0 al último.
-     Mostramos el % final junto a la fecha de fin, y 0% (base) junto al inicio. */
+  /* Mostrar evolución del PATRIMONIO en €.
+     El % a izquierda/derecha es la rentabilidad TOTAL real (ganancia/coste)
+     que viene calculada en cada punto (h[i].pct). En el extremo izquierdo
+     normalmente es 0% (acabas de empezar); en el derecho es la rentabilidad
+     total acumulada — la misma que aparece en la tarjeta RENT. TOTAL. */
   let firstIdx=0;
   while(firstIdx<h.length-1&&(!h[firstIdx].val||h[firstIdx].val<=0))firstIdx++;
-  const firstVal=h[firstIdx].val||0,lastVal=h[h.length-1].val||0;
-  const pctChange=firstVal>0?((lastVal-firstVal)/firstVal*100):0;
-  const pctTxt=firstVal>0?((pctChange>=0?'+':'')+pctChange.toFixed(1)+'%'):'—';
-  const pctCls=pctChange>=0?'g':'r';
+  const firstPct=h[firstIdx].pct||0;
+  const lastPct=h[h.length-1].pct||0;
+  const pctTxtI=((firstPct>=0?'+':'')+(firstPct*100).toFixed(1)+'%');
+  const pctTxtF=((lastPct>=0?'+':'')+(lastPct*100).toFixed(1)+'%');
+  const pctCls=lastPct>=0?'g':'r';
   const pi=G('spk-pct-i'),pf=G('spk-pct-f');
-  if(pi){pi.textContent=firstVal>0?'0%':'';pi.className='spk-pct-i';}
-  if(pf){pf.textContent=pctTxt;pf.className='spk-pct-f '+pctCls;}
+  if(pi){pi.textContent=h[firstIdx].val>0?pctTxtI:'';pi.className='spk-pct-i';}
+  if(pf){pf.textContent=pctTxtF;pf.className='spk-pct-f '+pctCls;}
   const startEl=G('spk-start'),endEl=G('spk-end');
-  if(startEl)startEl.textContent=firstVal>0?(h[firstIdx].label||''):(h[0].label||'');
+  if(startEl)startEl.textContent=h[firstIdx]?.label||'';
   if(endEl)endEl.textContent=h[h.length-1].label||'';
+  /* color de línea según resultado final */
+  const lineColor=lastPct>=0?'#22d3ee':'#ff7a8a';
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,50);
-  const lineColor=pctChange>=0?'#22d3ee':'#ff7a8a';
-  g.addColorStop(0,pctChange>=0?'rgba(34,211,238,.4)':'rgba(255,122,138,.35)');
+  g.addColorStop(0,lastPct>=0?'rgba(34,211,238,.4)':'rgba(255,122,138,.35)');
   g.addColorStop(1,'rgba(34,211,238,0)');
   try{CH.sp=new Chart(ctx,{
     type:'line',
@@ -2655,7 +2687,14 @@ async function mkSparkline(){
       interaction:{mode:'index',intersect:false,axis:'x'},
       plugins:{
         legend:{display:false},
-        tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}
+        tooltip:{...TT,callbacks:{
+          title:c=>c[0].label,
+          label:c=>{
+            const p=h[c.dataIndex];
+            const pct=p&&p.pct!=null?((p.pct>=0?'+':'')+(p.pct*100).toFixed(1)+'%'):'';
+            return ' '+fe(c.parsed.y)+(pct?' · '+pct:'');
+          }
+        }}
       },
       scales:{x:{display:false},y:{display:false}},
       animation:{duration:800}
@@ -2731,21 +2770,53 @@ async function mkPatr(){
   if(patrRangeMonths>0&&h.length>patrRangeMonths){
     h=h.slice(-patrRangeMonths);
   }
-  /* % cambio del primer valor > 0 al último (evita divisiones por 0
-     cuando la cartera arranca desde cero). */
+  /* Rentabilidad total al final del rango (no diferencia de valor euro,
+     que se contaminaría con aportes). h[i].pct es la rentabilidad real
+     ganancia/coste calculada por buildPatrimonyTimeline en cada punto. */
   let firstIdx=0;
   while(firstIdx<h.length-1&&(!h[firstIdx].val||h[firstIdx].val<=0))firstIdx++;
-  const firstVal=h[firstIdx].val||0,lastVal=h[h.length-1].val||0;
-  const pctChange=firstVal>0?((lastVal-firstVal)/firstVal*100):0;
+  const lastPct=h[h.length-1].pct||0;
   const ttlEl=G('c-pt-pct');
   if(ttlEl){
-    ttlEl.textContent=firstVal>0?((pctChange>=0?'+':'')+pctChange.toFixed(1)+'%'):'—';
-    ttlEl.className='cc-pct '+(pctChange>=0?'g':'r');
+    ttlEl.textContent=((lastPct>=0?'+':'')+(lastPct*100).toFixed(1)+'%');
+    ttlEl.className='cc-pct '+(lastPct>=0?'g':'r');
   }
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(34,211,238,.2)');g.addColorStop(1,'rgba(34,211,238,0)');
   const step=h.length>18?Math.ceil(h.length/12):1;
-  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Activos',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false,axis:'x'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});attachToggleTooltip(CH.pt);}catch(e){}
+  try{CH.pt=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:h.map(x=>x.label),
+      datasets:[
+        /* Eje izquierdo (€): patrimonio (valor de mercado de la posición abierta) */
+        {label:'Patrimonio',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3,yAxisID:'y'},
+        /* Eje derecho (%): rentabilidad acumulada real (ganancia / coste). */
+        {label:'Rent. total',data:h.map(x=>(x.pct||0)*100),borderColor:'#ffd54a',borderWidth:1.8,borderDash:[5,4],fill:false,pointRadius:0,pointHoverRadius:6,pointBackgroundColor:'#ffd54a',tension:.3,yAxisID:'y1'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false,axis:'x'},
+      plugins:{
+        legend:{display:true,position:'top',align:'end',labels:{color:'#aebfd4',boxWidth:14,boxHeight:2,font:{size:10},padding:10}},
+        tooltip:{...TT,callbacks:{
+          title:c=>c[0].label,
+          label:c=>{
+            if(c.datasetIndex===0)return ' Patrimonio: '+fe(c.parsed.y);
+            const v=c.parsed.y;
+            return ' Rent. total: '+(v>=0?'+':'')+v.toFixed(1)+'%';
+          }
+        }}
+      },
+      scales:{
+        x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},
+        y:{position:'left',grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#22d3ee'}},
+        y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v.toFixed(0)+'%',color:'#ffd54a'}}
+      },
+      animation:{duration:600}
+    }
+  });attachToggleTooltip(CH.pt);}catch(e){}
 }
 /* Gráfica solo de acciones, fondos y ETFs (excluye cripto y otros) */
 async function mkEquity(){
