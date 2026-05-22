@@ -470,12 +470,14 @@ input,select,button,textarea{font-family:inherit}
 /* ISIN bajo el ticker en filas de Editar activos */
 .cat-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
 .cat-isin{font-size:9.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
-/* Sparkline: leyenda con fechas inicio/fin y % cambio en esquina */
-.spkw{position:relative}
-.spk-pct{position:absolute;top:4px;right:6px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;background:rgba(7,16,31,.7);padding:2px 7px;border-radius:8px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-.spk-pct.g{color:var(--g)}
-.spk-pct.r{color:var(--r)}
-.spk-axis{display:flex;justify-content:space-between;font-size:9.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin:4px 4px 0;letter-spacing:.03em}
+/* Sparkline: ejes con fecha+% en cada extremo (no intrusivo) */
+.spk-axis{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;margin:4px 4px 0}
+.spk-end-l{display:inline-flex;align-items:baseline;gap:6px;font-size:9.5px;color:var(--w3);letter-spacing:.03em}
+.spk-end-r{text-align:right}
+.spk-pct-i,.spk-pct-f{font-weight:700;font-size:10px}
+.spk-pct-i{color:var(--w3)}
+.spk-pct-f.g{color:var(--g)}
+.spk-pct-f.r{color:var(--r)}
 /* % de cambio en esquina de gráficas grandes */
 .cc-pos{position:relative}
 .cc-pct{position:absolute;top:10px;right:12px;font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;background:rgba(7,16,31,.75);padding:4px 10px;border-radius:9px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:5}
@@ -526,6 +528,41 @@ input,select,button,textarea{font-family:inherit}
 .ops-toolbar{display:flex;justify-content:flex-end;margin-bottom:10px}
 .ops-tbtn{background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:11.5px;font-weight:600;padding:7px 14px;border-radius:14px;cursor:pointer;font-family:inherit}
 .ops-tbtn:active{transform:scale(0.96)}
+
+/* ── Botón "Informe del Analista Bursátil" destacado ── */
+.analyst-launch{display:flex;align-items:center;gap:14px;width:100%;background:linear-gradient(135deg,rgba(34,150,235,.15),rgba(139,124,255,.10));border:1px solid rgba(34,150,235,.32);border-radius:14px;padding:14px 16px;margin:14px 0;cursor:pointer;font-family:inherit;text-align:left;transition:transform .15s,background .15s}
+.analyst-launch:active{transform:scale(0.98);background:linear-gradient(135deg,rgba(34,150,235,.22),rgba(139,124,255,.16))}
+.al-ic{font-size:22px;flex-shrink:0}
+.al-tx{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.al-tx b{color:var(--w);font-size:13.5px;letter-spacing:.01em}
+.al-tx small{color:var(--w3);font-size:10.5px;line-height:1.4}
+.al-arr{color:var(--c2);font-size:18px;font-weight:300;flex-shrink:0}
+
+/* ── Bloques plegables en Explorar (Análisis fundamental, Previsiones, Sector) ── */
+.exp-coll{background:var(--bg2);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.exp-coll>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 14px}
+.exp-coll>summary::-webkit-details-marker{display:none}
+.exp-coll>summary::marker{content:''}
+.exp-coll-h .ic{flex-shrink:0}
+.exp-coll-tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.exp-coll-tx b{color:var(--w);font-size:13.5px}
+.exp-coll-tx small{color:var(--w3);font-size:10.5px}
+.exp-coll-chev{color:var(--c2);font-size:14px;flex-shrink:0;transition:transform .2s}
+.exp-coll[open]>summary .exp-coll-chev{transform:rotate(180deg)}
+.exp-coll-body{padding:0 14px 14px;animation:expandIn .25s ease}
+@keyframes expandIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Cartera: topbar con pestañas + acciones a la derecha ── */
+.cart-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 12px}
+.cart-topbar .seg-tg{margin:0}
+.cart-topbar-acts{display:flex;align-items:center;gap:8px}
+/* Botón "Sel." compacto */
+.ct-sel-btn{display:inline-flex;align-items:center;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:11px;font-weight:600;padding:7px 11px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.04em}
+.ct-sel-btn:active{transform:scale(0.96)}
+.ct-sel-btn.active{background:rgba(34,150,235,.2);color:var(--c2);border-color:rgba(34,150,235,.4)}
+/* Botón "+" circular azul arriba a la derecha */
+.ct-add-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--c);color:var(--bg);border:none;font-size:21px;font-weight:300;line-height:1;cursor:pointer;box-shadow:0 4px 10px rgba(34,150,235,.4);padding:0;font-family:inherit}
+.ct-add-btn:active{transform:scale(0.93)}
 </style>
 </head>
 <body>
@@ -552,11 +589,10 @@ input,select,button,textarea{font-family:inherit}
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
     <div class="spkw">
       <canvas id="c-sp" height="50"></canvas>
-      <div class="spk-pct" id="spk-pct"></div>
     </div>
     <div class="spk-axis">
-      <span id="spk-start"></span>
-      <span id="spk-end"></span>
+      <span class="spk-end-l"><span id="spk-start"></span><span class="spk-pct-i" id="spk-pct-i"></span></span>
+      <span class="spk-end-l spk-end-r"><span id="spk-end"></span><span class="spk-pct-f" id="spk-pct-f"></span></span>
     </div>
   </div>
   <div class="sgrid">
@@ -588,10 +624,16 @@ input,select,button,textarea{font-family:inherit}
 </section>
 
 <section class="view" id="v-cartera">
-  <!-- Toggle pill: Posiciones / Operaciones (un único control segmentado) -->
-  <div class="seg-tg" role="tablist">
-    <button class="seg-opt on" id="ct-posiciones" onclick="setCarteraTab('posiciones')">Posiciones</button>
-    <button class="seg-opt" id="ct-ops" onclick="setCarteraTab('ops')">Operaciones</button>
+  <!-- Toggle pill + botones de acción en una línea -->
+  <div class="cart-topbar">
+    <div class="seg-tg" role="tablist">
+      <button class="seg-opt on" id="ct-posiciones" onclick="setCarteraTab('posiciones')">Posiciones</button>
+      <button class="seg-opt" id="ct-ops" onclick="setCarteraTab('ops')">Operaciones</button>
+    </div>
+    <div class="cart-topbar-acts">
+      <button class="ct-sel-btn" id="ops-seltoggle" onclick="toggleOpsSelectMode()" style="display:none">Sel.</button>
+      <button class="ct-add-btn" onclick="openAddOp()" aria-label="Añadir operación">＋</button>
+    </div>
   </div>
 
   <div class="subview on" id="sv-posiciones">
@@ -623,20 +665,15 @@ input,select,button,textarea{font-family:inherit}
     </div>
 
     <div id="positions-list"></div>
-    <button class="fab fab-fixed" onclick="openAddOp()" aria-label="Añadir operación">+</button>
   </div>
 
   <div class="subview" id="sv-ops">
-    <div class="ops-toolbar">
-      <button class="ops-tbtn" id="ops-seltoggle" onclick="toggleOpsSelectMode()">Seleccionar</button>
-    </div>
     <div class="ops-selbar" id="ops-selbar" style="display:none">
       <button class="ops-selall" onclick="selectAllOps()">Todas</button>
       <span class="ops-selcnt" id="ops-selcount">0 seleccionadas</span>
       <button class="ops-seldel" onclick="delSelectedOps()">Eliminar</button>
     </div>
     <div id="ops-list"></div>
-    <button class="fab fab-fixed" onclick="openAddOp()" aria-label="Nueva operación">+</button>
   </div>
 </section>
 
@@ -853,7 +890,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.0';      /* visible en header y Ajustes */
+const APP_VERSION='v8.2';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1856,7 +1893,7 @@ function toApiSymbol(t){return toFmpSymbol(t);}
 async function fetchFmpFundamentals(ticker){
   if(!hasApiKey())return null;
   const sym=toFmpSymbol(ticker);
-  const [quoteR,profileR,ratiosR,metricsR,growthR,cashR]=await Promise.all([
+  const [quoteR,profileR,ratiosR,metricsR,growthR,cashR,incomeR]=await Promise.all([
     fmpGet('quote/'+encodeURIComponent(sym)),
     fmpGet('profile/'+encodeURIComponent(sym)),
     fmpGet('ratios-ttm/'+encodeURIComponent(sym)),
@@ -1864,6 +1901,8 @@ async function fetchFmpFundamentals(ticker){
     fmpGet('financial-growth/'+encodeURIComponent(sym)+'?period=quarter&limit=1'),
     /* cash-flow anual: respaldo si key-metrics-ttm no devuelve FCF */
     fmpGet('cash-flow-statement/'+encodeURIComponent(sym)+'?period=annual&limit=1'),
+    /* income statement anual: respaldo para EBITDA */
+    fmpGet('income-statement/'+encodeURIComponent(sym)+'?period=annual&limit=1'),
   ]);
   /* el quote es el endpoint base. Si ÉL falla por clave/límite, es fatal. */
   if(quoteR&&quoteR._keyerror)throw new Error('CLAVE_INVALIDA');
@@ -1955,27 +1994,40 @@ async function fetchFmpFundamentals(ticker){
     beta:{raw:n(profile&&profile.beta)},
     trailingEps:{raw:eps},
   };
+  /* ── EBITDA con varias estrategias en cascada ──
+     1) Directo de key-metrics-ttm (campo 'ebitdaTTM' o 'enterpriseValueOverEBITDATTM' inverso)
+     2) Income statement: 'ebitda' campo directo
+     3) Cálculo: operatingIncome + depreciationAndAmortization */
+  let ebitdaVal=null;
+  let evEbitdaMult=pick(metrics,'enterpriseValueOverEBITDATTM','evToEbitda','enterpriseValueMultipleTTM');
+  /* Estrategia 1: si tenemos EV y múltiplo EV/EBITDA, EBITDA = EV / múltiplo */
+  const evRaw=pick(metrics,'enterpriseValueTTM','enterpriseValue');
+  if(evEbitdaMult!=null&&evEbitdaMult>0&&evRaw!=null)ebitdaVal=evRaw/evEbitdaMult;
+  /* Estrategia 2: campo directo (a veces FMP lo expone) */
+  if(ebitdaVal==null)ebitdaVal=pick(metrics,'ebitdaTTM','ebitda');
+  /* Estrategia 3: desde el income-statement consultado (si disponible) */
+  if(ebitdaVal==null){
+    const incStmt=usable(incomeR);
+    ebitdaVal=pick(incStmt,'ebitda','ebitdaRatio');
+    if(ebitdaVal==null){
+      const opInc=pick(incStmt,'operatingIncome','operatingIncomeRatio');
+      const dep=pick(incStmt,'depreciationAndAmortization','depreciation');
+      if(opInc!=null&&dep!=null)ebitdaVal=opInc+dep;
+    }
+  }
+  /* Si tenemos EBITDA pero no múltiplo, calcular el múltiplo desde EV */
+  if(evEbitdaMult==null&&ebitdaVal!=null&&ebitdaVal>0&&evRaw!=null)evEbitdaMult=evRaw/ebitdaVal;
+
   F.defaultKeyStatistics={
     priceToBook:{raw:pick(ratios,'priceToBookRatioTTM','pbRatioTTM','priceBookValueRatioTTM')||pick(metrics,'pbRatioTTM')},
     trailingEps:{raw:eps},
     forwardEps:{raw:epsG!=null&&eps!=null?eps*(1+epsG):null},
     pegRatio:{raw:pick(ratios,'pegRatioTTM','priceEarningsToGrowthRatioTTM')},
     sharesOutstanding:{raw:n(quote.sharesOutstanding)},
-    enterpriseValue:{raw:pick(metrics,'enterpriseValueTTM','enterpriseValue')},
-    /* Múltiplos EV listos para usar (preferentemente directos de FMP) */
-    evEbitda:{raw:pick(metrics,'enterpriseValueOverEBITDATTM','evToEbitda','enterpriseValueMultipleTTM')},
-    evFcf:{raw:(()=>{
-      const ev=pick(metrics,'enterpriseValueTTM','enterpriseValue');
-      if(ev!=null&&fcfVal!=null&&fcfVal>0)return ev/fcfVal;
-      return null;
-    })()},
-    ebitda:{raw:(()=>{
-      /* EBITDA: a partir del múltiplo EV/EBITDA y EV */
-      const ev=pick(metrics,'enterpriseValueTTM','enterpriseValue');
-      const mult=pick(metrics,'enterpriseValueOverEBITDATTM','evToEbitda');
-      if(ev!=null&&mult!=null&&mult>0)return ev/mult;
-      return null;
-    })()},
+    enterpriseValue:{raw:evRaw},
+    evEbitda:{raw:evEbitdaMult},
+    evFcf:{raw:evRaw!=null&&fcfVal!=null&&fcfVal>0?evRaw/fcfVal:null},
+    ebitda:{raw:ebitdaVal},
   };
   F.financialData={
     returnOnEquity:{raw:pick(ratios,'returnOnEquityTTM','roeTTM')},
@@ -2418,6 +2470,40 @@ const CH={};
 const TT={backgroundColor:'#16263d',borderColor:'#243752',borderWidth:1,titleColor:'#f4f8ff',bodyColor:'#aebfd4',padding:10,cornerRadius:8};
 function dch(k){if(CH[k]){try{CH[k].destroy();}catch(e){}delete CH[k];}}
 function chartReady(){return typeof Chart!=='undefined';}
+/* Habilita comportamiento "tap-to-toggle" del tooltip:
+   - Primer toque: muestra el tooltip del punto más cercano.
+   - Segundo toque en el mismo punto: cierra el tooltip.
+   - Toque en otro punto: salta a ese punto. */
+function attachToggleTooltip(chart){
+  if(!chart||!chart.canvas)return;
+  let lastIdx=-1;
+  chart.canvas.addEventListener('click',(ev)=>{
+    try{
+      const points=chart.getElementsAtEventForMode(ev,'index',{intersect:false},false);
+      if(!points.length){
+        chart.tooltip.setActiveElements([],{x:0,y:0});
+        chart.update();
+        lastIdx=-1;
+        return;
+      }
+      const idx=points[0].index;
+      if(idx===lastIdx){
+        /* mismo punto: cerrar tooltip */
+        chart.tooltip.setActiveElements([],{x:0,y:0});
+        chart.update();
+        lastIdx=-1;
+      }else{
+        /* punto distinto: mostrar tooltip aquí */
+        chart.tooltip.setActiveElements(
+          points.map(p=>({datasetIndex:p.datasetIndex,index:p.index})),
+          {x:ev.offsetX,y:ev.offsetY}
+        );
+        chart.update();
+        lastIdx=idx;
+      }
+    }catch(e){}
+  });
+}
 function initChartDefaults(){
   if(!chartReady())return;
   Chart.defaults.color='#aebfd4';Chart.defaults.borderColor='#243752';
@@ -2435,17 +2521,19 @@ async function mkSparkline(){
   }
   if(h.length<2){ctx.style.display='none';return;}
   ctx.style.display='';
-  /* Calcular cambio porcentual del primer al último punto para mostrarlo */
-  const firstVal=h[0].val||0,lastVal=h[h.length-1].val||0;
+  /* Calcular cambio porcentual del primer valor>0 al último.
+     Mostramos el % final junto a la fecha de fin, y 0% (base) junto al inicio. */
+  let firstIdx=0;
+  while(firstIdx<h.length-1&&(!h[firstIdx].val||h[firstIdx].val<=0))firstIdx++;
+  const firstVal=h[firstIdx].val||0,lastVal=h[h.length-1].val||0;
   const pctChange=firstVal>0?((lastVal-firstVal)/firstVal*100):0;
-  const pctTxt=(pctChange>=0?'+':'')+pctChange.toFixed(1)+'%';
-  const pctEl=G('spk-pct');
-  if(pctEl){
-    pctEl.textContent=pctTxt;
-    pctEl.className='spk-pct '+(pctChange>=0?'g':'r');
-  }
+  const pctTxt=firstVal>0?((pctChange>=0?'+':'')+pctChange.toFixed(1)+'%'):'—';
+  const pctCls=pctChange>=0?'g':'r';
+  const pi=G('spk-pct-i'),pf=G('spk-pct-f');
+  if(pi){pi.textContent=firstVal>0?'0%':'';pi.className='spk-pct-i';}
+  if(pf){pf.textContent=pctTxt;pf.className='spk-pct-f '+pctCls;}
   const startEl=G('spk-start'),endEl=G('spk-end');
-  if(startEl)startEl.textContent=h[0].label||'';
+  if(startEl)startEl.textContent=firstVal>0?(h[firstIdx].label||''):(h[0].label||'');
   if(endEl)endEl.textContent=h[h.length-1].label||'';
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,50);
   const lineColor=pctChange>=0?'#22d3ee':'#ff7a8a';
@@ -2467,7 +2555,7 @@ async function mkSparkline(){
       scales:{x:{display:false},y:{display:false}},
       animation:{duration:800}
     }
-  });}catch(e){}
+  });attachToggleTooltip(CH.sp);}catch(e){}
 }
 function mkDonut(){
   dch('dn');if(!chartReady())return;
@@ -2538,18 +2626,21 @@ async function mkPatr(){
   if(patrRangeMonths>0&&h.length>patrRangeMonths){
     h=h.slice(-patrRangeMonths);
   }
-  /* % cambio del primer al último punto */
-  const firstVal=h[0].val||0,lastVal=h[h.length-1].val||0;
+  /* % cambio del primer valor > 0 al último (evita divisiones por 0
+     cuando la cartera arranca desde cero). */
+  let firstIdx=0;
+  while(firstIdx<h.length-1&&(!h[firstIdx].val||h[firstIdx].val<=0))firstIdx++;
+  const firstVal=h[firstIdx].val||0,lastVal=h[h.length-1].val||0;
   const pctChange=firstVal>0?((lastVal-firstVal)/firstVal*100):0;
   const ttlEl=G('c-pt-pct');
   if(ttlEl){
-    ttlEl.textContent=(pctChange>=0?'+':'')+pctChange.toFixed(1)+'%';
+    ttlEl.textContent=firstVal>0?((pctChange>=0?'+':'')+pctChange.toFixed(1)+'%'):'—';
     ttlEl.className='cc-pct '+(pctChange>=0?'g':'r');
   }
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(34,211,238,.2)');g.addColorStop(1,'rgba(34,211,238,0)');
   const step=h.length>18?Math.ceil(h.length/12):1;
-  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Activos',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false,axis:'x'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});}catch(e){}
+  try{CH.pt=new Chart(ctx,{type:'line',data:{labels:h.map(x=>x.label),datasets:[{label:'Activos',data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2.5,fill:true,backgroundColor:g,pointRadius:h.length>24?0:3,pointHoverRadius:7,pointBackgroundColor:'#22d3ee',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false,axis:'x'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,callback:function(v,i){return i%step===0?this.getLabelForValue(v):'';}}},y:{grid:{color:'#243752'},ticks:{callback:v=>'€'+Math.round(v/1000)+'k',color:'#aebfd4'}}},animation:{duration:600}}});attachToggleTooltip(CH.pt);}catch(e){}
 }
 /* Gráfica solo de acciones, fondos y ETFs (excluye cripto y otros) */
 async function mkEquity(){
@@ -2745,6 +2836,9 @@ function setCarteraTab(t){
   G('ct-ops').classList.toggle('on',t==='ops');
   G('sv-posiciones').classList.toggle('on',t==='posiciones');
   G('sv-ops').classList.toggle('on',t==='ops');
+  /* mostrar botón "Sel." solo en pestaña Operaciones */
+  const sel=G('ops-seltoggle');
+  if(sel)sel.style.display=t==='ops'?'inline-flex':'none';
 }
 let carteraFilter='Todos',carteraSearch='',posTab='act';
 let opsSelectMode=false;
@@ -2884,6 +2978,11 @@ function renderOpsList(){
 function toggleOpsSelectMode(){
   opsSelectMode=!opsSelectMode;
   opsSelected.clear();
+  const btn=G('ops-seltoggle');
+  if(btn)btn.classList.toggle('active',opsSelectMode);
+  /* mostrar/ocultar barra de selección */
+  const bar=G('ops-selbar');
+  if(bar)bar.style.display=opsSelectMode?'flex':'none';
   renderOpsList();
 }
 function toggleOpSelect(id){
@@ -3205,6 +3304,9 @@ function renderExplore(){
   const beta=rawVal(sd.beta)||rawVal(ks.beta);
   const w52h=rawVal(sd.fiftyTwoWeekHigh);
   const w52l=rawVal(sd.fiftyTwoWeekLow);
+  /* EV/EBITDA y EV/FCF: ya vienen calculados desde la capa de datos */
+  const evEbitda=rawVal(ks.evEbitda);
+  const evFcf=rawVal(ks.evFcf);
   /* mediana histórica PER: estimación a partir de 5 años de precio y BPA actual */
   let medianPE=null;
   /* EPS: del dato directo si existe, si no se deriva de precio/PER */
@@ -3214,12 +3316,22 @@ function renderExplore(){
     const pes=chart.series.map(p=>p/epsForMedian).filter(x=>x>0&&x<300).sort((a,b)=>a-b);
     if(pes.length)medianPE=pes[Math.floor(pes.length/2)];
   }
+  /* color para EV/EBITDA y EV/FCF según rangos sectoriales típicos */
+  const sectorClean=(fund?.assetProfile?.sector||'').toLowerCase();
+  const isTechMul=sectorClean.includes('tech')||sectorClean.includes('software')||sectorClean.includes('semicond');
+  const isFinMul=sectorClean.includes('financ')||sectorClean.includes('bank');
+  /* rangos: [óptimo_max, caro_max] */
+  const evEbRange=isTechMul?[18,28]:isFinMul?[10,15]:[12,18];
+  const evFcfRange=isTechMul?[28,40]:isFinMul?[15,22]:[20,30];
+  const colorize=(v,r)=>v==null?'':v<0?'mv-bad':v<r[0]?'mv-good':v>r[1]?'mv-bad':'';
   html+=`<div class="exp-card">
     <div class="an-h"><span class="ic" style="background:rgba(34,211,238,.15)">📊</span>Datos de mercado y valoración</div>
     <div class="exp-meta">
       <div class="exp-mc"><div class="exp-ml">PER (trailing)${noteIcon('per')}</div><div class="exp-mv ${pe&&medianPE?(pe<medianPE*0.9?'mv-good':pe>medianPE*1.15?'mv-bad':''):''}">${pe?pe.toFixed(1):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Forward PER${noteIcon('fper')}</div><div class="exp-mv ${pe&&fwdPe?(fwdPe<pe?'mv-good':'mv-bad'):''}">${fwdPe?fwdPe.toFixed(1):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">PER mediana hist.<span class="pill-est">EST</span>${noteIcon('permediana')}</div><div class="exp-mv">${medianPE?medianPE.toFixed(1):'—'}</div></div>
+      <div class="exp-mc"><div class="exp-ml">EV / EBITDA${noteIcon('evebitda')}</div><div class="exp-mv ${colorize(evEbitda,evEbRange)}">${evEbitda?evEbitda.toFixed(1)+'×':'—'}</div></div>
+      <div class="exp-mc"><div class="exp-ml">EV / FCF${noteIcon('evfcfmult')}</div><div class="exp-mv ${colorize(evFcf,evFcfRange)}">${evFcf?evFcf.toFixed(1)+'×':'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Capitalización${noteIcon('capitalizacion')}</div><div class="exp-mv">${mktCap?fbig(mktCap):'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Rentab. dividendo${noteIcon('dividendo')}</div><div class="exp-mv ${divY&&divY>0.03?'mv-good':''}">${divY?(divY*100).toFixed(2)+'%':'—'}</div></div>
       <div class="exp-mc"><div class="exp-ml">Beta (volatilidad)${noteIcon('beta')}</div><div class="exp-mv ${beta?(beta>1.3?'mv-bad':beta<0.8?'mv-good':''):''}">${beta?beta.toFixed(2):'—'}</div></div>
@@ -3247,37 +3359,40 @@ function renderExplore(){
     return;
   }
 
-  /* ── Perfil / a qué se dedica ── */
+  /* ── Perfil mínimo (solo si hace falta para calc internos) ── */
   const prof=fund.assetProfile||fund.summaryProfile||{};
   const sector=prof.sector||'—';
   const industry=prof.industry||'—';
-  const employees=rawVal(prof.fullTimeEmployees);
-  const desc=prof.longBusinessSummary||'';
-  const descShort=desc?desc.slice(0,420)+(desc.length>420?'…':''):'Sin descripción disponible.';
-  html+=`<div class="exp-card">
-    <div class="an-h"><span class="ic" style="background:rgba(139,124,255,.15)">🏢</span>A qué se dedica la empresa</div>
-    <div class="exp-meta" style="margin-bottom:10px">
-      <div class="exp-mc"><div class="exp-ml">Sector</div><div class="exp-mv" style="font-size:11px">${sector}</div></div>
-      <div class="exp-mc"><div class="exp-ml">Industria</div><div class="exp-mv" style="font-size:11px">${industry}</div></div>
-      <div class="exp-mc"><div class="exp-ml">Empleados</div><div class="exp-mv">${employees?employees.toLocaleString('es-ES'):'—'}</div></div>
-      <div class="exp-mc"><div class="exp-ml">País</div><div class="exp-mv" style="font-size:11px">${prof.country||'—'}</div></div>
-    </div>
-    <div class="prose">${descShort}</div>
-    ${buildPositionSynthesis(fund,sector,mktCap)}
-  </div>`;
 
-  /* ── Análisis fundamental: Graham + Buffett ── */
+  /* ── Botón "Informe del Analista Bursátil" en posición destacada,
+        justo bajo Datos de mercado. Mejor estética. ── */
+  let analistaHtml='';
+  try{analistaHtml=buildAnalistaCard(ticker,chart,fund,expState.session)||'';}catch(e){}
+  if(analistaHtml){
+    html+=`<button class="analyst-launch" onclick="openAnalistaModal()">
+      <span class="al-ic">📊</span>
+      <span class="al-tx"><b>Informe del Analista Bursátil</b><small>Descripción, posición competitiva, trimestres, valoración exhaustiva</small></span>
+      <span class="al-arr">→</span>
+    </button>`;
+    /* guardar el html en estado para abrirlo en modal cuando se pulse */
+    expState.analistaHtml=analistaHtml;
+  }
+
+  /* ── Análisis fundamental: Graham + Buffett (PLEGABLE) ── */
   const graham=grahamAnalysis(fund);
   const buffett=buffettAnalysis(fund);
-  html+=`<div class="exp-card">
-    <div class="an-h"><span class="ic" style="background:rgba(52,232,158,.15)">📐</span>Análisis fundamental</div>
+  html+=`<details class="exp-coll"><summary class="exp-coll-h">
+    <span class="ic" style="background:rgba(52,232,158,.15)">📐</span>
+    <span class="exp-coll-tx"><b>Análisis fundamental</b><small>Graham + Buffett · ${graham.score+buffett.score}/${graham.max+buffett.max} pts</small></span>
+    <span class="exp-coll-chev">▾</span>
+  </summary><div class="exp-coll-body">
     <div style="font-size:11px;color:var(--w2);margin-bottom:5px">Método Benjamin Graham — valoración por precio${noteIcon('graham')} <span style="float:right;color:var(--w);font-weight:600">${graham.score}/${graham.max}</span></div>
     <div class="score-bar"><div class="score-fill" style="width:${graham.max?100*graham.score/graham.max:0}%;background:${graham.score/Math.max(graham.max,1)>0.6?'var(--g)':graham.score/Math.max(graham.max,1)>0.35?'var(--warn)':'var(--r)'}"></div></div>
     <div style="margin:8px 0 14px">${graham.checks.map(c=>`<span class="tag ${c.ok?'ok':'bad'}">${c.ok?'✓':'✗'} ${c.txt}</span>`).join('')}</div>
     <div style="font-size:11px;color:var(--w2);margin-bottom:5px">Método Warren Buffett — calidad del negocio${noteIcon('buffett')} <span style="float:right;color:var(--w);font-weight:600">${buffett.score}/${buffett.max}</span></div>
     <div class="score-bar"><div class="score-fill" style="width:${buffett.max?100*buffett.score/buffett.max:0}%;background:${buffett.score/Math.max(buffett.max,1)>0.6?'var(--g)':buffett.score/Math.max(buffett.max,1)>0.35?'var(--warn)':'var(--r)'}"></div></div>
     <div style="margin:8px 0 0">${buffett.checks.map(c=>`<span class="tag ${c.ok?'ok':'bad'}">${c.ok?'✓':'✗'} ${c.txt}</span>`).join('')}</div>
-  </div>`;
+  </div></details>`;
 
   /* ── Valoración EV/FCF ── */
   const val=evFcfValuation(fund,price);
@@ -3298,12 +3413,15 @@ function renderExplore(){
   }
   html+='</div>';
 
-  /* ── Previsiones 3 años ── */
+  /* ── Previsiones 3 años (PLEGABLE) ── */
   const proj=projection(fund);
   expState.proj=proj;
   if(proj){
-    html+=`<div class="exp-card">
-      <div class="an-h"><span class="ic" style="background:rgba(34,211,238,.15)">📈</span>Previsiones a 3 años<span class="pill-est">EST</span>${noteIcon('previsiones')}</div>
+    html+=`<details class="exp-coll"><summary class="exp-coll-h">
+      <span class="ic" style="background:rgba(34,211,238,.15)">📈</span>
+      <span class="exp-coll-tx"><b>Previsiones a 3 años</b><small>Proyección con ${(proj.growth*100).toFixed(1)}% crecimiento anual · estimación</small></span>
+      <span class="exp-coll-chev">▾</span>
+    </summary><div class="exp-coll-body">
       <div class="prose" style="margin-bottom:10px">Proyección basada en el crecimiento estimado de ventas (<b>${(proj.growth*100).toFixed(1)}%</b> anual) y los márgenes actuales de la empresa. Son estimaciones del algoritmo, no certezas.</div>
       ${proj.rows.map(r=>`
         <div class="fc-year">
@@ -3325,7 +3443,7 @@ function renderExplore(){
       ${proj.roc!=null?`<div class="metric-row"><span class="metric-l">ROC actual${noteIcon('roc')}</span><span class="metric-v">${(proj.roc*100).toFixed(1)}%</span></div>`:''}
       ${proj.debtToEquity!=null?`<div class="metric-row"><span class="metric-l">Ratio deuda/capital${noteIcon('deudacapital')}</span><span class="metric-v">${proj.debtToEquity.toFixed(2)}</span></div>`:''}
       ${proj.currentRatio!=null?`<div class="metric-row"><span class="metric-l">Ratio de liquidez${noteIcon('liquidez')}</span><span class="metric-v">${proj.currentRatio.toFixed(2)}</span></div>`:''}
-    </div>`;
+    </div></details>`;
   }
 
   /* ── Análisis técnico ── */
@@ -3343,11 +3461,15 @@ function renderExplore(){
     </div>`;
   }
 
-  /* ── OPORTUNIDADES DE COMPRA DEL SECTOR (se rellena en diferido) ── */
-  html+=`<div class="exp-card" id="sector-opps">
-    <div class="an-h"><span class="ic" style="background:rgba(52,232,158,.15)">💡</span>Oportunidades del sector</div>
-    <div class="prose" id="sector-opps-body" style="color:var(--w3)">Estudiando el sector en busca de empresas infravaloradas…</div>
-  </div>`;
+  /* ── SECTOR: oportunidades + competidores (FUSIONADO Y PLEGABLE) ── */
+  html+=`<details class="exp-coll" id="sector-coll"><summary class="exp-coll-h">
+    <span class="ic" style="background:rgba(52,232,158,.15)">💡</span>
+    <span class="exp-coll-tx"><b>Sector ${sector!=='—'?'· '+sector:''}</b><small>Oportunidades y competidores</small></span>
+    <span class="exp-coll-chev">▾</span>
+  </summary><div class="exp-coll-body">
+    <div id="sector-opps-body" style="font-size:12px;color:var(--w3);margin-bottom:14px">Estudiando el sector en busca de empresas infravaloradas…</div>
+    <div id="sector-comp-body"></div>
+  </div></details>`;
 
   /* ── VEREDICTO FINAL ── */
   const verdict=buildVerdict(graham,buffett,val,tech);
@@ -3358,27 +3480,12 @@ function renderExplore(){
     <div class="verdict-score"><b>${verdict.score}</b><span>/100 puntuación global</span></div>
   </div>`+html;
 
-  /* ── ANALISTA BURSÁTIL (integrado en Explorar, plegable) ── */
+  /* ── Competidores: lo metemos como parte del bloque "sector" plegable ── */
   try{
-    const analistaHtml=buildAnalistaCard(ticker,chart,fund,expState.session);
-    if(analistaHtml){
-      html+=`<div class="sec-divider"><span>ANÁLISIS DEL ANALISTA BURSÁTIL</span></div>
-        <div class="an-collapse">
-          <button class="an-toggle" onclick="toggleAnalista(this)">
-            <span class="an-toggle-ic" style="background:rgba(34,211,238,.15)">📊</span>
-            <span class="an-toggle-tx"><b>Informe del Analista Bursátil</b><small>Descripción, posición competitiva, trimestres y valoración exhaustiva</small></span>
-            <span class="an-toggle-chev">▾</span>
-          </button>
-          <div class="an-collapse-body" style="display:none">${analistaHtml}</div>
-        </div>`;
-    }
-  }catch(e){}
-
-  /* ── COMPETIDORES Y SUGERENCIAS DEL SECTOR ── */
-  try{
-    const sector=rawVal((fund&&fund.assetProfile||{}).sector)||(fund&&fund.assetProfile&&fund.assetProfile.sector)||'';
-    html+=buildCompetitorsBlock(ticker,sector);
-  }catch(e){}
+    const compHtml=buildCompetitorsBlock(ticker,sector);
+    /* lo insertamos en placeholder al cerrar el render */
+    expState.compHtml=compHtml;
+  }catch(e){expState.compHtml='';}
 
   /* ── Disclaimer ── */
   html+=`<div class="disclaim">⚠️ Este análisis es una <b>estimación automática</b> generada por el algoritmo de la app a partir de datos públicos de Yahoo Finance. Las etiquetas <span class="pill-est">EST</span> indican valores calculados o proyectados, no datos oficiales. <b>No es asesoramiento financiero ni una recomendación de inversión.</b> Verifica siempre con fuentes oficiales y consulta a un profesional antes de invertir.</div>`;
@@ -3386,9 +3493,22 @@ function renderExplore(){
   G('exp-out').innerHTML=html;
   const u=chart.series[chart.series.length-1]>=chart.series[0];
   setTimeout(()=>mkExploreChart(chart.series,chart.times,u),60);
+  /* inyectar competidores dentro del bloque "Sector" plegable */
+  if(expState.compHtml){
+    const cb=G('sector-comp-body');
+    if(cb)cb.innerHTML=expState.compHtml;
+  }
   /* estudio del sector en diferido (no bloquea el render principal) */
   const sectorForOpps=(fund&&fund.assetProfile&&fund.assetProfile.sector)||'';
   setTimeout(()=>studySectorOpportunities(ticker,sectorForOpps),200);
+}
+
+/* Abre el informe del analista bursátil en un sheet a pantalla completa */
+function openAnalistaModal(){
+  if(!expState.analistaHtml){showToast('Informe no disponible');return;}
+  openSheet(`<div class="shttl">📊 Informe del Analista Bursátil</div>
+    ${expState.analistaHtml}
+    <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
 }
 
 /* Estudia empresas del sector y muestra las 2 mejores oportunidades:
@@ -3935,6 +4055,14 @@ const GLOSSARY={
   permediana:{t:'PER mediana histórica',d:[
     'Es el valor <b>central</b> del PER de la empresa a lo largo de los últimos años.',
     'Sirve de referencia: si el PER actual está muy por debajo de su mediana, la acción podría estar barata frente a su propia historia; si está muy por encima, cara.']},
+  evebitda:{t:'EV / EBITDA',d:[
+    '<b>EV</b> = capitalización + deuda − caja (lo que costaría comprar la empresa entera). <b>EBITDA</b> = beneficio antes de intereses, impuestos y amortizaciones.',
+    'EV/EBITDA indica cuántas veces el beneficio operativo paga la cotización. <b>Más comparable</b> que el PER entre empresas con distinta deuda y estructuras de capital.',
+    'Rangos orientativos: <b>10-15× saludable</b> en general, <b>18-28× tecnología</b>, <b>6-12× financieras</b>. Por encima del rango: caro. Negativo o muy alto: empresa con pérdidas o burbuja.']},
+  evfcfmult:{t:'EV / FCF',d:[
+    'Múltiplo que indica <b>cuántos años de flujo de caja libre</b> se pagan por la empresa al precio actual.',
+    'Es el más exigente: el FCF es dinero real que queda tras inversiones de mantenimiento. Bajo (10-20×) implica que la empresa se "paga sola" rápido.',
+    'Rangos orientativos: <b>15-25× saludable</b>, <b>30× empieza a ser caro</b>, <b>>40× especulativo</b>. Negativo: la empresa quema caja, no genera flujo positivo.']},
   beta:{t:'Beta',d:[
     'La <b>Beta</b> mide cuánto se mueve una acción respecto al mercado en su conjunto.',
     'Beta = 1: se mueve igual que el mercado. Beta > 1: más volátil (amplifica subidas y bajadas). Beta < 1: más estable. Beta negativa: tiende a moverse al contrario.']},
@@ -5267,9 +5395,17 @@ function buildAnalistaCard(ticker,chart,fund,session){
     h+=`<div style="background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.3);border-radius:8px;padding:9px 11px;margin-bottom:8px;font-size:11px;color:var(--warn);line-height:1.5">⚠ Datos de estados financieros no disponibles ahora mismo (precio y mercado sí son válidos). Algunos puntos pueden aparecer parciales — reintenta en unos segundos para el análisis completo.</div>`;
   }
 
-  /* 1 */
+  /* 1 — Descripción del negocio enriquecida con sector/industria/empleados/país */
+  const employees=rawVal(prof.fullTimeEmployees);
+  const country=prof.country||'—';
   h+=anBlock('1','Descripción del negocio','#22d3ee',
-    `<div class="prose">${descShort}</div>
+    `<div class="an-grid2" style="margin-bottom:10px">
+       <div class="an-mc"><div class="an-ml">Sector</div><div class="an-mv" style="font-size:11px">${sector}</div></div>
+       <div class="an-mc"><div class="an-ml">Industria</div><div class="an-mv" style="font-size:11px">${industry}</div></div>
+       <div class="an-mc"><div class="an-ml">Empleados</div><div class="an-mv">${employees?employees.toLocaleString('es-ES'):'—'}</div></div>
+       <div class="an-mc"><div class="an-ml">País</div><div class="an-mv" style="font-size:11px">${country}</div></div>
+     </div>
+     <div class="prose">${descShort}</div>
      <div style="margin-top:7px"><span class="tag ok">${sector}</span><span class="tag" style="background:rgba(139,124,255,.14);color:var(--c2)">${industry}</span></div>`);
 
   /* 2 */
@@ -5308,39 +5444,6 @@ function buildAnalistaCard(ticker,chart,fund,session){
       <div class="an-mc"><div class="an-ml">Precio actual</div><div class="an-mv">${price.toFixed(2)} ${cur}</div></div>
       <div class="an-mc"><div class="an-ml">Market cap</div><div class="an-mv">${mktCap?fbig(mktCap)+' '+cur:'n/d'}</div></div>
     </div>`);
-
-  /* ── 6b. MÚLTIPLOS DE VALORACIÓN (PER, EV/EBITDA, EV/FCF) ──
-     Cada métrica es pulsable para abrir su análisis sectorial. */
-  const secMul=prof.sector||'';
-  const perVal=rawVal(fd.trailingPE)||rawVal(ks.trailingPE);
-  const evEbitda=rawVal(fd.evEbitda);
-  const evFcf=rawVal(fd.evFcf);
-  const ev=rawVal(fd.enterpriseValue);
-  const ebitda=rawVal(fd.ebitda);
-  const fcfRaw=rawVal(fd.freeCashflow);
-  const mkRow=(label,val,type,extraTip)=>{
-    if(val==null)return `<div class="mult-row"><div class="mult-l">${label}</div><div class="mult-v">n/d</div></div>`;
-    const interp=interpretMultiple(val,type,secMul);
-    if(!interp)return `<div class="mult-row"><div class="mult-l">${label}</div><div class="mult-v">${val.toFixed(1)}×</div></div>`;
-    const id='m-'+Math.random().toString(36).slice(2,9);
-    return `<div class="mult-row mult-tap" onclick="toggleMultExp('${id}')">
-      <div class="mult-l">${label}</div>
-      <div class="mult-mid"><span class="mult-badge" style="background:${interp.color}22;color:${interp.color};border-color:${interp.color}55">${interp.label}</span></div>
-      <div class="mult-v" style="color:${interp.color}">${val.toFixed(1)}×</div>
-    </div>
-    <div class="mult-exp" id="${id}">
-      <div class="prose" style="font-size:11px">${interp.text}</div>
-      ${extraTip?`<div style="font-size:10.5px;color:var(--w3);margin-top:6px">${extraTip}</div>`:''}
-    </div>`;
-  };
-  h+=anBlock('6b','Múltiplos de valoración','#22d3ee',
-    `<div class="prose" style="margin-bottom:10px;font-size:11.5px">Indicadores que miden cuánto se paga por cada euro de beneficio, EBITDA o flujo de caja. Pulsa cada uno para ver el análisis sectorial.</div>
-    <div class="mult-tbl">
-      ${mkRow('PER (precio / beneficio)',perVal,'PER','Lo más usado. Indica cuántos años de beneficios actuales paga la cotización. Sectores defensivos suelen tener PER más bajo; tecnología y crecimiento, más alto.')}
-      ${mkRow('EV/EBITDA',evEbitda,'EV/EBITDA','Útil porque elimina diferencias de estructura de capital y políticas de amortización. Más comparable entre empresas con distintos niveles de deuda.'+(ev&&ebitda?'<br><br><b>Cálculo:</b> EV ('+fbig(ev)+' '+cur+') ÷ EBITDA ('+fbig(ebitda)+' '+cur+')':''))}
-      ${mkRow('EV/FCF',evFcf,'EV/FCF','El múltiplo más exigente. Mide cuántos años de FCF se pagan por la empresa. Si es bajo, la empresa "se paga sola" rápido.'+(ev&&fcfRaw?'<br><br><b>Cálculo:</b> EV ('+fbig(ev)+' '+cur+') ÷ FCF ('+fbig(fcfRaw)+' '+cur+')':''))}
-    </div>
-    ${(evEbitda==null&&evFcf==null)?'<div style="font-size:10.5px;color:var(--w3);margin-top:8px">Si faltan métricas, suele ser porque la fuente no las reporta para este sector (típico en bancos y servicios financieros, donde EV/EBITDA no aplica).</div>':''}`);
 
   /* 7 */
   const dCls=distFromHigh>=-0.05?'pos':distFromHigh>=-0.25?'':'neg';
