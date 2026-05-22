@@ -272,6 +272,12 @@ input,select,button,textarea{font-family:inherit}
 .fc-table .est{color:var(--c)}
 .disclaim{font-size:10px;color:var(--w3);line-height:1.5;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-top:10px}
 .pill-est{font-size:8px;background:var(--c2);color:var(--bg);padding:1px 6px;border-radius:8px;margin-left:5px;font-weight:700;vertical-align:middle}
+.pill-est-w{display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px;vertical-align:middle}
+.pill-est-btn{cursor:pointer;display:inline-flex;align-items:center;gap:3px;user-select:none}
+.pill-est-btn:active{transform:scale(0.96)}
+.pill-est-q{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border-radius:50%;background:rgba(7,16,31,.4);color:var(--c2);font-size:8px;font-weight:700;line-height:1}
+.pill-est-exp{display:none;font-size:10.5px;color:var(--w2);background:rgba(34,150,235,.06);border:1px solid rgba(34,150,235,.18);border-radius:7px;padding:7px 10px;line-height:1.5;letter-spacing:0;font-weight:400;text-transform:none;max-width:100%}
+.pill-est-exp.open{display:block}
 ::-webkit-scrollbar{width:0;height:0}
 /* ── AUTOCOMPLETADO BUSCADOR ── */
 .sugg-box{position:relative;margin-top:-6px;margin-bottom:10px;display:none}
@@ -450,14 +456,76 @@ input,select,button,textarea{font-family:inherit}
 .cat-edit{font-size:14px;flex-shrink:0;color:var(--w3);padding:0 4px}
 /* Sub-valor pequeño bajo el principal en las tarjetas del Panel */
 .sv-sub{font-size:10px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin-top:3px;letter-spacing:.02em}
-/* Chips de filtro dentro de la tarjeta ACTIVOS TOTALES */
-.hero-filter{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px;padding-right:40px}
-.hfchip{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--w2);font-size:10px;font-weight:600;letter-spacing:.04em;padding:4px 10px;border-radius:11px;cursor:pointer;font-family:inherit;transition:all .15s}
-.hfchip:active{transform:scale(0.95)}
-.hfchip.on{background:rgba(34,150,235,.18);border-color:rgba(34,150,235,.4);color:var(--c2)}
+/* Selector desplegable compacto en la tarjeta ACTIVOS TOTALES */
+.hero-filter{position:relative;display:inline-block;margin:0 0 12px}
+.hfsel{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--w);font-size:11px;font-weight:600;letter-spacing:.04em;padding:5px 11px;border-radius:14px;cursor:pointer;font-family:inherit}
+.hfsel:active{background:rgba(34,150,235,.12)}
+.hfsel-cur{color:var(--c2)}
+.hfsel-chev{font-size:9px;color:var(--w3)}
+.hfsel-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:5px;min-width:140px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.4);flex-direction:column;gap:1px}
+.hfsel-menu.open{display:flex}
+.hfsel-opt{background:none;border:none;color:var(--w2);font-size:12px;text-align:left;padding:8px 12px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500}
+.hfsel-opt:active{background:rgba(34,150,235,.15)}
+.hfsel-opt.on{background:rgba(34,150,235,.18);color:var(--c2)}
 /* ISIN bajo el ticker en filas de Editar activos */
 .cat-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
 .cat-isin{font-size:9.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
+/* Sparkline: leyenda con fechas inicio/fin y % cambio en esquina */
+.spkw{position:relative}
+.spk-pct{position:absolute;top:4px;right:6px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;background:rgba(7,16,31,.7);padding:2px 7px;border-radius:8px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.spk-pct.g{color:var(--g)}
+.spk-pct.r{color:var(--r)}
+.spk-axis{display:flex;justify-content:space-between;font-size:9.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin:4px 4px 0;letter-spacing:.03em}
+/* % de cambio en esquina de gráficas grandes */
+.cc-pos{position:relative}
+.cc-pct{position:absolute;top:10px;right:12px;font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;background:rgba(7,16,31,.75);padding:4px 10px;border-radius:9px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:5}
+.cc-pct.g{color:var(--g)}
+.cc-pct.r{color:var(--r)}
+/* ── Múltiplos de valoración pulsables ── */
+.mult-tbl{display:flex;flex-direction:column;gap:2px}
+.mult-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.mult-row:last-of-type{border-bottom:none}
+.mult-tap{cursor:pointer;transition:background .15s}
+.mult-tap:active{background:rgba(34,150,235,.06)}
+.mult-l{font-size:12px;color:var(--w);font-weight:500}
+.mult-mid{display:flex;align-items:center;justify-content:center}
+.mult-v{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.mult-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;border:1px solid;letter-spacing:.04em;white-space:nowrap}
+.mult-exp{display:none;padding:10px 12px;margin-bottom:4px;background:rgba(34,150,235,.04);border-left:2px solid rgba(34,150,235,.3);border-radius:6px}
+.mult-exp.open{display:block}
+
+/* ── Cartera: rediseño compacto ── */
+/* Toggle pill segmentado (Posiciones/Operaciones, Activas/Cerradas) */
+.seg-tg{display:inline-flex;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:3px;gap:2px;margin:14px 0 12px}
+.seg-tg-sm{margin:0;flex-shrink:0}
+.seg-opt{background:transparent;border:none;color:var(--w2);font-size:11.5px;font-weight:600;padding:6px 14px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.02em;transition:all .18s;white-space:nowrap}
+.seg-tg-sm .seg-opt{font-size:10.5px;padding:5px 11px}
+.seg-opt:active{transform:scale(0.96)}
+.seg-opt.on{background:var(--c);color:var(--bg);box-shadow:0 1px 4px rgba(34,150,235,.4)}
+/* Barra de filtros unificada */
+.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.fb-sel-w{position:relative}
+.fb-sel{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:18px;cursor:pointer;font-family:inherit}
+.fb-sel-cur{color:var(--c2)}
+.fb-sel-chev{font-size:9px;color:var(--w3)}
+.fb-sel-menu{display:none;position:absolute;top:calc(100% + 5px);left:0;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:5px;min-width:140px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.4);flex-direction:column;gap:1px}
+.fb-sel-menu.open{display:flex}
+.fb-sel-opt{background:none;border:none;color:var(--w2);font-size:12px;text-align:left;padding:8px 12px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500}
+.fb-sel-opt.on{background:rgba(34,150,235,.18);color:var(--c2)}
+/* Búsqueda compacta: icono solo, se expande al pulsar */
+.fb-search{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:18px;transition:width .25s;overflow:hidden;width:34px;height:34px}
+.fb-search.open{width:140px}
+.fb-search-btn{flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--w2);cursor:pointer;padding:0}
+.fb-search-inp{flex:1;background:none;border:none;color:var(--w);font-size:12px;font-family:inherit;padding:0 10px 0 0;outline:none;width:0;opacity:0;transition:opacity .25s}
+.fb-search.open .fb-search-inp{opacity:1;width:auto}
+/* Botón Explorar (lupa) en tarjeta de posición */
+.atop-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.acard-exp{width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(34,150,235,.12);border:1px solid rgba(34,150,235,.28);border-radius:6px;font-size:11px;cursor:pointer;padding:0;color:var(--c2);transition:background .15s}
+.acard-exp:active{background:rgba(34,150,235,.28);transform:scale(0.94)}
+/* Toolbar de Operaciones (solo botón Seleccionar visible) */
+.ops-toolbar{display:flex;justify-content:flex-end;margin-bottom:10px}
+.ops-tbtn{background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:11.5px;font-weight:600;padding:7px 14px;border-radius:14px;cursor:pointer;font-family:inherit}
+.ops-tbtn:active{transform:scale(0.96)}
 </style>
 </head>
 <body>
@@ -482,7 +550,14 @@ input,select,button,textarea{font-family:inherit}
     <div class="hero-filter" id="hero-filter"></div>
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
-    <div class="spkw"><canvas id="c-sp" height="50"></canvas></div>
+    <div class="spkw">
+      <canvas id="c-sp" height="50"></canvas>
+      <div class="spk-pct" id="spk-pct"></div>
+    </div>
+    <div class="spk-axis">
+      <span id="spk-start"></span>
+      <span id="spk-end"></span>
+    </div>
   </div>
   <div class="sgrid">
     <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div><div class="sv-sub hide-val" id="s-inv-act">&mdash;</div></div>
@@ -513,29 +588,47 @@ input,select,button,textarea{font-family:inherit}
 </section>
 
 <section class="view" id="v-cartera">
-  <div class="subhdr">
-    <button class="subtab on" id="ct-posiciones" onclick="setCarteraTab('posiciones')">Posiciones</button>
-    <button class="subtab" id="ct-ops" onclick="setCarteraTab('ops')">Operaciones</button>
+  <!-- Toggle pill: Posiciones / Operaciones (un único control segmentado) -->
+  <div class="seg-tg" role="tablist">
+    <button class="seg-opt on" id="ct-posiciones" onclick="setCarteraTab('posiciones')">Posiciones</button>
+    <button class="seg-opt" id="ct-ops" onclick="setCarteraTab('ops')">Operaciones</button>
   </div>
+
   <div class="subview on" id="sv-posiciones">
     <!-- mini-resumen de cartera siempre visible arriba -->
     <div class="cart-sum" id="cart-sum"></div>
-    <div class="sw2">
-      <svg class="sic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="si" type="search" placeholder="Buscar activo..." oninput="onCarteraSearch(this.value)">
+
+    <!-- Barra de filtros unificada: tipo + búsqueda + activas/cerradas -->
+    <div class="filter-bar">
+      <!-- Selector tipo (desplegable compacto, igual que el del hero) -->
+      <div class="fb-sel-w">
+        <button class="fb-sel" onclick="event.stopPropagation();toggleCarteraSel()">
+          <span class="fb-sel-cur" id="fb-sel-cur">Todos</span>
+          <span class="fb-sel-chev">▾</span>
+        </button>
+        <div class="fb-sel-menu" id="fb-sel-menu"></div>
+      </div>
+      <!-- Búsqueda compacta: icono lupa que abre input al pulsar -->
+      <div class="fb-search">
+        <button class="fb-search-btn" id="fb-search-btn" onclick="toggleCarteraSearch()" aria-label="Buscar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <input class="fb-search-inp" id="fb-search-inp" type="search" placeholder="Buscar..." oninput="onCarteraSearch(this.value)">
+      </div>
+      <!-- Toggle Activas/Cerradas en pildora segmentada -->
+      <div class="seg-tg seg-tg-sm">
+        <button class="seg-opt on" id="ptab-act" onclick="setPosTab('act')">Activas</button>
+        <button class="seg-opt" id="ptab-clo" onclick="setPosTab('clo')">Cerradas</button>
+      </div>
     </div>
-    <div class="chrow" id="cartera-chips"></div>
-    <div class="pos-tabs">
-      <button class="pos-tab on" id="ptab-act" onclick="setPosTab('act')">Activas</button>
-      <button class="pos-tab" id="ptab-clo" onclick="setPosTab('clo')">Cerradas</button>
-    </div>
+
     <div id="positions-list"></div>
     <button class="fab fab-fixed" onclick="openAddOp()" aria-label="Añadir operación">+</button>
   </div>
+
   <div class="subview" id="sv-ops">
-    <div class="btn-pair">
-      <button class="fab" onclick="openAddOp()">+ Nueva operaci&oacute;n</button>
-      <button class="fab alt" id="ops-seltoggle" onclick="toggleOpsSelectMode()">Seleccionar</button>
+    <div class="ops-toolbar">
+      <button class="ops-tbtn" id="ops-seltoggle" onclick="toggleOpsSelectMode()">Seleccionar</button>
     </div>
     <div class="ops-selbar" id="ops-selbar" style="display:none">
       <button class="ops-selall" onclick="selectAllOps()">Todas</button>
@@ -543,6 +636,7 @@ input,select,button,textarea{font-family:inherit}
       <button class="ops-seldel" onclick="delSelectedOps()">Eliminar</button>
     </div>
     <div id="ops-list"></div>
+    <button class="fab fab-fixed" onclick="openAddOp()" aria-label="Nueva operación">+</button>
   </div>
 </section>
 
@@ -759,7 +853,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v7.16';      /* visible en header y Ajustes */
+const APP_VERSION='v8.0';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1762,12 +1856,14 @@ function toApiSymbol(t){return toFmpSymbol(t);}
 async function fetchFmpFundamentals(ticker){
   if(!hasApiKey())return null;
   const sym=toFmpSymbol(ticker);
-  const [quoteR,profileR,ratiosR,metricsR,growthR]=await Promise.all([
+  const [quoteR,profileR,ratiosR,metricsR,growthR,cashR]=await Promise.all([
     fmpGet('quote/'+encodeURIComponent(sym)),
     fmpGet('profile/'+encodeURIComponent(sym)),
     fmpGet('ratios-ttm/'+encodeURIComponent(sym)),
     fmpGet('key-metrics-ttm/'+encodeURIComponent(sym)),
     fmpGet('financial-growth/'+encodeURIComponent(sym)+'?period=quarter&limit=1'),
+    /* cash-flow anual: respaldo si key-metrics-ttm no devuelve FCF */
+    fmpGet('cash-flow-statement/'+encodeURIComponent(sym)+'?period=annual&limit=1'),
   ]);
   /* el quote es el endpoint base. Si ÉL falla por clave/límite, es fatal. */
   if(quoteR&&quoteR._keyerror)throw new Error('CLAVE_INVALIDA');
@@ -1782,13 +1878,46 @@ async function fetchFmpFundamentals(ticker){
   const ratios=usable(ratiosR);
   const metrics=usable(metricsR);
   const growth=usable(growthR);
+  const cashStmt=usable(cashR);
   const n=v=>{const x=parseFloat(v);return isNaN(x)?null:x;};
-  /* lee un campo probando varios nombres posibles (FMP varía entre stable/v3) */
   const pick=(obj,...keys)=>{
     if(!obj)return null;
     for(const k of keys){const v=n(obj[k]);if(v!=null)return v;}
     return null;
   };
+  /* ── FCF con varias estrategias en cascada para que rara vez falle ──
+     1) FCF directo del cash-flow-statement (lo más fiable; campo 'freeCashFlow')
+     2) Operating cash flow − CapEx del cash-flow-statement
+     3) freeCashFlowPerShareTTM × sharesOutstanding (lo que había)
+     4) operatingCashFlowPerShareTTM × shares − capExPerShareTTM × shares  */
+  let fcfVal=null;
+  /* Estrategia 1 */
+  fcfVal=pick(cashStmt,'freeCashFlow','freecashflow');
+  /* Estrategia 2 */
+  if(fcfVal==null){
+    const ocf=pick(cashStmt,'operatingCashFlow','netCashProvidedByOperatingActivities','cashFlowFromOperatingActivities');
+    const cap=pick(cashStmt,'capitalExpenditure','capitalExpenditures');
+    if(ocf!=null&&cap!=null)fcfVal=ocf-Math.abs(cap);   /* CapEx suele ser negativo */
+    else if(ocf!=null)fcfVal=ocf;                       /* peor caso: solo OCF */
+  }
+  /* Estrategia 3 — lo que ya teníamos */
+  if(fcfVal==null){
+    const fcfPS=pick(metrics,'freeCashFlowPerShareTTM');
+    const shr=n(quote.sharesOutstanding);
+    if(fcfPS!=null&&shr!=null&&shr>0)fcfVal=fcfPS*shr;
+  }
+  /* Estrategia 4 */
+  if(fcfVal==null){
+    const ocfPS=pick(metrics,'operatingCashFlowPerShareTTM');
+    const capPS=pick(metrics,'capexPerShareTTM','capExPerShareTTM');
+    const shr=n(quote.sharesOutstanding);
+    if(ocfPS!=null&&shr!=null&&shr>0){
+      const ocf=ocfPS*shr;
+      const cap=capPS!=null?capPS*shr:0;
+      fcfVal=ocf-Math.abs(cap);
+    }
+  }
+
   const F={_source:'fmp'};
   const price=n(quote.price);
   const eps=pick(quote,'eps','epsTTM','netIncomePerShareTTM');
@@ -1833,6 +1962,20 @@ async function fetchFmpFundamentals(ticker){
     pegRatio:{raw:pick(ratios,'pegRatioTTM','priceEarningsToGrowthRatioTTM')},
     sharesOutstanding:{raw:n(quote.sharesOutstanding)},
     enterpriseValue:{raw:pick(metrics,'enterpriseValueTTM','enterpriseValue')},
+    /* Múltiplos EV listos para usar (preferentemente directos de FMP) */
+    evEbitda:{raw:pick(metrics,'enterpriseValueOverEBITDATTM','evToEbitda','enterpriseValueMultipleTTM')},
+    evFcf:{raw:(()=>{
+      const ev=pick(metrics,'enterpriseValueTTM','enterpriseValue');
+      if(ev!=null&&fcfVal!=null&&fcfVal>0)return ev/fcfVal;
+      return null;
+    })()},
+    ebitda:{raw:(()=>{
+      /* EBITDA: a partir del múltiplo EV/EBITDA y EV */
+      const ev=pick(metrics,'enterpriseValueTTM','enterpriseValue');
+      const mult=pick(metrics,'enterpriseValueOverEBITDATTM','evToEbitda');
+      if(ev!=null&&mult!=null&&mult>0)return ev/mult;
+      return null;
+    })()},
   };
   F.financialData={
     returnOnEquity:{raw:pick(ratios,'returnOnEquityTTM','roeTTM')},
@@ -1845,8 +1988,7 @@ async function fetchFmpFundamentals(ticker){
     debtToEquity:{raw:pick(ratios,'debtEquityRatioTTM','debtToEquityRatioTTM','debtToEquityTTM')},
     totalRevenue:{raw:pick(metrics,'revenuePerShareTTM')&&n(quote.sharesOutstanding)
       ?pick(metrics,'revenuePerShareTTM')*n(quote.sharesOutstanding):null},
-    freeCashflow:{raw:pick(metrics,'freeCashFlowPerShareTTM')&&n(quote.sharesOutstanding)
-      ?pick(metrics,'freeCashFlowPerShareTTM')*n(quote.sharesOutstanding):null},
+    freeCashflow:{raw:fcfVal},
     totalCash:{raw:pick(metrics,'cashPerShareTTM')&&n(quote.sharesOutstanding)
       ?pick(metrics,'cashPerShareTTM')*n(quote.sharesOutstanding):null},
     totalDebt:{raw:pick(metrics,'debtToAssetsTTM')},
@@ -2284,21 +2426,36 @@ function initChartDefaults(){
 async function mkSparkline(){
   dch('sp');if(!chartReady())return;
   const ctx=G('c-sp');if(!ctx)return;
-  /* histórico real mes a mes para que la línea muestre evolución */
+  /* respeta el filtro del hero: si está 'Acciones', solo trae histórico de acciones */
+  const filterTypes=heroFilter==='Todos'?null:[heroFilter];
   let h=[];
-  try{h=await buildPatrimonyTimeline();}catch(e){}
+  try{h=await buildPatrimonyTimeline(filterTypes);}catch(e){}
   if(h.length<2){
     h=patrimonioHistory().map(x=>({label:String(x.year),val:x.val}));
   }
   if(h.length<2){ctx.style.display='none';return;}
   ctx.style.display='';
+  /* Calcular cambio porcentual del primer al último punto para mostrarlo */
+  const firstVal=h[0].val||0,lastVal=h[h.length-1].val||0;
+  const pctChange=firstVal>0?((lastVal-firstVal)/firstVal*100):0;
+  const pctTxt=(pctChange>=0?'+':'')+pctChange.toFixed(1)+'%';
+  const pctEl=G('spk-pct');
+  if(pctEl){
+    pctEl.textContent=pctTxt;
+    pctEl.className='spk-pct '+(pctChange>=0?'g':'r');
+  }
+  const startEl=G('spk-start'),endEl=G('spk-end');
+  if(startEl)startEl.textContent=h[0].label||'';
+  if(endEl)endEl.textContent=h[h.length-1].label||'';
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,50);
-  g.addColorStop(0,'rgba(34,211,238,.4)');g.addColorStop(1,'rgba(34,211,238,0)');
+  const lineColor=pctChange>=0?'#22d3ee':'#ff7a8a';
+  g.addColorStop(0,pctChange>=0?'rgba(34,211,238,.4)':'rgba(255,122,138,.35)');
+  g.addColorStop(1,'rgba(34,211,238,0)');
   try{CH.sp=new Chart(ctx,{
     type:'line',
     data:{
       labels:h.map(x=>x.label),
-      datasets:[{data:h.map(x=>x.val),borderColor:'#22d3ee',borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:'#22d3ee',pointHoverBorderColor:'#07101f',pointHoverBorderWidth:2,tension:.4}],
+      datasets:[{data:h.map(x=>x.val),borderColor:lineColor,borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:lineColor,pointHoverBorderColor:'#07101f',pointHoverBorderWidth:2,tension:.4}],
     },
     options:{
       responsive:true,maintainAspectRatio:false,
@@ -2369,9 +2526,10 @@ function setPatrRange(m){
 async function mkPatr(){
   dch('pt');if(!chartReady())return;
   const ctx=G('c-pt');if(!ctx)return;
-  /* histórico real mes a mes (descarga precios históricos) */
+  /* respeta el filtro del hero: si está 'Acciones', solo trae histórico de acciones */
+  const filterTypes=heroFilter==='Todos'?null:[heroFilter];
   let h=[];
-  try{h=await buildPatrimonyTimeline();}catch(e){}
+  try{h=await buildPatrimonyTimeline(filterTypes);}catch(e){}
   if(h.length<2){
     h=patrimonioHistory().map(x=>({label:x.year,val:x.val}));
   }
@@ -2379,6 +2537,14 @@ async function mkPatr(){
   /* recortar al rango seleccionado */
   if(patrRangeMonths>0&&h.length>patrRangeMonths){
     h=h.slice(-patrRangeMonths);
+  }
+  /* % cambio del primer al último punto */
+  const firstVal=h[0].val||0,lastVal=h[h.length-1].val||0;
+  const pctChange=firstVal>0?((lastVal-firstVal)/firstVal*100):0;
+  const ttlEl=G('c-pt-pct');
+  if(ttlEl){
+    ttlEl.textContent=(pctChange>=0?'+':'')+pctChange.toFixed(1)+'%';
+    ttlEl.className='cc-pct '+(pctChange>=0?'g':'r');
   }
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(34,211,238,.2)');g.addColorStop(1,'rgba(34,211,238,0)');
@@ -2509,7 +2675,31 @@ function renderHeroFilter(){
   const box=G('hero-filter');if(!box)return;
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
   if(types.length<=1){box.innerHTML='';return;}
-  box.innerHTML=types.map(t=>`<button class="hfchip${t===heroFilter?' on':''}" onclick="event.stopPropagation();setHeroFilter('${t}')">${t}</button>`).join('');
+  /* Selector compacto: muestra el activo actual con icono ▾, al pulsarlo
+     abre un menú flotante con las opciones. Más estético que chips llenando ancho. */
+  box.innerHTML=`<button class="hfsel" onclick="event.stopPropagation();toggleHeroSel(event)">
+    <span class="hfsel-cur">${heroFilter}</span>
+    <span class="hfsel-chev">▾</span>
+  </button>
+  <div class="hfsel-menu" id="hfsel-menu">
+    ${types.map(t=>`<button class="hfsel-opt${t===heroFilter?' on':''}" onclick="event.stopPropagation();setHeroFilter('${t}');toggleHeroSel()">${t}</button>`).join('')}
+  </div>`;
+}
+function toggleHeroSel(ev){
+  const m=G('hfsel-menu');if(!m)return;
+  m.classList.toggle('open');
+  /* cerrar al pulsar fuera */
+  if(m.classList.contains('open')){
+    setTimeout(()=>{
+      const close=(e)=>{
+        if(!m.contains(e.target)&&!e.target.closest('.hfsel')){
+          m.classList.remove('open');
+          document.removeEventListener('click',close);
+        }
+      };
+      document.addEventListener('click',close);
+    },50);
+  }
 }
 function renderDash(){
   renderHeroFilter();
@@ -2568,24 +2758,49 @@ function renderCartera(){
   const cs=G('cart-sum');
   if(cs){
     const cls=T.pct>=0?'g':'r';
-    const sign=T.gain>=0?'+':'-';
     cs.innerHTML=`<div class="csum-card">
       <div class="csum-l"><div class="csum-lbl">Valor</div><div class="csum-val hide-val sm">${fe(T.valOpen)}</div></div>
       <div class="csum-l"><div class="csum-lbl">Posiciones</div><div class="csum-val">${actCount}</div></div>
       <div class="csum-l"><div class="csum-lbl">Rent. total</div><div class="csum-val ${cls}">${fp(T.pct)}</div></div>
     </div>`;
   }
+  /* Selector desplegable de tipo (mismo patrón que el del hero) */
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
-  G('cartera-chips').innerHTML=types.map(t=>`<button class="chip${t===carteraFilter?' on':''}" onclick="setCF('${t}')">${t}</button>`).join('');
+  const cur=G('fb-sel-cur');if(cur)cur.textContent=carteraFilter;
+  const menu=G('fb-sel-menu');
+  if(menu)menu.innerHTML=types.map(t=>`<button class="fb-sel-opt${t===carteraFilter?' on':''}" onclick="event.stopPropagation();setCF('${t}');toggleCarteraSel()">${t}</button>`).join('');
   renderPositions();renderOpsList();
 }
 function setCF(t){
   carteraFilter=t;
-  /* re-pintar los chips para que el resaltado refleje el seleccionado */
+  const cur=G('fb-sel-cur');if(cur)cur.textContent=t;
+  /* repintar opciones del menú para reflejar selección */
   const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
-  const el=G('cartera-chips');
-  if(el)el.innerHTML=types.map(x=>`<button class="chip${x===carteraFilter?' on':''}" onclick="setCF('${x}')">${x}</button>`).join('');
+  const menu=G('fb-sel-menu');
+  if(menu)menu.innerHTML=types.map(x=>`<button class="fb-sel-opt${x===carteraFilter?' on':''}" onclick="event.stopPropagation();setCF('${x}');toggleCarteraSel()">${x}</button>`).join('');
   renderPositions();
+}
+function toggleCarteraSel(){
+  const m=G('fb-sel-menu');if(!m)return;
+  m.classList.toggle('open');
+  if(m.classList.contains('open')){
+    setTimeout(()=>{
+      const close=(e)=>{
+        if(!m.contains(e.target)&&!e.target.closest('.fb-sel')){
+          m.classList.remove('open');
+          document.removeEventListener('click',close);
+        }
+      };
+      document.addEventListener('click',close);
+    },50);
+  }
+}
+function toggleCarteraSearch(){
+  const inp=G('fb-search-inp'),btn=G('fb-search-btn'),box=inp&&inp.parentElement;
+  if(!box)return;
+  const open=box.classList.toggle('open');
+  if(open){setTimeout(()=>inp.focus(),50);}
+  else{inp.value='';onCarteraSearch('');}
 }
 function setPosTab(t){
   posTab=t;
@@ -2622,14 +2837,13 @@ function renderPositions(){
   }
   list.innerHTML=items.map(a=>{
     const m=assetMetrics(a),col=TC[a.type]||'#9aa8bd',closed=m.units<=0;
-    /* peso dentro de la cartera basado en el valor ABIERTO (lo que vale hoy lo que tienes) */
     const peso=totOpen>0?m.valOpen/totOpen:0;
-    /* tarjeta:
-       - Valor = lo que vale hoy la posición abierta
-       - Invertido = coste de las unidades que aún tienes (lo que sigue "puesto")
-       - Ganancia / Rent. = TOTAL RETURN (incluye ventas pasadas si las hay) */
+    /* Botón de "Explorar" solo si hay ticker (sin ticker no se puede buscar) */
+    const expBtn=a.ticker
+      ? `<button class="acard-exp" onclick="event.stopPropagation();navTo('explorar');setTimeout(()=>exploreExample('${a.ticker}'),300)" aria-label="Analizar en Explorar">🔍</button>`
+      : '';
     return `<div class="acard" onclick="showAssetDetail('${a.id}')">
-      <div class="atop"><div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div><div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div></div>
+      <div class="atop"><div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div><div class="atop-r"><div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div>${expBtn}</div></div>
       <div class="ams">
         <div><div class="aml">Valor</div><div class="amv" style="color:${col}">${fe(m.valOpen)}</div></div>
         <div><div class="aml">Invertido</div><div class="amv">${fe(m.openCost)}</div></div>
@@ -2758,7 +2972,6 @@ function showAssetDetail(id){
     </div>
     <div style="font-size:10px;letter-spacing:.15em;color:var(--w2);margin-bottom:6px">RENTABILIDAD ANUAL</div>
     ${annHtml}
-    ${a.ticker?`<button class="fab alt" style="margin:14px 0 0" onclick="closeSheet();navTo('explorar');setTimeout(()=>exploreExample('${a.ticker}'),300)">Ver análisis en Explorar</button>`:''}
     <button class="fab alt" style="margin:8px 0 0" onclick="openAssetEditor('${a.id}')">✏️ Editar activo</button>
     <button class="fab alt" style="margin:8px 0 0;border-color:var(--r);color:var(--r)" onclick="delAsset('${a.id}')">Eliminar activo y todas sus operaciones</button>
     <div class="shrow"><button class="bcancel" style="flex:1" onclick="closeSheet()">Cerrar</button></div>`);
@@ -3992,6 +4205,13 @@ const PANEL_GLOSSARY={
     h:'Para cada año: (valor fin año − valor inicio − aportes del año) / (valor inicio + aportes/2). Es la rentabilidad ponderada por tiempo de ese año aislado.',
     n:'Pulsa una fila para ver el detalle de las operaciones de ese año.'
   },
+  'multi-asset':{
+    t:'Rentabilidad por activo',
+    q:'¿Cómo se lee la gráfica?',
+    a:'Cada línea es un activo diferente. El eje X son los años, el Y es la rentabilidad anual en %. La línea destacada con ★ es la rentabilidad de la cartera completa. Pulsa los nombres de arriba para ocultar o mostrar activos y comparar más cómodamente.',
+    h:'Cada punto se calcula con la rentabilidad anual de ese activo: (valor fin año − valor inicio − aportes) / (valor inicio + aportes/2). Cuando no hay precio histórico fiable para un año, el punto se omite (la línea hace un salto).',
+    n:'Líneas por encima de la línea de la cartera (★) → ese activo está superando la media. Por debajo → la está arrastrando hacia abajo. Una caída brusca de un año al siguiente puede indicar un mal año real o un cambio de precio mal sincronizado.'
+  },
   'evolucion':{
     t:'Evolución de activos',
     q:'¿Qué muestra?',
@@ -4707,21 +4927,24 @@ function closeSheet(){G('overlay').classList.remove('on');G('sheet').classList.r
 /* ── Modales que muestran las gráficas pesadas (evolución y multi-activo) ──
    Reutilizan los canvases del DOM moviéndolos temporalmente dentro del sheet. */
 function openEvolutionChart(){
-  openSheet(`<div class="shttl">📈 Evolución de activos</div>
+  const filtTxt=heroFilter==='Todos'?'todos los activos':'solo '+heroFilter;
+  openSheet(`<div class="shttl">📈 Evolución <span style="font-size:11px;color:var(--w3);font-weight:500">· ${filtTxt}</span></div>
     <div class="rng-row">
       <button class="rng" data-r="6" onclick="setPatrRange(6)">6M</button>
       <button class="rng" data-r="12" onclick="setPatrRange(12)">1A</button>
       <button class="rng" data-r="24" onclick="setPatrRange(24)">2A</button>
       <button class="rng on" data-r="0" onclick="setPatrRange(0)">Todo</button>
     </div>
-    <div class="cc" style="height:260px"><canvas id="c-pt" height="260"></canvas></div>
+    <div class="cc cc-pos" style="height:260px">
+      <canvas id="c-pt" height="260"></canvas>
+      <div class="cc-pct" id="c-pt-pct"></div>
+    </div>
     <div style="font-size:11px;color:var(--w3);text-align:center;margin-top:6px">Pulsa la línea para ver el valor exacto en cada momento</div>
     <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
-  /* dibujar tras render */
   setTimeout(()=>{if(typeof mkPatr==='function')mkPatr();},80);
 }
 function openMultiAssetChart(){
-  openSheet(`<div class="shttl">📊 Rentabilidad por activo</div>
+  openSheet(`<div class="shttl">📊 Rentabilidad por activo<span class="note-ic" style="margin-left:8px" onclick="event.stopPropagation();explain('multi-asset')">?</span></div>
     <div class="trow" id="tgl-row"></div>
     <div class="cc" style="padding:16px 8px 8px;height:300px"><canvas id="c-ml" height="280"></canvas></div>
     <div style="font-size:11px;color:var(--w3);text-align:center;margin-top:6px">Pulsa los activos arriba para ocultar/mostrar</div>
@@ -4914,6 +5137,56 @@ async function runAnalista(input){
   }
 }
 
+/* Pildora "ESTIMADO" / "CALCULADO" con explicación desplegable.
+   Al pulsarla muestra cómo se obtuvo el valor en un detalle plegable.
+   Uso: estPill('ESTIMADO', 'Calculado como X × Y porque el dato directo no está disponible.') */
+function estPill(label,explanation){
+  const id='est-'+Math.random().toString(36).slice(2,9);
+  return `<span class="pill-est-w">
+    <span class="pill-est pill-est-btn" onclick="event.stopPropagation();toggleEstPill('${id}')">${label} <span class="pill-est-q">?</span></span>
+    <span class="pill-est-exp" id="${id}">${explanation}</span>
+  </span>`;
+}
+function toggleEstPill(id){
+  const el=document.getElementById(id);
+  if(el)el.classList.toggle('open');
+}
+function toggleMultExp(id){
+  const el=document.getElementById(id);
+  if(el)el.classList.toggle('open');
+}
+
+/* Interpreta un múltiplo financiero contra los rangos sectoriales típicos.
+   Devuelve {color,label,text} con análisis comparativo.
+   Tipo: 'PER','EV/EBITDA','EV/FCF','P/B','PEG' */
+function interpretMultiple(val,type,sector){
+  sector=(sector||'').toLowerCase();
+  const isTech=sector.includes('tech')||sector.includes('software')||sector.includes('semicond');
+  const isCons=sector.includes('consumer')||sector.includes('retail')||sector.includes('apparel');
+  const isFin=sector.includes('financ')||sector.includes('bank')||sector.includes('insur');
+  const isHealth=sector.includes('health')||sector.includes('pharma')||sector.includes('biotech');
+  const isEnergy=sector.includes('energy')||sector.includes('utility')||sector.includes('utilities');
+  const isInd=sector.includes('industr');
+  /* Rangos típicos sano/caro/burbuja por tipo y sector */
+  const ranges={
+    'PER':       isTech?[15,25,40,60]:isFin?[8,12,18,25]:isEnergy?[6,12,18,25]:[10,18,28,45],
+    'EV/EBITDA': isTech?[12,18,28,40]:isFin?[6,10,15,22]:isEnergy?[4,8,12,18]:[8,12,18,28],
+    'EV/FCF':    isTech?[18,28,40,60]:isFin?[10,15,22,30]:isEnergy?[8,14,20,30]:[12,20,30,45],
+    'P/B':       isTech?[3,6,10,18]:isFin?[0.8,1.5,2.5,4]:[1.5,3,5,8],
+    'PEG':       [0.8,1.2,1.8,3],
+  };
+  const r=ranges[type]||[10,18,28,45];
+  /* r = [muy_barato_max, optimo_max, normal_max, caro_max]; >caro_max = burbuja
+     <muy_barato_max = descuento extremo (puede ser oportunidad o trampa) */
+  if(val==null||isNaN(val))return null;
+  if(val<0)return {color:'#ff7a8a',label:'NEGATIVO',text:'<b>Valor negativo</b>: la empresa no es rentable por este múltiplo. Puede indicar pérdidas operativas, deuda elevada o flujos de caja negativos.'};
+  if(val<r[0])return {color:'#ffd54a',label:'MUY BAJO',text:`Por debajo del rango habitual del sector (${r[0]}-${r[1]}× ${type}). Puede ser una oportunidad de valor, pero también descuenta riesgos: posible caída de beneficios, deuda alta o sector en declive. <b>Verifica el motivo</b> antes de asumir que es ganga.`};
+  if(val<r[1])return {color:'#34e89e',label:'ÓPTIMO',text:`En rango razonable o atractivo para el sector (${r[0]}-${r[1]}× ${type}). Indica que se compra a múltiplos competitivos. Combina con crecimiento y márgenes para confirmar la oportunidad.`};
+  if(val<r[2])return {color:'#22d3ee',label:'NORMAL',text:`Múltiplo dentro de la media del sector (${r[1]}-${r[2]}× ${type}). Ni barato ni caro: la valoración refleja expectativas de crecimiento equilibradas. Mira el crecimiento esperado para decidir.`};
+  if(val<r[3])return {color:'#ffb74d',label:'CARO',text:`Cotiza por encima de la media (${r[2]}-${r[3]}× ${type}). Solo se justifica si hay crecimiento sostenido por encima del sector. <b>Vigila</b>: si los resultados no acompañan, suele corregir.`};
+  return {color:'#ff7a8a',label:'POSIBLE BURBUJA',text:`Múltiplo extremo (>${r[3]}× ${type}), muy por encima del rango histórico del sector. <b>Riesgo elevado</b>: descuenta crecimiento muy alto durante muchos años. Una sola decepción de resultados puede provocar una caída brusca.`};
+}
+
 function buildAnalistaCard(ticker,chart,fund,session){
   const meta=chart.meta||{};
   const price=(session&&session.price)||meta.regularMarketPrice||chart.series[chart.series.length-1];
@@ -5027,7 +5300,7 @@ function buildAnalistaCard(ticker,chart,fund,session){
   }else{
     estHtml='<div class="prose">Sin consenso de analistas disponible para el próximo trimestre en la fuente.</div>';
   }
-  h+=anBlock('5','Previsión próximo trimestre','#22d3ee',estHtml+'<span class="pill-est">CONSENSO</span>');
+  h+=anBlock('5','Previsión próximo trimestre','#22d3ee',estHtml+estPill('CONSENSO','Cifras procedentes del consenso de analistas de Wall Street agregado por la fuente de datos (FMP). No es un cálculo propio: son las estimaciones publicadas por casas de análisis para el siguiente trimestre.'));
 
   /* 6 */
   h+=anBlock('6','Cotización y capitalización','#8b7cff',
@@ -5035,6 +5308,39 @@ function buildAnalistaCard(ticker,chart,fund,session){
       <div class="an-mc"><div class="an-ml">Precio actual</div><div class="an-mv">${price.toFixed(2)} ${cur}</div></div>
       <div class="an-mc"><div class="an-ml">Market cap</div><div class="an-mv">${mktCap?fbig(mktCap)+' '+cur:'n/d'}</div></div>
     </div>`);
+
+  /* ── 6b. MÚLTIPLOS DE VALORACIÓN (PER, EV/EBITDA, EV/FCF) ──
+     Cada métrica es pulsable para abrir su análisis sectorial. */
+  const secMul=prof.sector||'';
+  const perVal=rawVal(fd.trailingPE)||rawVal(ks.trailingPE);
+  const evEbitda=rawVal(fd.evEbitda);
+  const evFcf=rawVal(fd.evFcf);
+  const ev=rawVal(fd.enterpriseValue);
+  const ebitda=rawVal(fd.ebitda);
+  const fcfRaw=rawVal(fd.freeCashflow);
+  const mkRow=(label,val,type,extraTip)=>{
+    if(val==null)return `<div class="mult-row"><div class="mult-l">${label}</div><div class="mult-v">n/d</div></div>`;
+    const interp=interpretMultiple(val,type,secMul);
+    if(!interp)return `<div class="mult-row"><div class="mult-l">${label}</div><div class="mult-v">${val.toFixed(1)}×</div></div>`;
+    const id='m-'+Math.random().toString(36).slice(2,9);
+    return `<div class="mult-row mult-tap" onclick="toggleMultExp('${id}')">
+      <div class="mult-l">${label}</div>
+      <div class="mult-mid"><span class="mult-badge" style="background:${interp.color}22;color:${interp.color};border-color:${interp.color}55">${interp.label}</span></div>
+      <div class="mult-v" style="color:${interp.color}">${val.toFixed(1)}×</div>
+    </div>
+    <div class="mult-exp" id="${id}">
+      <div class="prose" style="font-size:11px">${interp.text}</div>
+      ${extraTip?`<div style="font-size:10.5px;color:var(--w3);margin-top:6px">${extraTip}</div>`:''}
+    </div>`;
+  };
+  h+=anBlock('6b','Múltiplos de valoración','#22d3ee',
+    `<div class="prose" style="margin-bottom:10px;font-size:11.5px">Indicadores que miden cuánto se paga por cada euro de beneficio, EBITDA o flujo de caja. Pulsa cada uno para ver el análisis sectorial.</div>
+    <div class="mult-tbl">
+      ${mkRow('PER (precio / beneficio)',perVal,'PER','Lo más usado. Indica cuántos años de beneficios actuales paga la cotización. Sectores defensivos suelen tener PER más bajo; tecnología y crecimiento, más alto.')}
+      ${mkRow('EV/EBITDA',evEbitda,'EV/EBITDA','Útil porque elimina diferencias de estructura de capital y políticas de amortización. Más comparable entre empresas con distintos niveles de deuda.'+(ev&&ebitda?'<br><br><b>Cálculo:</b> EV ('+fbig(ev)+' '+cur+') ÷ EBITDA ('+fbig(ebitda)+' '+cur+')':''))}
+      ${mkRow('EV/FCF',evFcf,'EV/FCF','El múltiplo más exigente. Mide cuántos años de FCF se pagan por la empresa. Si es bajo, la empresa "se paga sola" rápido.'+(ev&&fcfRaw?'<br><br><b>Cálculo:</b> EV ('+fbig(ev)+' '+cur+') ÷ FCF ('+fbig(fcfRaw)+' '+cur+')':''))}
+    </div>
+    ${(evEbitda==null&&evFcf==null)?'<div style="font-size:10.5px;color:var(--w3);margin-top:8px">Si faltan métricas, suele ser porque la fuente no las reporta para este sector (típico en bancos y servicios financieros, donde EV/EBITDA no aplica).</div>':''}`);
 
   /* 7 */
   const dCls=distFromHigh>=-0.05?'pos':distFromHigh>=-0.25?'':'neg';
@@ -5169,7 +5475,7 @@ function analistaValuation(fund,price,chart){
     <div class="metric-row" style="border-top:1px solid var(--line);margin-top:2px"><span class="metric-l" style="color:var(--w);font-weight:600">Precio justo medio estimado</span><span class="metric-v" style="color:var(--gold);font-weight:700">${fairPrice.toFixed(2)} ${cur}</span></div>
     <div class="metric-row"><span class="metric-l" style="color:var(--w);font-weight:600">Precio actual</span><span class="metric-v">${price.toFixed(2)} ${cur}</span></div>
     <div class="prose" style="margin-top:10px;border-left:2px solid ${vClass==='buy'?'var(--g)':vClass==='hold'?'var(--warn)':'var(--r)'};padding-left:10px">${recom}</div>
-    <span class="pill-est">ESTIMACIÓN</span>`;
+    ${estPill('ESTIMACIÓN','Esta es una valoración aproximada que combina varios métodos (EV/FCF con múltiplo conservador por sector, PER medio histórico, descuento de flujos de caja y NAV). No es un dato oficial sino un cálculo de la app a partir de los datos financieros. Tómalo como una orientación, no como un objetivo de precio.')}`;
   return {html,fairPrice,margin,verdict};
 }
 
