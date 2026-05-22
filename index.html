@@ -514,10 +514,10 @@ input,select,button,textarea{font-family:inherit}
 .fb-sel-menu.open{display:flex}
 .fb-sel-opt{background:none;border:none;color:var(--w2);font-size:12px;text-align:left;padding:8px 12px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500}
 .fb-sel-opt.on{background:rgba(34,150,235,.18);color:var(--c2)}
-/* Búsqueda compacta al final. Al expandirse usa posición absoluta hacia
-   la izquierda para no desplazar nada bajo la barra. */
-.fb-search{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;width:34px;height:34px;margin-left:auto;flex-shrink:0;position:relative}
-.fb-search.open{position:absolute;right:0;top:0;width:min(180px,calc(100% - 90px));z-index:18;transition:width .25s}
+/* Búsqueda compacta al final. Al expandirse, JS calcula el ancho dinámico
+   desde el final del segmento Activas/Cerradas hasta el borde de la barra. */
+.fb-search{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;width:34px;height:34px;margin-left:auto;flex-shrink:0;position:relative;transition:width .25s}
+.fb-search.open{position:absolute;right:0;top:0;z-index:18}
 .fb-search-btn{flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--w2);cursor:pointer;padding:0}
 .fb-search-inp{flex:1;background:none;border:none;color:var(--w);font-size:12px;font-family:inherit;padding:0 10px 0 0;outline:none;width:0;opacity:0;transition:opacity .25s}
 .fb-search.open .fb-search-inp{opacity:1;width:auto}
@@ -554,18 +554,20 @@ input,select,button,textarea{font-family:inherit}
 @keyframes expandIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── Cartera: topbar con pestañas + acciones a la derecha ── */
-.cart-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 12px}
+/* El cart-topbar es relativo y reserva 44px de padding a la derecha para el +.
+   El botón + está en position:absolute right:0, por lo que cae EXACTAMENTE
+   en el mismo píxel sin importar la pestaña ni si "Selec." está visible. */
+.cart-topbar{position:relative;display:flex;align-items:center;gap:10px;margin:14px 0 12px;padding-right:46px}
 .cart-topbar .seg-tg{margin:0}
-/* Contenedor de acciones de la topbar: el botón + queda anclado a la
-   derecha en posición absoluta para que coincida en ambas pestañas
-   (en Posiciones no hay Selec., en Operaciones sí, pero el + no se mueve). */
-.cart-topbar-acts{position:relative;display:flex;align-items:center;gap:8px;padding-right:44px;min-height:36px}
+/* Contenedor del botón Selec. (alineado a la derecha del flex, justo antes
+   del padding-right reservado para el +) */
+.cart-topbar-acts{margin-left:auto;display:flex;align-items:center;gap:8px;min-height:36px}
 /* Botón "Selec." compacto */
 .ct-sel-btn{display:inline-flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:10.5px;font-weight:600;padding:0 9px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.03em;height:28px;min-width:0;white-space:nowrap}
 .ct-sel-btn:active{transform:scale(0.96)}
 .ct-sel-btn.active{background:rgba(34,150,235,.2);color:var(--c2);border-color:rgba(34,150,235,.4)}
-/* Botón "+" anclado a la derecha del cart-topbar-acts */
-.ct-add-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--c);color:var(--bg);border:none;font-size:21px;font-weight:300;line-height:1;cursor:pointer;box-shadow:0 4px 10px rgba(34,150,235,.4);padding:0;font-family:inherit}
+/* Botón "+" anclado a la derecha del cart-topbar (no del cart-topbar-acts) */
+.ct-add-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--c);color:var(--bg);border:none;font-size:21px;font-weight:300;line-height:1;cursor:pointer;box-shadow:0 4px 10px rgba(34,150,235,.4);padding:0;font-family:inherit;z-index:5}
 .ct-add-btn:active{transform:translateY(-50%) scale(0.93)}
 </style>
 </head>
@@ -636,8 +638,11 @@ input,select,button,textarea{font-family:inherit}
     </div>
     <div class="cart-topbar-acts">
       <button class="ct-sel-btn" id="ops-seltoggle" onclick="toggleOpsSelectMode()" style="display:none">Selec.</button>
-      <button class="ct-add-btn" onclick="openAddOp()" aria-label="Añadir operación">＋</button>
     </div>
+    <!-- Botón + ANCLADO a la topbar (no a topbar-acts) para que su posición
+         sea idéntica en pestaña Posiciones y en Operaciones, independientemente
+         de si "Selec." está visible. -->
+    <button class="ct-add-btn" onclick="openAddOp()" aria-label="Añadir operación">＋</button>
   </div>
 
   <div class="subview on" id="sv-posiciones">
@@ -895,7 +900,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.4';      /* visible en header y Ajustes */
+const APP_VERSION='v8.5';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2475,10 +2480,11 @@ const CH={};
 const TT={backgroundColor:'#16263d',borderColor:'#243752',borderWidth:1,titleColor:'#f4f8ff',bodyColor:'#aebfd4',padding:10,cornerRadius:8};
 function dch(k){if(CH[k]){try{CH[k].destroy();}catch(e){}delete CH[k];}}
 function chartReady(){return typeof Chart!=='undefined';}
-/* Habilita comportamiento "tap-to-toggle" del tooltip:
-   - Primer toque: muestra el tooltip del punto más cercano.
-   - Segundo toque en el mismo punto o sobre el propio tooltip: cierra.
-   - Toque en otro punto: salta a ese punto. */
+/* Habilita comportamiento "tap-to-toggle" del tooltip de Chart.js.
+   Filosofía: si el tooltip está abierto, CUALQUIER click que NO sea sobre un
+   punto distinto al actual, lo cierra. Esto cubre los clicks sobre la propia
+   ventana del tooltip sin tener que medir su rectángulo (lo que es fragil en
+   pantallas Retina con devicePixelRatio>1). */
 function attachToggleTooltip(chart){
   if(!chart||!chart.canvas)return;
   let lastIdx=-1;
@@ -2486,40 +2492,38 @@ function attachToggleTooltip(chart){
     try{chart.tooltip.setActiveElements([],{x:0,y:0});chart.update();}catch(e){}
     lastIdx=-1;
   };
-  /* En Chart.js v4 el tooltip tiene una propiedad `caretX/caretY` y unas
-     dimensiones internas `width/height`. Cuando opacity>0, el tooltip
-     está abierto y dibujado. Calculamos su rectángulo en coordenadas
-     del canvas (que coinciden con clientX/Y relativos al rect). */
-  const handler=(ev)=>{
+  const showAt=(points,x,y)=>{
+    chart.tooltip.setActiveElements(
+      points.map(p=>({datasetIndex:p.datasetIndex,index:p.index})),
+      {x,y}
+    );
+    chart.update();
+    lastIdx=points[0].index;
+  };
+  chart.canvas.addEventListener('click',(ev)=>{
     try{
       const rect=chart.canvas.getBoundingClientRect();
-      /* coords del evento dentro del canvas (px CSS) */
       const cx=(ev.clientX!=null?ev.clientX:ev.touches?.[0]?.clientX)-rect.left;
       const cy=(ev.clientY!=null?ev.clientY:ev.touches?.[0]?.clientY)-rect.top;
       const tip=chart.tooltip;
-      /* ¿el toque cayó sobre la ventana del tooltip abierto? */
-      if(tip&&tip.opacity>0&&tip.width>0&&tip.height>0){
-        const tx=tip.x||tip.caretX-tip.width/2;
-        const ty=tip.y||tip.caretY-tip.height-10;
-        if(cx>=tx&&cx<=tx+tip.width&&cy>=ty&&cy<=ty+tip.height){
-          closeTip();return;
-        }
-      }
-      /* localizar el punto más cercano usando coordenadas relativas al canvas */
+      const wasOpen=tip&&tip.opacity>0;
       const fakeEv={x:cx,y:cy,native:ev,type:'click'};
       const points=chart.getElementsAtEventForMode(fakeEv,'index',{intersect:false},false);
-      if(!points.length){closeTip();return;}
-      const idx=points[0].index;
-      if(idx===lastIdx){closeTip();return;}
-      chart.tooltip.setActiveElements(
-        points.map(p=>({datasetIndex:p.datasetIndex,index:p.index})),
-        {x:cx,y:cy}
-      );
-      chart.update();
-      lastIdx=idx;
+      if(wasOpen){
+        /* Tooltip abierto. Solo se "mueve" si el click cayó sobre un punto
+           CON ÍNDICE DISTINTO al actual. Cualquier otro caso (mismo punto,
+           sobre la ventana del tooltip, fuera de la línea) → cierra. */
+        if(points.length&&points[0].index!==lastIdx){
+          showAt(points,cx,cy);
+        }else{
+          closeTip();
+        }
+      }else{
+        /* Tooltip cerrado. Si el click cayó sobre algún punto, abrirlo ahí. */
+        if(points.length)showAt(points,cx,cy);
+      }
     }catch(e){}
-  };
-  chart.canvas.addEventListener('click',handler);
+  });
 }
 function initChartDefaults(){
   if(!chartReady())return;
@@ -2910,8 +2914,24 @@ function toggleCarteraSearch(){
   const inp=G('fb-search-inp'),btn=G('fb-search-btn'),box=inp&&inp.parentElement;
   if(!box)return;
   const open=box.classList.toggle('open');
-  if(open){setTimeout(()=>inp.focus(),50);}
-  else{inp.value='';onCarteraSearch('');}
+  if(open){
+    /* Medir el ancho disponible desde el final del segmento Activas/Cerradas
+       hasta el borde derecho de la filter-bar (para NO tapar ese botón). */
+    const bar=box.parentElement;                       /* .filter-bar */
+    const segs=bar.querySelectorAll('.seg-tg-sm');
+    const seg=segs[segs.length-1];                     /* segmento Activas/Cerradas */
+    if(seg&&bar){
+      const segR=seg.getBoundingClientRect();
+      const barR=bar.getBoundingClientRect();
+      const avail=Math.max(80,barR.right-segR.right-10);
+      box.style.width=avail+'px';
+    }
+    setTimeout(()=>inp.focus(),50);
+  }else{
+    box.style.width='';
+    inp.value='';
+    onCarteraSearch('');
+  }
 }
 function setPosTab(t){
   posTab=t;
@@ -3023,7 +3043,7 @@ function updateOpsBar(){
     bar.style.display='none';
   }
   const tgl=G('ops-seltoggle');
-  if(tgl)tgl.textContent=opsSelectMode?'Cancelar':'Seleccionar';
+  if(tgl)tgl.textContent=opsSelectMode?'Cancelar':'Selec.';
 }
 function delSelectedOps(){
   if(!opsSelected.size){showToast('No hay operaciones seleccionadas');return;}
