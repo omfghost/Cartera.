@@ -567,6 +567,18 @@ input,select,button,textarea{font-family:inherit}
 /* Botón "+" anclado a la derecha del cart-topbar (no del cart-topbar-acts) */
 .ct-add-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--c);color:var(--bg);border:none;font-size:21px;font-weight:300;line-height:1;cursor:pointer;box-shadow:0 4px 10px rgba(34,150,235,.4);padding:0;font-family:inherit;z-index:5}
 .ct-add-btn:active{transform:translateY(-50%) scale(0.93)}
+
+/* ── Selector compacto de orden en Posiciones (Peso / Rentab.) ── */
+.pos-sort-w{position:relative;display:inline-block}
+.pos-sort-btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:10.5px;font-weight:600;padding:0 10px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.03em;height:28px;white-space:nowrap}
+.pos-sort-btn:active{transform:scale(0.96)}
+.pos-sort-cur{color:var(--c2)}
+.pos-sort-chev{font-size:9px;color:var(--w3)}
+.pos-sort-menu{display:none;position:absolute;top:calc(100% + 5px);right:0;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:5px;min-width:130px;z-index:25;box-shadow:0 8px 24px rgba(0,0,0,.4);flex-direction:column;gap:1px}
+.pos-sort-menu.open{display:flex}
+.pos-sort-opt{background:none;border:none;color:var(--w2);font-size:12px;text-align:left;padding:8px 12px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500}
+.pos-sort-opt:active{background:rgba(34,150,235,.12)}
+.pos-sort-opt.on{background:rgba(34,150,235,.18);color:var(--c2)}
 </style>
 </head>
 <body>
@@ -635,6 +647,17 @@ input,select,button,textarea{font-family:inherit}
       <button class="seg-opt" id="ct-ops" onclick="setCarteraTab('ops')">Operaciones</button>
     </div>
     <div class="cart-topbar-acts">
+      <!-- Selector de orden (visible solo en pestaña Posiciones). Compacto. -->
+      <div class="pos-sort-w" id="pos-sort-w">
+        <button class="pos-sort-btn" onclick="event.stopPropagation();togglePosSortMenu()">
+          <span class="pos-sort-cur" id="pos-sort-cur">Peso</span>
+          <span class="pos-sort-chev">▾</span>
+        </button>
+        <div class="pos-sort-menu" id="pos-sort-menu">
+          <button class="pos-sort-opt on" onclick="event.stopPropagation();setPosSort('peso')">Peso</button>
+          <button class="pos-sort-opt" onclick="event.stopPropagation();setPosSort('rent')">Rentabilidad</button>
+        </div>
+      </div>
       <button class="ct-sel-btn" id="ops-seltoggle" onclick="toggleOpsSelectMode()" style="display:none">Selec.</button>
     </div>
     <!-- Botón + ANCLADO a la topbar (no a topbar-acts) para que su posición
@@ -897,7 +920,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.8';      /* visible en header y Ajustes */
+const APP_VERSION='v8.9';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2918,13 +2941,47 @@ function setCarteraTab(t){
   G('ct-ops').classList.toggle('on',t==='ops');
   G('sv-posiciones').classList.toggle('on',t==='posiciones');
   G('sv-ops').classList.toggle('on',t==='ops');
-  /* mostrar botón "Sel." solo en pestaña Operaciones */
+  /* botón "Sel." solo en pestaña Operaciones */
   const sel=G('ops-seltoggle');
   if(sel)sel.style.display=t==='ops'?'inline-flex':'none';
+  /* selector de orden solo en pestaña Posiciones */
+  const sort=G('pos-sort-w');
+  if(sort)sort.style.display=t==='posiciones'?'inline-block':'none';
 }
-let carteraFilter='Todos',carteraSearch='',posTab='act';
+let carteraFilter='Todos',carteraSearch='',posTab='act',posSort='peso';
 let opsSelectMode=false;
 const opsSelected=new Set();
+function setPosSort(t){
+  posSort=t;
+  /* actualizar etiqueta del botón */
+  const cur=G('pos-sort-cur');
+  if(cur)cur.textContent=t==='rent'?'Rentab.':'Peso';
+  /* repintar opciones del menú para reflejar selección */
+  const menu=G('pos-sort-menu');
+  if(menu){
+    menu.querySelectorAll('.pos-sort-opt').forEach(b=>{
+      const isOn=(b.textContent.toLowerCase().startsWith('rent')?'rent':'peso')===t;
+      b.classList.toggle('on',isOn);
+    });
+    menu.classList.remove('open');
+  }
+  renderPositions();
+}
+function togglePosSortMenu(){
+  const m=G('pos-sort-menu');if(!m)return;
+  m.classList.toggle('open');
+  if(m.classList.contains('open')){
+    setTimeout(()=>{
+      const close=(e)=>{
+        if(!m.contains(e.target)&&!e.target.closest('.pos-sort-btn')){
+          m.classList.remove('open');
+          document.removeEventListener('click',close);
+        }
+      };
+      document.addEventListener('click',close);
+    },50);
+  }
+}
 function renderCartera(){
   /* mini-resumen arriba */
   const T=portfolioTotals();
@@ -2997,6 +3054,21 @@ function renderPositions(){
   items=items.filter(a=>{
     const closed=assetMetrics(a).units<=1e-9;
     return tab==='clo'?closed:!closed;
+  });
+  /* Ordenar de mayor a menor según el criterio seleccionado.
+     'peso'   → por valor abierto (peso real en la cartera).
+     'rent'   → por rentabilidad total %.
+     Las posiciones sin coste no entran en 'rent' (peso queda como fallback). */
+  const totForSort=portfolioTotals().valOpen||1;
+  items.sort((a,b)=>{
+    const ma=assetMetrics(a),mb=assetMetrics(b);
+    if(posSort==='rent'){
+      const ra=ma.inv>0?ma.pct:-Infinity;
+      const rb=mb.inv>0?mb.pct:-Infinity;
+      return rb-ra;
+    }
+    /* default: peso */
+    return (mb.valOpen/totForSort)-(ma.valOpen/totForSort);
   });
   /* actualizar el contador de la pestaña Cerradas */
   const allClosed=DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)&&assetMetrics(a).units<=1e-9).length;
