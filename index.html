@@ -505,8 +505,8 @@ input,select,button,textarea{font-family:inherit}
 .seg-opt:active{transform:scale(0.96)}
 .seg-opt.on{background:var(--c);color:var(--bg);box-shadow:0 1px 4px rgba(34,150,235,.4)}
 /* Barra de filtros unificada */
-.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-.fb-sel-w{position:relative}
+.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:nowrap;position:relative}
+.fb-sel-w{position:relative;flex-shrink:0}
 .fb-sel{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:18px;cursor:pointer;font-family:inherit}
 .fb-sel-cur{color:var(--c2)}
 .fb-sel-chev{font-size:9px;color:var(--w3)}
@@ -514,10 +514,11 @@ input,select,button,textarea{font-family:inherit}
 .fb-sel-menu.open{display:flex}
 .fb-sel-opt{background:none;border:none;color:var(--w2);font-size:12px;text-align:left;padding:8px 12px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500}
 .fb-sel-opt.on{background:rgba(34,150,235,.18);color:var(--c2)}
-/* Búsqueda compacta: icono solo, se expande al pulsar */
-.fb-search{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:18px;transition:width .25s;overflow:hidden;width:34px;height:34px}
-.fb-search.open{width:140px}
-.fb-search-btn{flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--w2);cursor:pointer;padding:0}
+/* Búsqueda compacta al final. Al expandirse usa posición absoluta hacia
+   la izquierda para no desplazar nada bajo la barra. */
+.fb-search{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;width:34px;height:34px;margin-left:auto;flex-shrink:0;position:relative}
+.fb-search.open{position:absolute;right:0;top:0;width:min(180px,calc(100% - 90px));z-index:18;transition:width .25s}
+.fb-search-btn{flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--w2);cursor:pointer;padding:0}
 .fb-search-inp{flex:1;background:none;border:none;color:var(--w);font-size:12px;font-family:inherit;padding:0 10px 0 0;outline:none;width:0;opacity:0;transition:opacity .25s}
 .fb-search.open .fb-search-inp{opacity:1;width:auto}
 /* Botón Explorar (lupa) en tarjeta de posición */
@@ -556,8 +557,8 @@ input,select,button,textarea{font-family:inherit}
 .cart-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 12px}
 .cart-topbar .seg-tg{margin:0}
 .cart-topbar-acts{display:flex;align-items:center;gap:8px}
-/* Botón "Sel." compacto */
-.ct-sel-btn{display:inline-flex;align-items:center;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:11px;font-weight:600;padding:7px 11px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.04em}
+/* Botón "Sel." más corto */
+.ct-sel-btn{display:inline-flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--line);color:var(--w);font-size:10.5px;font-weight:600;padding:0 9px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.03em;height:28px;min-width:0}
 .ct-sel-btn:active{transform:scale(0.96)}
 .ct-sel-btn.active{background:rgba(34,150,235,.2);color:var(--c2);border-color:rgba(34,150,235,.4)}
 /* Botón "+" circular azul arriba a la derecha */
@@ -650,17 +651,18 @@ input,select,button,textarea{font-family:inherit}
         </button>
         <div class="fb-sel-menu" id="fb-sel-menu"></div>
       </div>
-      <!-- Búsqueda compacta: icono lupa que abre input al pulsar -->
+      <!-- Toggle Activas/Cerradas en pildora segmentada -->
+      <div class="seg-tg seg-tg-sm">
+        <button class="seg-opt on" id="ptab-act" onclick="setPosTab('act')">Activas</button>
+        <button class="seg-opt" id="ptab-clo" onclick="setPosTab('clo')">Cerradas</button>
+      </div>
+      <!-- Búsqueda al final: solo icono lupa, se expande hacia la izquierda
+           (sobre los chips) sin desplazar nada debajo. -->
       <div class="fb-search">
         <button class="fb-search-btn" id="fb-search-btn" onclick="toggleCarteraSearch()" aria-label="Buscar">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
         <input class="fb-search-inp" id="fb-search-inp" type="search" placeholder="Buscar..." oninput="onCarteraSearch(this.value)">
-      </div>
-      <!-- Toggle Activas/Cerradas en pildora segmentada -->
-      <div class="seg-tg seg-tg-sm">
-        <button class="seg-opt on" id="ptab-act" onclick="setPosTab('act')">Activas</button>
-        <button class="seg-opt" id="ptab-clo" onclick="setPosTab('clo')">Cerradas</button>
       </div>
     </div>
 
@@ -890,7 +892,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v8.2';      /* visible en header y Ajustes */
+const APP_VERSION='v8.3';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2472,28 +2474,33 @@ function dch(k){if(CH[k]){try{CH[k].destroy();}catch(e){}delete CH[k];}}
 function chartReady(){return typeof Chart!=='undefined';}
 /* Habilita comportamiento "tap-to-toggle" del tooltip:
    - Primer toque: muestra el tooltip del punto más cercano.
-   - Segundo toque en el mismo punto: cierra el tooltip.
+   - Segundo toque en el mismo punto o sobre el propio tooltip: cierra.
    - Toque en otro punto: salta a ese punto. */
 function attachToggleTooltip(chart){
   if(!chart||!chart.canvas)return;
   let lastIdx=-1;
+  const closeTip=()=>{
+    chart.tooltip.setActiveElements([],{x:0,y:0});
+    chart.update();
+    lastIdx=-1;
+  };
   chart.canvas.addEventListener('click',(ev)=>{
     try{
-      const points=chart.getElementsAtEventForMode(ev,'index',{intersect:false},false);
-      if(!points.length){
-        chart.tooltip.setActiveElements([],{x:0,y:0});
-        chart.update();
-        lastIdx=-1;
-        return;
+      /* ¿el click cayó sobre la zona del tooltip activo? */
+      const tip=chart.tooltip;
+      if(tip&&tip.opacity>0&&tip.width>0){
+        const x=ev.offsetX,y=ev.offsetY;
+        const tl=tip.x,tt=tip.y,tr=tip.x+tip.width,tb=tip.y+tip.height;
+        if(x>=tl&&x<=tr&&y>=tt&&y<=tb){
+          closeTip();return;
+        }
       }
+      const points=chart.getElementsAtEventForMode(ev,'index',{intersect:false},false);
+      if(!points.length){closeTip();return;}
       const idx=points[0].index;
       if(idx===lastIdx){
-        /* mismo punto: cerrar tooltip */
-        chart.tooltip.setActiveElements([],{x:0,y:0});
-        chart.update();
-        lastIdx=-1;
+        closeTip();
       }else{
-        /* punto distinto: mostrar tooltip aquí */
         chart.tooltip.setActiveElements(
           points.map(p=>({datasetIndex:p.datasetIndex,index:p.index})),
           {x:ev.offsetX,y:ev.offsetY}
@@ -2600,7 +2607,7 @@ function mkAnnBar(){
   dch('ab');if(!chartReady())return;
   const ctx=G('c-ab');if(!ctx)return;
   const a=annualReturns();if(!a.length)return;
-  try{CH.ab=new Chart(ctx,{type:'bar',data:{labels:a.map(x=>String(x.year)+(x.isCurrent?'*':'')),datasets:[{data:a.map(x=>parseFloat((x.rent*100).toFixed(2))),backgroundColor:a.map(x=>x.rent>=0?'rgba(52,232,158,.82)':'rgba(255,107,122,.82)'),borderColor:a.map(x=>x.rent>=0?'#34e89e':'#ff6b7a'),borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%',afterLabel:c=>' Val.fin: '+fe(a[c.dataIndex].valFin,true)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',font:{size:12,weight:'600'}}},y:{grid:{color:'#243752'},ticks:{callback:v=>v+'%',color:'#aebfd4'}}},animation:{delay:c=>c.dataIndex*90,duration:600}}});}catch(e){}
+  try{CH.ab=new Chart(ctx,{type:'bar',data:{labels:a.map(x=>String(x.year)+(x.isCurrent?'*':'')),datasets:[{data:a.map(x=>parseFloat((x.rent*100).toFixed(2))),backgroundColor:a.map(x=>x.rent>=0?'rgba(52,232,158,.82)':'rgba(255,107,122,.82)'),borderColor:a.map(x=>x.rent>=0?'#34e89e':'#ff6b7a'),borderWidth:1.5,borderRadius:7,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%',afterLabel:c=>' Val.fin: '+fe(a[c.dataIndex].valFin,true)}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',font:{size:12,weight:'600'}}},y:{grid:{color:'#243752'},ticks:{callback:v=>v+'%',color:'#aebfd4'}}},animation:{delay:c=>c.dataIndex*90,duration:600}}});attachToggleTooltip(CH.ab);}catch(e){}
 }
 let hidS=new Set();
 let patrRangeMonths=0;  /* 0 = todo el histórico */
@@ -2676,7 +2683,7 @@ function mkMulti(){
     const dm={};ar.forEach(r=>{if(r.rent!=null)dm[r.year]=parseFloat((r.rent*100).toFixed(2));});
     ds.push({label:a.name,data:an.map(x=>dm[x.year]!=null?dm[x.year]:null),borderColor:col,backgroundColor:col+'18',borderWidth:2,pointRadius:3,pointHoverRadius:6,tension:.35,fill:false,spanGaps:true,hidden:hidS.has(a.id)});
   });
-  try{CH.ml=new Chart(ctx,{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.parsed.y==null?null:' '+c.dataset.label+': '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4'}},y:{grid:{color:'#243752'},ticks:{callback:v=>(v>=0?'+':'')+v+'%',color:'#aebfd4'}}},animation:{duration:700}}});}catch(e){}
+  try{CH.ml=new Chart(ctx,{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.parsed.y==null?null:' '+c.dataset.label+': '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4'}},y:{grid:{color:'#243752'},ticks:{callback:v=>(v>=0?'+':'')+v+'%',color:"#aebfd4"}}},animation:{duration:700}}});attachToggleTooltip(CH.ml);}catch(e){}
 }
 function buildToggles(){
   const row=G('tgl-row');if(!row)return;row.innerHTML='';
@@ -2705,7 +2712,7 @@ function mkCum(){
   const d=cumulativeReturn();if(!d.length)return;
   const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
   g.addColorStop(0,'rgba(139,124,255,.2)');g.addColorStop(1,'rgba(139,124,255,0)');
-  try{CH.cm=new Chart(ctx,{type:'line',data:{labels:d.map(x=>x.year),datasets:[{data:d.map(x=>parseFloat((x.cum*100).toFixed(2))),borderColor:'#8b7cff',backgroundColor:g,fill:true,borderWidth:2.5,pointBackgroundColor:'#8b7cff',pointBorderColor:'#07101f',pointBorderWidth:2,pointRadius:5,pointHoverRadius:8,tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4'}},y:{grid:{color:'#243752'},ticks:{callback:v=>(v>=0?'+':'')+v+'%',color:'#aebfd4'}}},animation:{duration:700}}});}catch(e){}
+  try{CH.cm=new Chart(ctx,{type:'line',data:{labels:d.map(x=>x.year),datasets:[{data:d.map(x=>parseFloat((x.cum*100).toFixed(2))),borderColor:'#8b7cff',backgroundColor:g,fill:true,borderWidth:2.5,pointBackgroundColor:'#8b7cff',pointBorderColor:'#07101f',pointBorderWidth:2,pointRadius:5,pointHoverRadius:8,tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>' '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4'}},y:{grid:{color:'#243752'},ticks:{callback:v=>(v>=0?'+':'')+v+'%',color:"#aebfd4"}}},animation:{duration:700}}});attachToggleTooltip(CH.cm);}catch(e){}
 }
 function mkPie2(){
   dch('p2');if(!chartReady())return;
