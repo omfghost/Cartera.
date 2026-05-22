@@ -25,6 +25,10 @@
   --ok:#34e89e;--warn:#ffb74d;--bad:#ff6b7a;
   --nav:62px;--rad:14px;--rs:9px;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+/* html toma el color de fondo del nav inferior, para que el área de la home
+   indicator del iPhone (~34px no pintables por la app) se mezcle con el
+   nav y no se vea como un hueco negro raro. */
+html{background:rgb(7,16,31)}
 html,body{height:100%;overflow:hidden;background:var(--bg);-webkit-font-smoothing:antialiased;margin:0}
 body{font-family:'JetBrains Mono',monospace;color:var(--w);height:100dvh}
 input,select,button,textarea{font-family:inherit}
@@ -167,22 +171,12 @@ input,select,button,textarea{font-family:inherit}
    En PWA standalone: 110px (62px botones + 48px área home indicator).
    Los botones (.nb) usan justify-content para alinearse al centro vertical
    del nav, dejando espacio abajo para que la barra "baje" hasta el borde. */
-.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box;align-items:flex-start}
-/* En PWA: incrementar la variable hace que el nav sea más alto */
-body.pwa{--nav:110px}
-@media all and (display-mode:standalone){
-  body{--nav:110px}
-}
-@media all and (display-mode:fullscreen){
-  body{--nav:110px}
-}
-/* Los botones se quedan a 62px arriba del nav, dejando el espacio inferior
-   (los 48px) libre para la home indicator. Esto resuelve que el contenido
-   del nav se centraba verticalmente cuando el nav era de 110px. */
-body.pwa .bnav .nb{height:62px;flex:1;max-height:62px}
-@media all and (display-mode:standalone){
-  .bnav .nb{height:62px;flex:1;max-height:62px}
-}
+/* Nav inferior estándar. iOS reserva ~34px bajo el viewport para la
+   home indicator que no podemos pintar — los disimulamos con el
+   background del html (mismo color del nav, ver html{} arriba). */
+.bnav{flex-shrink:0;display:flex;height:var(--nav);background:rgba(7,16,31,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--line);z-index:50;box-sizing:border-box}
+/* sb-fill obsoleto */
+.sb-fill{display:none}
 /* sb-fill ya no es necesario, lo dejamos invisible */
 .sb-fill{display:none}
 .bnav .nb{height:var(--nav)}
@@ -454,6 +448,16 @@ body.pwa .bnav .nb{height:62px;flex:1;max-height:62px}
 .cat-tk{font-size:10px;color:var(--c2);font-family:'JetBrains Mono',monospace;letter-spacing:.03em}
 .cat-tk.none{color:var(--warn);font-style:italic}
 .cat-edit{font-size:14px;flex-shrink:0;color:var(--w3);padding:0 4px}
+/* Sub-valor pequeño bajo el principal en las tarjetas del Panel */
+.sv-sub{font-size:10px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin-top:3px;letter-spacing:.02em}
+/* Chips de filtro dentro de la tarjeta ACTIVOS TOTALES */
+.hero-filter{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px;padding-right:40px}
+.hfchip{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--w2);font-size:10px;font-weight:600;letter-spacing:.04em;padding:4px 10px;border-radius:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.hfchip:active{transform:scale(0.95)}
+.hfchip.on{background:rgba(34,150,235,.18);border-color:rgba(34,150,235,.4);color:var(--c2)}
+/* ISIN bajo el ticker en filas de Editar activos */
+.cat-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.cat-isin{font-size:9.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -475,25 +479,26 @@ body.pwa .bnav .nb{height:62px;flex:1;max-height:62px}
   <div class="hero">
     <button class="hero-evo-mini" onclick="openEvolutionChart()" aria-label="Evolución de activos">📈</button>
     <div class="hlbl">ACTIVOS TOTALES<span class="note-ic" onclick="event.stopPropagation();explain('activos-totales')">?</span></div>
+    <div class="hero-filter" id="hero-filter"></div>
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
     <div class="spkw"><canvas id="c-sp" height="50"></canvas></div>
   </div>
   <div class="sgrid">
-    <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div></div>
+    <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div><div class="sv-sub hide-val" id="s-inv-act">&mdash;</div></div>
     <div class="sc"><div class="sl">GANANCIA TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('ganancia-total')">?</span></div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
     <div class="sc"><div class="sl">RENT. TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-total')">?</span></div><div class="sv g" id="s-tot">&mdash;</div></div>
-    <div class="sc"><div class="sl">REALIZADO ACUMULADO<span class="note-ic" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
+    <div class="sc"><div class="sl">REALIZADO<span class="note-ic" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
     <div class="sc"><div class="sl">CAGR ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('cagr')">?</span></div><div class="sv c" id="s-cagr">&mdash;</div></div>
     <div class="sc"><div class="sl">RENT. A&Ntilde;O ACTUAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-año')">?</span></div><div class="sv gold" id="s-yr">&mdash;</div></div>
   </div>
   <div class="sec">A&Ntilde;O EN CURSO<span class="note-ic" onclick="event.stopPropagation();explain('año-curso')">?</span> <span id="yr-label" style="color:var(--gold)"></span></div>
   <div class="ybl">
-    <div class="ybc"><div class="ybl2">INICIO A&Ntilde;O</div><div class="ybv hide-val sm" id="yb-ini">&mdash;</div></div>
+    <div class="ybc"><div class="ybl2">INICIO A&Ntilde;O<span class="note-ic" onclick="event.stopPropagation();explain('inicio-año')">?</span></div><div class="ybv hide-val sm" id="yb-ini">&mdash;</div></div>
     <div class="ybdiv"></div>
-    <div class="ybc"><div class="ybl2">VALOR ACTUAL</div><div class="ybv c hide-val sm" id="yb-act">&mdash;</div></div>
+    <div class="ybc"><div class="ybl2">VALOR ACTUAL<span class="note-ic" onclick="event.stopPropagation();explain('valor-actual')">?</span></div><div class="ybv c hide-val sm" id="yb-act">&mdash;</div></div>
     <div class="ybdiv"></div>
-    <div class="ybc"><div class="ybl2">RENTABILIDAD</div><div class="ybv lg" id="yb-rent">&mdash;</div></div>
+    <div class="ybc"><div class="ybl2">RENTABILIDAD<span class="note-ic" onclick="event.stopPropagation();explain('rentabilidad-año')">?</span></div><div class="ybv lg" id="yb-rent">&mdash;</div></div>
   </div>
   <div class="sec">DISTRIBUCI&Oacute;N POR TIPO<span class="note-ic" onclick="event.stopPropagation();explain('distribucion')">?</span></div>
   <div class="dnw dnw-sm"><canvas id="c-dn" height="180"></canvas><div class="dnc"><div class="dnt hide-val sm" id="dn-t">&mdash;</div><div class="dns">total</div></div></div>
@@ -754,7 +759,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v7.15';      /* visible en header y Ajustes */
+const APP_VERSION='v7.16';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -927,13 +932,14 @@ function assetMetrics(a){
 
 function portfolioTotals(){
   /* Total return de toda la cartera */
-  let inv=0,val=0,valOpen=0,realized=0,realizedPL=0;
+  let inv=0,val=0,valOpen=0,realized=0,realizedPL=0,openCost=0;
   DB.assets.forEach(a=>{
     const m=assetMetrics(a);
     inv+=m.inv;val+=m.val;valOpen+=m.valOpen;
     realized+=m.realized;realizedPL+=m.realizedPL;
+    openCost+=m.openCost||0;
   });
-  return {inv,val,valOpen,realized,realizedPL,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
+  return {inv,val,valOpen,realized,realizedPL,openCost,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
 }
 function unitsAtYearEnd(aid,year){
   const cut=year+'-12-31';let units=0;
@@ -2486,14 +2492,35 @@ function navTo(v){
 }
 
 /* ════ DASHBOARD ════ */
+let heroFilter='Todos';
+function setHeroFilter(t){heroFilter=t;renderDash();}
+function portfolioTotalsByType(type){
+  if(type==='Todos')return portfolioTotals();
+  let inv=0,val=0,valOpen=0,realized=0,realizedPL=0,openCost=0;
+  DB.assets.filter(a=>a.type===type).forEach(a=>{
+    const m=assetMetrics(a);
+    inv+=m.inv;val+=m.val;valOpen+=m.valOpen;
+    realized+=m.realized;realizedPL+=m.realizedPL;
+    openCost+=m.openCost||0;
+  });
+  return {inv,val,valOpen,realized,realizedPL,openCost,gain:val-inv,pct:inv>0?(val-inv)/inv:0};
+}
+function renderHeroFilter(){
+  const box=G('hero-filter');if(!box)return;
+  const types=['Todos',...new Set(DB.assets.filter(a=>DB.ops.some(o=>o.aid===a.id)).map(a=>a.type))];
+  if(types.length<=1){box.innerHTML='';return;}
+  box.innerHTML=types.map(t=>`<button class="hfchip${t===heroFilter?' on':''}" onclick="event.stopPropagation();setHeroFilter('${t}')">${t}</button>`).join('');
+}
 function renderDash(){
-  const T=portfolioTotals(),cg=calcCAGR(),cy=currentYearReturn(),an=annualReturns();
+  renderHeroFilter();
+  const T=portfolioTotalsByType(heroFilter),cg=calcCAGR(),cy=currentYearReturn(),an=annualReturns();
   /* ACTIVOS TOTALES = lo que vale hoy lo que tienes (no incluye ventas pasadas) */
   setText('h-amt',fe(T.valOpen));
   /* GANANCIA / RENT = TOTAL RETURN (incluye realizado + no realizado vs invertido total) */
   const ge=G('h-gain');ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg '+(T.gain>=0?'pos':'neg');
   setText('h-pct',fp(T.pct));setText('h-cagr','CAGR '+fp(cg,false));
   setText('s-inv',fe(T.inv));
+  setText('s-inv-act','Activas: '+fe(T.openCost||0));
   const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv '+(T.gain>=0?'g':'r');
   const st=G('s-tot');if(st){st.textContent=fp(T.pct);st.className='sv '+(T.pct>=0?'g':'r');}
   const sr=G('s-real');
@@ -3542,7 +3569,8 @@ function renderCategoryRows(){
       const tkBadge=a.ticker
         ? `<span class="cat-tk">${a.ticker}</span>`
         : `<span class="cat-tk none">sin ticker</span>`;
-      html+=`<div class="cat-row" onclick="openAssetEditor('${a.id}')"><div class="cat-l"><div class="cat-nm">${a.name}</div>${tkBadge}</div><div class="cat-edit">✏️</div></div>`;
+      const isinBadge=a.isin?`<span class="cat-isin">ISIN ${a.isin}</span>`:'';
+      html+=`<div class="cat-row" onclick="openAssetEditor('${a.id}')"><div class="cat-l"><div class="cat-nm">${a.name}</div><div class="cat-meta">${tkBadge}${isinBadge}</div></div><div class="cat-edit">✏️</div></div>`;
     });
     html+='</div>';
   });
@@ -3565,7 +3593,8 @@ function openAssetEditor(id){
   const opts=TYPES.map(t=>`<option value="${t}"${t===a.type?' selected':''}>${t}</option>`).join('');
   const safeName=(a.name||'').replace(/"/g,'&quot;');
   const safeTk=(a.ticker||'').replace(/"/g,'&quot;');
-  const tickerHint=a.cg?'Cripto: este activo usa CoinGecko ('+a.cg+'). Editar ticker no afectará al precio.':'Yahoo Finance ticker. Ejemplos: AAPL, MSFT, ASML.AS, CSPX.L, BTC-USD. Déjalo vacío si no quiere precio automático.';
+  const safeIsin=(a.isin||'').replace(/"/g,'&quot;');
+  const tickerHint=a.cg?'Cripto: este activo usa CoinGecko ('+a.cg+'). Editar ticker no afectará al precio.':'Yahoo Finance. Ejemplos: AAPL, MSFT, ASML.AS, CSPX.L (S&P500 Londres), SXR8.DE (S&P500 Xetra), BTC-USD.';
   openSheet(`<div class="shttl" style="color:var(--c2)">✏️ Editar activo</div>
     <div class="ae-grp">
       <label class="ae-lbl">Nombre</label>
@@ -3576,8 +3605,13 @@ function openAssetEditor(id){
       <select id="ae-type" class="ae-sel">${opts}</select>
     </div>
     <div class="ae-grp">
-      <label class="ae-lbl">Ticker (símbolo en bolsa)</label>
-      <input id="ae-tk" class="ae-inp" type="text" value="${safeTk}" placeholder="Ej: AAPL, ASML.AS, BTC-USD" autocapitalize="characters" autocorrect="off">
+      <label class="ae-lbl">ISIN (opcional)</label>
+      <input id="ae-isin" class="ae-inp" type="text" value="${safeIsin}" placeholder="Ej: IE00B5BMR087" autocapitalize="characters" autocorrect="off" maxlength="12">
+      <div class="ae-hint">Código internacional (12 caracteres). ETFs/fondos lo usan para identificación. Solo informativo.</div>
+    </div>
+    <div class="ae-grp">
+      <label class="ae-lbl">Ticker (símbolo Yahoo Finance)</label>
+      <input id="ae-tk" class="ae-inp" type="text" value="${safeTk}" placeholder="Ej: AAPL, SXR8.DE" autocapitalize="characters" autocorrect="off">
       <div class="ae-hint">${tickerHint}</div>
     </div>
     <div class="ae-warn">Al cambiar el ticker se borrará el precio y moneda guardados; la próxima sincronización los descargará frescos.</div>
@@ -3597,11 +3631,31 @@ function saveAssetEdit(id){
   const newName=(G('ae-name').value||'').trim();
   const newType=G('ae-type').value;
   const newTk=(G('ae-tk').value||'').trim().toUpperCase();
+  const newIsin=(G('ae-isin')?G('ae-isin').value||'':'').trim().toUpperCase();
   if(!newName){showToast('El nombre no puede estar vacío');return;}
   if(!TYPES.includes(newType)){showToast('Tipo no válido');return;}
+  /* Validar ISIN si lo introducen: 12 chars (2 letras país + 9 alfanum + 1 check) */
+  if(newIsin&&!/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(newIsin)){
+    showToast('ISIN no válido (12 caracteres: 2 letras + 9 alfa + 1 dígito)');
+    return;
+  }
   const changes=[];
   if(newName!==a.name){a.name=newName;changes.push('nombre');}
   if(newType!==a.type){a.type=newType;changes.push('tipo');}
+  if(newIsin!==(a.isin||'')){
+    a.isin=newIsin||null;
+    changes.push('ISIN');
+    /* Si el ISIN tiene mapeo conocido y el usuario no puso ticker manualmente,
+       autorellena con el ticker correspondiente para ahorrar trabajo. */
+    if(newIsin&&!newTk&&typeof ISIN_TICKER!=='undefined'&&ISIN_TICKER[newIsin]){
+      const auto=ISIN_TICKER[newIsin];
+      a.ticker=auto;
+      delete a.price;delete a.currency;
+      a._priceOK=false;a.needsPriceSync=true;
+      if(typeof HIST_CACHE!=='undefined')delete HIST_CACHE[id];
+      changes.push('ticker auto: '+auto);
+    }
+  }
   const oldTk=(a.ticker||'').toUpperCase();
   if(newTk!==oldTk){
     a.ticker=newTk||null;
@@ -3857,9 +3911,9 @@ const PANEL_GLOSSARY={
   'total-invertido':{
     t:'Total invertido',
     q:'¿Qué es?',
-    a:'Todo el dinero que has aportado de tu bolsillo a tus inversiones <b>desde el inicio</b>, incluyendo posiciones ya vendidas.',
-    h:'Suma de todas las compras realizadas (precio × unidades + comisiones) a lo largo del tiempo.',
-    n:'Es la referencia base contra la que se mide la rentabilidad total.'
+    a:'Todo el dinero que has aportado de tu bolsillo a tus inversiones <b>desde el inicio</b>, incluyendo posiciones ya vendidas. <br><br><b>Activas</b>: el coste actual solo de las posiciones que aún tienes abiertas (lo que pagaste por las unidades que conservas).',
+    h:'Total = suma de todas las compras (precio × unidades + comisiones). Activas = coste medio × unidades aún en cartera.',
+    n:'La diferencia entre los dos te dice cuánto has rotado: si "Activas" es mucho menor que "Total", has vendido y reinvertido mucho.'
   },
   'ganancia-total':{
     t:'Ganancia total',
@@ -3876,7 +3930,7 @@ const PANEL_GLOSSARY={
     n:'Verde = ganancia; rojo = pérdida. Una rentabilidad de +10% significa que €100 invertidos valen ahora €110 (incluyendo lo vendido).'
   },
   'realizado':{
-    t:'Realizado acumulado',
+    t:'Realizado (acumulado)',
     q:'¿Qué es?',
     a:'Suma de ganancias y pérdidas <b>realizadas</b> (= ya materializadas en ventas) a lo largo de toda tu historia.',
     h:'Por cada venta: (precio venta − precio medio de compra) × unidades vendidas − comisiones. Sumado a lo largo del tiempo.',
@@ -3902,6 +3956,27 @@ const PANEL_GLOSSARY={
     a:'Resumen de cómo te ha ido este año: con qué valor empezaste, dónde estás ahora y qué rentabilidad llevas acumulada.',
     h:'Inicio año = activos al 31-dic del año anterior. Valor actual = activos hoy. Rentabilidad = cambio relativo ajustado por aportes y ventas del año.',
     n:'Si el inicio sale 0, es tu primer año con datos.'
+  },
+  'inicio-año':{
+    t:'Inicio de año',
+    q:'¿Qué es?',
+    a:'El valor que tenían tus activos a fecha 31 de diciembre del año anterior.',
+    h:'Se calcula con las unidades que tenías a esa fecha multiplicadas por su precio de cierre. Si no hay precio histórico disponible, se usa el precio actual.',
+    n:'Es la referencia desde la que se mide cuánto ha cambiado tu cartera este año.'
+  },
+  'valor-actual':{
+    t:'Valor actual',
+    q:'¿Qué es?',
+    a:'Lo que valen hoy todos tus activos abiertos, en euros.',
+    h:'Suma de (unidades × precio actual) de cada posición. Es el mismo número que aparece arriba como "Activos totales".',
+    n:'Sube y baja con el mercado. La diferencia con "Inicio de año" te da la rentabilidad anual (ajustada por aportes).'
+  },
+  'rentabilidad-año':{
+    t:'Rentabilidad del año',
+    q:'¿Qué es?',
+    a:'Cuánto ha crecido o caído tu cartera desde el 1 de enero, en porcentaje, contando aportes y ventas hechos durante el año.',
+    h:'(Valor actual − Inicio año − aportes netos del año) / (Inicio año + aportes/2). Es la rentabilidad ponderada por tiempo.',
+    n:'Se compara con índices: S&P 500 hace ~10% anual histórico, Euro Stoxx 50 ~7%.'
   },
   'distribucion':{
     t:'Distribución por tipo',
@@ -4366,8 +4441,17 @@ const ISIN_TICKER={
   'US11135F1012':'AVGO','US68389X1054':'ORCL','US91324P1021':'UNH',
   'US0846707026':'BRK-B','ES0148396007':'ITX.MC','ES0113900J37':'SAN.MC',
   'ES0144580Y14':'IBE.MC','ES0113211835':'BBVA.MC','ES0178430E18':'TEF.MC',
-  'FR0000121014':'MC.PA','CA21037X1006':'CSU.TO','IE00B5BMR087':'CSPX.L',
-  'IE00BYX5MX67':'CSPX.L','IE00B4L5Y983':'IWDA.AS','IE00BK5BQT80':'VWCE.DE',
+  'FR0000121014':'MC.PA','CA21037X1006':'CSU.TO',
+  /* ETFs iShares S&P 500 (varias clases y bolsas) */
+  'IE00B5BMR087':'CSPX.L',    /* iShares Core S&P 500 USD (Acc) — Londres en USD */
+  'IE00BYX5MX67':'SXR8.DE',   /* iShares Core S&P 500 EUR (Acc) — Xetra */
+  'IE0031442068':'IUSA.L',    /* iShares Core S&P 500 USD (Dist) */
+  /* Otros ETFs comunes */
+  'IE00B4L5Y983':'IWDA.AS',   /* iShares MSCI World */
+  'IE00BK5BQT80':'VWCE.DE',   /* Vanguard FTSE All-World */
+  'IE00B4L5YC18':'EUNL.DE',   /* iShares Core MSCI World */
+  'IE00B3RBWM25':'VEUR.L',    /* Vanguard FTSE Developed Europe */
+  'IE00B3XXRP09':'VUSA.L',    /* Vanguard S&P 500 */
 };
 
 function matchAsset(op){
@@ -4451,9 +4535,14 @@ function confirmBrokerImport(){
       /* clave única del activo dentro de esta importación */
       const sym=(o.symbol||'').toUpperCase();
       const isCrypto=o.type==='Criptomoneda';
+      const isISIN=/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(sym);
       let ticker=null;
+      let isin=null;
       if(isCrypto)ticker=sym.replace('-USD','')+'-USD';
-      else if(/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(sym))ticker=ISIN_TICKER[sym]||null;
+      else if(isISIN){
+        isin=sym;
+        ticker=ISIN_TICKER[sym]||null;  /* null si no hay mapeo: mejor que un falso ticker */
+      }
       else ticker=sym||null;
       const key=ticker?('T:'+ticker.toUpperCase()):('N:'+normName(o.name));
       /* ¿ya creé este activo en esta misma importación? -> reutilizar */
@@ -4483,9 +4572,9 @@ function confirmBrokerImport(){
           }
           DB.assets.push({
             id:aid,name:o.name,type:o.type||'Acciones',
-            ticker:ticker,cg:null,price:priceNative,
+            ticker:ticker,isin:isin,cg:null,price:priceNative,
             currency:nativeCur,
-            needsPriceSync:true,   /* marca: el precio es aproximado hasta sincronizar */
+            needsPriceSync:true,
           });
         }
         createdInThisImport[key]=aid;
@@ -4757,26 +4846,15 @@ document.addEventListener('DOMContentLoaded',()=>{
         }).catch(()=>{if(btn)btn.classList.remove('spin');renderAll();});
       },900);
     }
-    /* Detección robusta de modo "instalada en pantalla de inicio". */
+    /* Detección de modo "instalada en pantalla de inicio".
+       Marcamos body.pwa por si algún estilo lo necesita. No tocamos
+       las alturas del nav: iOS no permite a una PWA pintar más allá
+       del viewport reportado (797px en iPhone 13). */
     try{
       const isPWA = window.navigator.standalone===true
         || window.matchMedia('(display-mode:standalone)').matches
         || window.matchMedia('(display-mode:fullscreen)').matches;
-      if(isPWA){
-        document.body.classList.add('pwa');
-        /* fuerza la variable --nav a 110px y aplica al nav directamente */
-        document.documentElement.style.setProperty('--nav','110px');
-        const nav=document.querySelector('.bnav');
-        if(nav){
-          nav.style.height='110px';
-          nav.style.alignItems='flex-start';
-          nav.querySelectorAll('.nb').forEach(b=>{
-            b.style.height='62px';
-            b.style.maxHeight='62px';
-            b.style.flex='1';
-          });
-        }
-      }
+      if(isPWA)document.body.classList.add('pwa');
     }catch(e){}
     if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }catch(err){
