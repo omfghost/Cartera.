@@ -599,6 +599,12 @@ input,select,button,textarea{font-family:inherit}
 
 /* Iconos en cada bloque de Ajustes */
 .sbt-ic{display:inline-block;font-size:14px;margin-right:8px;vertical-align:-1px;filter:saturate(0.85)}
+
+/* Precio nativo + conversión a EUR en Explorar */
+.exp-px-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 0 4px;flex-wrap:wrap}
+.exp-px-row .exp-px{margin:0}
+.exp-px-eur{display:inline-flex;flex-direction:column;align-items:flex-end;color:var(--w3);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:.01em;line-height:1.1}
+.exp-px-eur small{font-size:9px;color:var(--w3);opacity:0.65;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
 </style>
 </head>
 <body>
@@ -952,7 +958,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v9.4';      /* visible en header y Ajustes */
+const APP_VERSION='v9.5';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3556,12 +3562,20 @@ function renderExplore(){
   let html='';
 
   /* ── Cabecera precio + gráfico ── */
+  /* Precio en divisa nativa + conversión a EUR a la derecha si la moneda
+     no es ya el euro (ETF en USD, cripto, GBP, etc.). */
+  const priceEur=cur&&cur.toUpperCase()!=='EUR'?toEUR(price,cur):null;
+  const eurChip=(priceEur!=null&&!isNaN(priceEur))
+    ?`<span class="exp-px-eur">${priceEur.toFixed(2)} €<small>conversión</small></span>`:'';
   html+=`<div class="exp-card">
     <div class="exp-head">
       <div><div class="exp-tk">${ticker}</div><div class="exp-nm">${name}</div></div>
       <div class="exp-ex2">${exch}</div>
     </div>
-    <div class="exp-px">${price.toFixed(2)} <span class="cur">${curSym(cur)||cur}</span></div>
+    <div class="exp-px-row">
+      <div class="exp-px">${price.toFixed(2)} <span class="cur">${curSym(cur)||cur}</span></div>
+      ${eurChip}
+    </div>
     ${chgKnown
       ?`<div class="exp-chg ${up?'pos':'neg'}">${up?'▲':'▼'} ${(chg*100).toFixed(2)}% · ${chgLabel}</div>`
       :`<div class="exp-chg" style="color:var(--w3)">Variación de sesión no disponible</div>`}
@@ -5682,9 +5696,13 @@ function buildAnalistaCard(ticker,chart,fund,session){
     const up=session.chgPct>=0;
     chgHtml=`<div style="font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:2px" class="${up?'pos':'neg'}">${up?'▲':'▼'} ${(session.chgPct*100).toFixed(2)}% · ${session.label}</div>`;
   }
+  /* Conversión a EUR si la divisa nativa no es euro */
+  const priceEurAn=cur&&cur.toUpperCase()!=='EUR'?toEUR(price,cur):null;
+  const eurHeader=(priceEurAn!=null&&!isNaN(priceEurAn))
+    ?`<div style="font-size:10.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin-top:3px">≈ ${priceEurAn.toFixed(2)} € <span style="font-size:9px;color:var(--w3);opacity:0.7">conv.</span></div>`:'';
   h+=`<div class="an-card-hd">
     <div><div class="an-tk">${ticker}</div><div class="an-nm">${name}</div></div>
-    <div style="text-align:right"><div class="an-px">${price.toFixed(2)} <span style="font-size:11px;color:var(--w2)">${cur}</span></div>${chgHtml}<div style="font-size:10px;color:var(--w2);margin-top:2px">${mktCap?fbig(mktCap)+' cap.':''}</div></div>
+    <div style="text-align:right"><div class="an-px">${price.toFixed(2)} <span style="font-size:11px;color:var(--w2)">${cur}</span></div>${eurHeader}${chgHtml}<div style="font-size:10px;color:var(--w2);margin-top:2px">${mktCap?fbig(mktCap)+' cap.':''}</div></div>
   </div>`;
   if(partial){
     h+=`<div style="background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.3);border-radius:8px;padding:9px 11px;margin-bottom:8px;font-size:11px;color:var(--warn);line-height:1.5">⚠ Datos de estados financieros no disponibles ahora mismo (precio y mercado sí son válidos). Algunos puntos pueden aparecer parciales — reintenta en unos segundos para el análisis completo.</div>`;
@@ -5736,7 +5754,7 @@ function buildAnalistaCard(ticker,chart,fund,session){
   /* 6 */
   h+=anBlock('6','Cotización y capitalización','#8b7cff',
     `<div class="an-grid2">
-      <div class="an-mc"><div class="an-ml">Precio actual</div><div class="an-mv">${price.toFixed(2)} ${cur}</div></div>
+      <div class="an-mc"><div class="an-ml">Precio actual</div><div class="an-mv">${price.toFixed(2)} ${cur}${priceEurAn!=null?`<div style="font-size:9px;color:var(--w3);font-weight:500;margin-top:2px;font-family:'JetBrains Mono',monospace">≈ ${priceEurAn.toFixed(2)} €</div>`:''}</div></div>
       <div class="an-mc"><div class="an-ml">Market cap</div><div class="an-mv">${mktCap?fbig(mktCap)+' '+cur:'n/d'}</div></div>
     </div>`);
 
@@ -5871,7 +5889,7 @@ function analistaValuation(fund,price,chart){
     <div style="font-size:10px;color:var(--w2);letter-spacing:.08em;margin-bottom:4px">MÉTODOS DE VALORACIÓN APLICADOS</div>
     ${detailRows}
     <div class="metric-row" style="border-top:1px solid var(--line);margin-top:2px"><span class="metric-l" style="color:var(--w);font-weight:600">Precio justo medio estimado</span><span class="metric-v" style="color:var(--gold);font-weight:700">${fairPrice.toFixed(2)} ${cur}</span></div>
-    <div class="metric-row"><span class="metric-l" style="color:var(--w);font-weight:600">Precio actual</span><span class="metric-v">${price.toFixed(2)} ${cur}</span></div>
+    <div class="metric-row"><span class="metric-l" style="color:var(--w);font-weight:600">Precio actual</span><span class="metric-v">${price.toFixed(2)} ${cur}${priceEurAn!=null?` <small style="color:var(--w3);font-weight:400">≈ ${priceEurAn.toFixed(2)} €</small>`:''}</span></div>
     <div class="prose" style="margin-top:10px;border-left:2px solid ${vClass==='buy'?'var(--g)':vClass==='hold'?'var(--warn)':'var(--r)'};padding-left:10px">${recom}</div>
     ${estPill('ESTIMACIÓN','Esta es una valoración aproximada que combina varios métodos (EV/FCF con múltiplo conservador por sector, PER medio histórico, descuento de flujos de caja y NAV). No es un dato oficial sino un cálculo de la app a partir de los datos financieros. Tómalo como una orientación, no como un objetivo de precio.')}`;
   return {html,fairPrice,margin,verdict};
