@@ -605,6 +605,13 @@ input,select,button,textarea{font-family:inherit}
 .exp-px-row .exp-px{margin:0}
 .exp-px-eur{display:inline-flex;flex-direction:column;align-items:flex-end;color:var(--w3);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:.01em;line-height:1.1}
 .exp-px-eur small{font-size:9px;color:var(--w3);opacity:0.65;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+
+
+
+/* Subtexto pequeño bajo el valor principal de una tarjeta sc
+   (ej: CAGR debajo de Media Anual, banda cualitativa debajo de Volatilidad).
+   Mantiene la misma altura visual entre tarjetas hermanas. */
+.sv-sub2{font-size:10.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin-top:4px;letter-spacing:.02em;font-weight:500;line-height:1.2}
 </style>
 </head>
 <body>
@@ -644,8 +651,16 @@ input,select,button,textarea{font-family:inherit}
     <div class="sc"><div class="sl">GANANCIA TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('ganancia-total')">?</span></div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
     <div class="sc"><div class="sl">RENT. TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-total')">?</span></div><div class="sv g" id="s-tot">&mdash;</div></div>
     <div class="sc"><div class="sl">REALIZADO<span class="note-ic" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
-    <div class="sc"><div class="sl">CAGR ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('cagr')">?</span></div><div class="sv c" id="s-cagr">&mdash;</div></div>
-    <div class="sc"><div class="sl">RENT. A&Ntilde;O ACTUAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-año')">?</span></div><div class="sv gold" id="s-yr">&mdash;</div></div>
+    <div class="sc">
+      <div class="sl">MEDIA ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('media-anual')">?</span></div>
+      <div class="sv c" id="s-mean">&mdash;</div>
+      <div class="sv-sub2" id="s-cagr-sub">CAGR &mdash;</div>
+    </div>
+    <div class="sc">
+      <div class="sl">VOLATILIDAD<span class="note-ic" onclick="event.stopPropagation();explain('volatilidad')">?</span></div>
+      <div class="sv" id="s-vol">&mdash;</div>
+      <div class="sv-sub2" id="s-vol-sub">&mdash;</div>
+    </div>
   </div>
   <div class="sec">A&Ntilde;O EN CURSO<span class="note-ic" onclick="event.stopPropagation();explain('año-curso')">?</span> <span id="yr-label" style="color:var(--gold)"></span></div>
   <div class="ybl">
@@ -958,7 +973,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v9.6';      /* visible en header y Ajustes */
+const APP_VERSION='v9.9';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1233,33 +1248,72 @@ function netFlowInYear(year,okIds){
   return net;
 }
 
-function annualReturns(){
+function annualReturns(filterType){
   const years=activeYears();
   const curYear=new Date().getFullYear();
-  /* Time-weighted return por año:
-     gain del año = valFin - valIni - flujo_neto_del_año
-     rent del año = gain / (valIni + flujo/2)
-     Si valIni sale inconsistente (ej. usuario borró años), marcamos el dato
-     como parcial para no inflar la rentabilidad. */
+  /* Filtro opcional por tipo: si llega "Acciones" solo cuentan operaciones
+     sobre activos de ese tipo. */
+  const okIds=filterType&&filterType!=='Todos'
+    ?new Set(DB.assets.filter(a=>a.type===filterType).map(a=>a.id))
+    :null;
   return years.map((yr,i)=>{
-    const valFin=yr>=curYear?portfolioTotals().valOpen:portfolioValueAtYearEnd(yr);
-    const valIni=i===0?0:portfolioValueAtYearEnd(years[i-1]);
-    const flow=netFlowInYear(yr);
+    const valFin=yr>=curYear
+      ?portfolioTotalsByType(filterType||'Todos').valOpen
+      :portfolioValueAtYearEnd(yr,okIds);
+    const valIni=i===0?0:portfolioValueAtYearEnd(years[i-1],okIds);
+    const flow=netFlowInYear(yr,okIds);
     const gain=valFin-valIni-flow;
-    /* base para % */
     const base=valIni+flow/2;
-    /* salvaguarda: si la base es muy pequeña pero la ganancia enorme,
-       hay un hueco en los datos -> marcamos como parcial */
     let rent=base>0?gain/base:0;
-    const partial=valIni===0&&i>0;       /* primer año disponible no es realmente el primero */
-    /* si parcial, limitamos a una rentabilidad razonable basada en coste real */
+    const partial=valIni===0&&i>0;
     if(partial||Math.abs(rent)>5){
-      /* fallback robusto: ganancia frente a lo invertido neto en el año */
       const investedNet=Math.max(Math.abs(flow),valIni||0,1);
       rent=gain/investedNet;
     }
     return {year:yr,valIni,valFin,flow,gain,rent,partial,isCurrent:yr>=curYear};
   });
+}
+
+/* Rentabilidad MEDIA ANUAL HISTÓRICA: promedio aritmético de las
+   rentabilidades anuales. Diferente al CAGR (compuesto): la media
+   te dice qué año típico has tenido, año tras año. La diferencia
+   entre media y CAGR es proporcional a la volatilidad. */
+function meanAnnualReturn(filterType){
+  const ar=annualReturns(filterType);
+  /* solo años completos con dato fiable: descartamos el año en curso
+     (incompleto) y los marcados como parciales por falta de histórico. */
+  const valid=ar.filter(r=>!r.isCurrent&&!r.partial);
+  if(!valid.length)return null;
+  const sum=valid.reduce((s,r)=>s+r.rent,0);
+  return sum/valid.length;
+}
+
+/* Volatilidad anualizada de la cartera (desviación típica de las
+   rentabilidades mensuales × √12). Mide cuánto se mueve la cartera
+   típicamente, mes a mes. Una volatilidad del 15% significa que en un
+   año típico la cartera oscila ±15% sobre su trayectoria media.
+   Referencias aproximadas: bonos 3-5% · ETFs amplios 12-18% ·
+   acciones individuales 20-35% · cripto 50-90%. */
+function portfolioVolatility(filterType){
+  /* tomamos hasta 24 meses para tener una muestra reciente y representativa */
+  const tl=window._lastTimeline;
+  if(!tl||tl.length<3)return null;
+  const recent=tl.slice(-24);
+  /* rentabilidades mensuales aproximadas: variación del pct mes a mes.
+     Si el pct salta de +5% a +8%, la rentabilidad de ese mes fue +3 puntos.
+     Es una aproximación válida cuando los flujos netos son moderados. */
+  const monthly=[];
+  for(let i=1;i<recent.length;i++){
+    /* δ(valOpen)/valOpen_anterior aproxima la rentabilidad mensual real
+       de las posiciones abiertas, sin contaminarse por aportes. */
+    const v0=recent[i-1].val,v1=recent[i].val;
+    if(v0>0)monthly.push((v1-v0)/v0);
+  }
+  if(monthly.length<2)return null;
+  const mean=monthly.reduce((s,x)=>s+x,0)/monthly.length;
+  const variance=monthly.reduce((s,x)=>s+(x-mean)*(x-mean),0)/(monthly.length-1);
+  const sdMonthly=Math.sqrt(variance);
+  return sdMonthly*Math.sqrt(12);   /* anualizada */
 }
 function calcCAGR(filterType){
   const years=activeYears();if(years.length<1)return 0;
@@ -2717,6 +2771,12 @@ async function mkSparkline(){
   const filterTypes=heroFilter==='Todos'?null:[heroFilter];
   let h=[];
   try{h=await buildPatrimonyTimeline(filterTypes);}catch(e){}
+  /* expone la timeline para cálculos que la usan (volatilidad).
+     Tras cargarla, repinta la tarjeta de volatilidad — la timeline llega
+     en async después del primer render, así que sin esto la primera vez
+     se vería "—" hasta cambiar de pestaña. */
+  window._lastTimeline=h;
+  if(typeof refreshVolatilityCard==='function')refreshVolatilityCard();
   if(h.length<2){
     h=patrimonioHistory().map(x=>({label:String(x.year),val:x.val}));
   }
@@ -2996,6 +3056,27 @@ function navTo(v){
 /* ════ DASHBOARD ════ */
 let heroFilter='Todos';
 function setHeroFilter(t){heroFilter=t;renderDash();}
+/* Actualiza la tarjeta de volatilidad usando la timeline cacheada.
+   Devuelve "Baja/Moderada/Alta/Muy alta" + porcentaje. Si no hay datos
+   suficientes (cartera muy nueva), muestra '—' con mensaje. */
+function refreshVolatilityCard(){
+  const sv=G('s-vol'),sub=G('s-vol-sub');if(!sv||!sub)return;
+  const v=(typeof portfolioVolatility==='function')?portfolioVolatility(heroFilter):null;
+  if(v==null||isNaN(v)){
+    sv.textContent='—';sv.className='sv';
+    sub.textContent='Sin datos suf.';return;
+  }
+  const vp=v*100;
+  /* Banda cualitativa orientativa: Bonos 3-5% · ETFs amplios 12-18% ·
+     Acciones individuales 20-35% · Cripto 50-90%. */
+  let band='Baja',cls='g';
+  if(vp>=50){band='Muy alta';cls='r';}
+  else if(vp>=25){band='Alta';cls='warn';}
+  else if(vp>=12){band='Moderada';cls='gold';}
+  sv.textContent=vp.toFixed(1)+'%';
+  sv.className='sv '+cls;
+  sub.textContent=band;
+}
 function portfolioTotalsByType(type){
   if(type==='Todos')return portfolioTotals();
   let inv=0,val=0,valOpen=0,realized=0,realizedPL=0,openCost=0;
@@ -3055,8 +3136,20 @@ function renderDash(){
     sr.textContent=sign+fe(Math.abs(T.realizedPL));
     sr.className='sv '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
   }
-  setText('s-cagr',fp(cg,false));
-  const sy=G('s-yr');sy.textContent=fp(cy.rent);sy.className='sv '+(cy.rent>=0?'gold':'r');
+  setText('s-cagr-sub','CAGR '+fp(cg,false));
+  /* Media anual histórica: promedio de los años completos (filtra el actual) */
+  const ma=meanAnnualReturn(heroFilter);
+  const smean=G('s-mean');
+  if(smean){
+    if(ma==null){smean.textContent='—';smean.className='sv c';}
+    else{smean.textContent=fp(ma);smean.className='sv '+(ma>=0?'c':'r');}
+  }
+  /* la tarjeta s-yr ya no existe; ignoramos su setter */
+  const sy=G('s-yr');if(sy){sy.textContent=fp(cy.rent);sy.className='sv '+(cy.rent>=0?'gold':'r');}
+  /* Volatilidad: depende de la timeline, que carga en async.
+     Aquí pintamos el estado preliminar; refreshVolatilityCard reescribe
+     cuando la timeline está disponible. */
+  refreshVolatilityCard();
   setText('yr-label',cy.year);
   /* INICIO AÑO = valor a 31-dic del año anterior */
   setText('yb-ini',fe(cy.valIni));setText('yb-act',fe(cy.valAct));
@@ -4626,6 +4719,20 @@ const PANEL_GLOSSARY={
     a:'Tasa de crecimiento anual compuesta: si tu cartera siguiera creciendo a este ritmo constante cada año, llegaría al valor actual.',
     h:'(Valor actual / Total invertido)^(1/años transcurridos) − 1. Estima la rentabilidad media anualizada.',
     n:'Permite comparar con productos como depósitos (3-4%) o índices (S&P 500 ~10% anual histórico).'
+  },
+  'media-anual':{
+    t:'Media anual histórica',
+    q:'¿Qué muestra esta tarjeta?',
+    a:'El <b>promedio aritmético</b> de las rentabilidades anuales completas. Te dice qué año típico has tenido año tras año. Justo debajo, en pequeño, el <b>CAGR</b> (rentabilidad anual compuesta), que mide el resultado real acumulado.',
+    h:'Media = (rent. año 1 + rent. año 2 + … + rent. año N) / N, descartando el año en curso (incompleto). CAGR = (valor actual / invertido)^(1/años) − 1.',
+    n:'<b>Si la media es bastante mayor que el CAGR, tu cartera es volátil</b> (años buenos y malos compensándose). Ejemplo: +100% un año, −50% al siguiente → media +25%, pero CAGR 0% (acabas igual). Cuanto más se parezcan, más estable ha sido la inversión.'
+  },
+  'volatilidad':{
+    t:'Volatilidad anualizada',
+    q:'¿Qué muestra?',
+    a:'Cuánto se mueve la cartera <b>típicamente</b>, mes a mes. Una volatilidad del 15% significa que en un año típico la cartera oscila ±15% sobre su trayectoria media.',
+    h:'Desviación típica de las variaciones mensuales de los últimos 24 meses, anualizada (× √12). Solo considera el patrimonio de las posiciones abiertas, sin contaminarse con aportes nuevos.',
+    n:'Referencias orientativas: <b>Bonos 3-5%</b> · <b>ETFs amplios 12-18%</b> · <b>Acciones individuales 20-35%</b> · <b>Cripto 50-90%</b>. Cuanto más alta, más bandazos has sufrido por el camino aunque el resultado final sea bueno. El filtro de tipo recalcula este valor para ese tipo de activo.'
   },
   'rent-año':{
     t:'Rent. año actual',
