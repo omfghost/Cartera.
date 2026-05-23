@@ -391,13 +391,15 @@ input,select,button,textarea{font-family:inherit}
 .exp-mv.mv-good{color:var(--g)}
 .exp-mv.mv-bad{color:var(--r)}
 /* ── Bloques de ajustes plegables ── */
-.sblk-coll{padding:0;overflow:hidden}
-.sblk-coll>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;outline:none}
+.sblk-coll{padding:0;overflow:hidden;background:linear-gradient(135deg,rgba(24,38,60,.6),rgba(16,26,44,.6));border:1px solid var(--line);border-radius:14px;margin-bottom:10px;transition:border-color .2s,background .2s}
+.sblk-coll:not([open]):active{border-color:rgba(34,150,235,.35)}
+.sblk-coll[open]{background:var(--bg2);border-color:rgba(34,150,235,.22)}
+.sblk-coll>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;outline:none;user-select:none}
 .sblk-coll>summary::-webkit-details-marker{display:none}
 .sblk-coll>summary::marker{content:''}
 .sbt-sum{display:flex;align-items:center;justify-content:space-between;width:100%}
-.sbt-chev{color:var(--c2);font-size:14px;transition:transform .2s}
-.sblk-coll[open]>summary .sbt-chev{transform:rotate(180deg)}
+.sbt-chev{color:var(--c2);font-size:14px;transition:transform .25s,background .2s;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(34,150,235,.10);flex-shrink:0}
+.sblk-coll[open]>summary .sbt-chev{transform:rotate(180deg);background:rgba(34,150,235,.18)}
 .sblk-coll>*:not(summary){padding:0 14px 14px;animation:fadein .2s ease}
 @keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 /* ── Toggle de sonido (estilo iOS) ── */
@@ -430,8 +432,21 @@ input,select,button,textarea{font-family:inherit}
 .hero-evo-mini{position:absolute;top:13px;right:13px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(34,150,235,.13);border:1px solid rgba(34,150,235,.32);border-radius:9px;font-size:15px;cursor:pointer;padding:0;line-height:1;color:var(--c2);z-index:2;transition:background .15s}
 .hero-evo-mini:active{background:rgba(34,150,235,.28);transform:scale(0.94)}
 /* Botón secundario "Comparar rentabilidad por activo" — más discreto */
+.hero-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.hero-hdr .hlbl{margin:0;flex-shrink:0}
+.hero-hdr .hero-filter{margin:0;flex:1;display:flex;justify-content:flex-start}
+.hero-hdr .hero-evo-mini{position:static;width:34px;height:34px;flex-shrink:0;margin:0}
+/* Botón secundario "Comparar rentabilidad por activo" — más discreto */
 .hero-evo-btn{display:block;width:100%;margin-top:10px;background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px;color:var(--w2);font-size:11.5px;font-weight:500;cursor:pointer;letter-spacing:.02em}
 .hero-evo-btn:active{background:var(--bg2)}
+/* Botón moderno "Comparar rentabilidad por activo" en el Panel */
+.cmp-launch{display:flex;align-items:center;gap:13px;width:100%;background:linear-gradient(135deg,rgba(34,150,235,.10),rgba(139,124,255,.06));border:1px solid rgba(34,150,235,.22);border-radius:13px;padding:12px 14px;margin-top:14px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .15s,background .15s}
+.cmp-launch:active{transform:scale(0.98);background:linear-gradient(135deg,rgba(34,150,235,.18),rgba(139,124,255,.12))}
+.cmp-ic{font-size:19px;flex-shrink:0;filter:saturate(0.9)}
+.cmp-tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cmp-tx b{color:var(--w);font-size:12.5px;letter-spacing:.01em}
+.cmp-tx small{color:var(--w3);font-size:10.5px;line-height:1.3}
+.cmp-arr{color:var(--c2);font-size:16px;font-weight:300;flex-shrink:0}
 /* ── Menú de tipos de activos en Ajustes ── */
 .cat-grp{margin-bottom:10px}
 .cat-grp-h{display:flex;align-items:center;justify-content:space-between;padding:6px 0 6px 9px;font-size:11px;letter-spacing:.05em;font-weight:700;text-transform:uppercase;margin-bottom:4px}
@@ -538,16 +553,18 @@ input,select,button,textarea{font-family:inherit}
 .al-arr{color:var(--c2);font-size:18px;font-weight:300;flex-shrink:0}
 
 /* ── Bloques plegables en Explorar (Análisis fundamental, Previsiones, Sector) ── */
-.exp-coll{background:var(--bg2);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
-.exp-coll>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 14px}
+.exp-coll{background:linear-gradient(135deg,rgba(24,38,60,.6),rgba(16,26,44,.6));border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:border-color .2s,background .2s}
+.exp-coll:not([open]):active{border-color:rgba(34,150,235,.35);background:linear-gradient(135deg,rgba(34,150,235,.08),rgba(139,124,255,.04))}
+.exp-coll[open]{background:var(--bg2);border-color:rgba(34,150,235,.22)}
+.exp-coll>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 14px;user-select:none}
 .exp-coll>summary::-webkit-details-marker{display:none}
 .exp-coll>summary::marker{content:''}
-.exp-coll-h .ic{flex-shrink:0}
-.exp-coll-tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.exp-coll-tx b{color:var(--w);font-size:13.5px}
-.exp-coll-tx small{color:var(--w3);font-size:10.5px}
-.exp-coll-chev{color:var(--c2);font-size:14px;flex-shrink:0;transition:transform .2s}
-.exp-coll[open]>summary .exp-coll-chev{transform:rotate(180deg)}
+.exp-coll-h .ic{flex-shrink:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;font-size:15px}
+.exp-coll-tx{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.exp-coll-tx b{color:var(--w);font-size:13.5px;letter-spacing:.01em}
+.exp-coll-tx small{color:var(--w3);font-size:10.5px;line-height:1.4}
+.exp-coll-chev{color:var(--c2);font-size:14px;flex-shrink:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(34,150,235,.10);transition:transform .25s,background .2s}
+.exp-coll[open]>summary .exp-coll-chev{transform:rotate(180deg);background:rgba(34,150,235,.18)}
 .exp-coll-body{padding:0 14px 14px;animation:expandIn .25s ease}
 @keyframes expandIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -601,9 +618,11 @@ input,select,button,textarea{font-family:inherit}
 
 <section class="view active" id="v-dash">
   <div class="hero">
-    <button class="hero-evo-mini" onclick="openEvolutionChart()" aria-label="Evolución de activos">📈</button>
-    <div class="hlbl">ACTIVOS TOTALES<span class="note-ic" onclick="event.stopPropagation();explain('activos-totales')">?</span></div>
-    <div class="hero-filter" id="hero-filter"></div>
+    <div class="hero-hdr">
+      <div class="hlbl">ACTIVOS TOTALES<span class="note-ic" onclick="event.stopPropagation();explain('activos-totales')">?</span></div>
+      <div class="hero-filter" id="hero-filter"></div>
+      <button class="hero-evo-mini" onclick="openEvolutionChart()" aria-label="Evolución de activos">📈</button>
+    </div>
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
     <div class="hrow"><span class="hg hide-val sm" id="h-gain">&mdash;</span><span class="hs">&middot;</span><span class="hp" id="h-pct">&mdash;</span><span class="hs">&middot;</span><span class="hcg" id="h-cagr" onclick="explainCAGR()">CAGR &mdash;</span></div>
     <div class="spkw">
@@ -639,7 +658,11 @@ input,select,button,textarea{font-family:inherit}
   <div class="sec">RENTABILIDAD ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-anual')">?</span></div>
   <div class="cc" style="padding:16px 8px 8px"><canvas id="c-ab" height="220"></canvas></div>
   <div id="ann-rows"></div>
-  <button class="hero-evo-btn" style="margin-top:10px" onclick="openMultiAssetChart()">📊 Comparar por activo &#8250;</button>
+  <button class="cmp-launch" onclick="openMultiAssetChart()">
+    <span class="cmp-ic">📊</span>
+    <span class="cmp-tx"><b>Comparar rentabilidad por activo</b><small>Curva por separado de cada posición</small></span>
+    <span class="cmp-arr">→</span>
+  </button>
 </section>
 
 <section class="view" id="v-cartera">
@@ -745,10 +768,16 @@ input,select,button,textarea{font-family:inherit}
 
 
 <section class="view" id="v-ajustes">
-  <details class="sblk sblk-coll" open><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">🔑</span>FUENTE DE DATOS &middot; FMP</span><span class="sbt-chev">▾</span></summary><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">🔑</span>FUENTE DE DATOS &middot; FMP</span><span class="sbt-chev">▾</span></summary><div class="sbs">Para que Explorar y Analista funcionen de forma fiable, conecta una clave gratuita de Financial Modeling Prep (250 consultas/d&iacute;a, con datos fundamentales incluidos). La clave se guarda solo en este dispositivo.</div><div id="finnhub-box"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">⚡</span>SINCRONIZACI&Oacute;N AUTOM&Aacute;TICA</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si est&aacute; activada, la app actualiza los precios al abrirla. Si est&aacute; desactivada (recomendado), solo se actualizan cuando pulses el bot&oacute;n &#8635; manualmente. Desactivada gastas menos llamadas al API y la app abre m&aacute;s r&aacute;pido.</div><label class="snd-tg"><input type="checkbox" id="autosync-chk" onchange="setAutoSync(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Actualizar precios al abrir la app</span></label></details>
-  <details class="sblk sblk-coll" open ontoggle="if(this.open)renderDiagnostico()"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">🔍</span>DIAGN&Oacute;STICO DE PRECIOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Datos crudos guardados de cada activo. Si ves precios o monedas raros, pulsa "Resincronizar" para descargarlos limpios.</div><button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button><div id="diag-out" style="margin-top:10px"></div></details>
-  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">💶</span>PRECIOS ACTUALES</span><span class="sbt-chev">▾</span></summary><div class="sbs">AUTO = se actualiza con &#8635; &middot; MANUAL = introd&uacute;celo t&uacute;</div><div id="price-rows"></div></details>
+  <details class="sblk sblk-coll" ontoggle="if(this.open)renderDiagnostico()"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">💶</span>PRECIOS Y DIAGN&Oacute;STICO</span><span class="sbt-chev">▾</span></summary>
+    <div class="sbs">Edita los precios actuales o pulsa "Resincronizar" para descargarlos limpios desde la fuente. AUTO = se actualiza con &#8635; &middot; MANUAL = los introduces t&uacute;.</div>
+    <button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button>
+    <div class="sbs" style="margin-top:14px;font-weight:600;color:var(--w);letter-spacing:.04em;font-size:11px">PRECIOS ACTUALES</div>
+    <div id="price-rows"></div>
+    <div class="sbs" style="margin-top:14px;font-weight:600;color:var(--w);letter-spacing:.04em;font-size:11px">DATOS CRUDOS GUARDADOS</div>
+    <div id="diag-out"></div>
+  </details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">📅</span>PRECIOS HIST&Oacute;RICOS A 31/12 (OPCIONAL)</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si lo dejas vac&iacute;o se usa el precio actual. Rellenar el cierre real de cada a&ntilde;o afina el c&aacute;lculo de la rentabilidad anual.</div><div id="hist-table"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">✏️</span>EDITAR ACTIVOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Pulsa un activo para editar su nombre, tipo y ticker. &Uacute;til si la importaci&oacute;n asign&oacute; mal el tipo o si necesitas corregir el ticker para que se sincronicen los precios.</div><div id="cat-rows"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">📥</span>IMPORTAR OPERACIONES DE BROKER</span><span class="sbt-chev">▾</span></summary><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></details>
@@ -923,7 +952,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v9.3';      /* visible en header y Ajustes */
+const APP_VERSION='v9.4';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3644,8 +3673,12 @@ function renderExplore(){
 
   /* ── Valoración EV/FCF ── */
   const val=evFcfValuation(fund,price);
-  html+=`<div class="exp-card">
-    <div class="an-h"><span class="ic" style="background:rgba(255,213,74,.15)">⚖️</span>Valoración por EV/FCF<span class="pill-est">EST</span>${noteIcon('evfcf')}</div>`;
+  const valHeaderInfo=val.ok?`Potencial ${val.upside>=0?'+':''}${(val.upside*100).toFixed(1)}% · Precio objetivo ${val.fairPrice.toFixed(2)} ${cur}`:'No aplicable a este activo';
+  html+=`<details class="exp-coll"><summary class="exp-coll-h">
+    <span class="ic" style="background:rgba(255,213,74,.15)">⚖️</span>
+    <span class="exp-coll-tx"><b>Valoración por EV/FCF <span class="pill-est">EST</span></b><small>${valHeaderInfo}</small></span>
+    <span class="exp-coll-chev">▾</span>
+  </summary><div class="exp-coll-body">`;
   if(val.ok){
     const upCls=val.upside>0?'pos':'neg';
     html+=`<div class="prose" style="margin-bottom:10px">Se aplica un múltiplo <b>EV/FCF de ${val.mult}×</b>, asignado de forma conservadora según el sector (<b>${val.sector||'genérico'}</b>) y la posición de mercado de la empresa.</div>
@@ -3659,7 +3692,7 @@ function renderExplore(){
   }else{
     html+=`<div class="prose">${val.reason}. La valoración por EV/FCF requiere flujo de caja libre positivo (no aplicable a la mayoría de bancos, REITs o empresas en pérdidas).</div>`;
   }
-  html+='</div>';
+  html+='</div></details>';
 
   /* ── Previsiones 3 años (PLEGABLE) ── */
   const proj=projection(fund);
@@ -3694,19 +3727,23 @@ function renderExplore(){
     </div></details>`;
   }
 
-  /* ── Análisis técnico ── */
+  /* ── Análisis técnico (PLEGABLE) ── */
   const tech=technicalAnalysis(chart.series);
   if(tech){
     const sigColor=tech.signal==='compra'?'var(--g)':tech.signal==='venta'?'var(--r)':tech.signal==='cautela'?'var(--warn)':'var(--w2)';
-    html+=`<div class="exp-card">
-      <div class="an-h"><span class="ic" style="background:rgba(255,107,122,.15)">📉</span>Análisis técnico${noteIcon('rsi')}</div>
+    const sigLabel=tech.signal==='compra'?'COMPRA':tech.signal==='venta'?'VENTA':tech.signal==='cautela'?'CAUTELA':'NEUTRAL';
+    html+=`<details class="exp-coll"><summary class="exp-coll-h">
+      <span class="ic" style="background:rgba(255,107,122,.15)">📉</span>
+      <span class="exp-coll-tx"><b>Análisis técnico</b><small>Tendencia ${tech.trend} · RSI ${tech.rsi.toFixed(0)} · Señal: <span style="color:${sigColor};font-weight:600">${sigLabel}</span></small></span>
+      <span class="exp-coll-chev">▾</span>
+    </summary><div class="exp-coll-body">
       <div class="metric-row"><span class="metric-l">Tendencia actual</span><span class="metric-v" style="text-transform:capitalize">${tech.trend}</span></div>
-      <div class="metric-row"><span class="metric-l">RSI (14)</span><span class="metric-v">${tech.rsi.toFixed(0)} <small>${tech.rsi<32?'sobreventa':tech.rsi>70?'sobrecompra':'neutral'}</small></span></div>
+      <div class="metric-row"><span class="metric-l">RSI (14)${noteIcon('rsi')}</span><span class="metric-v">${tech.rsi.toFixed(0)} <small>${tech.rsi<32?'sobreventa':tech.rsi>70?'sobrecompra':'neutral'}</small></span></div>
       <div class="metric-row"><span class="metric-l">Soporte cercano</span><span class="metric-v">${tech.support.toFixed(2)} <small>(-${(tech.toSupport*100).toFixed(1)}%)</small></span></div>
       <div class="metric-row"><span class="metric-l">Resistencia cercana</span><span class="metric-v">${tech.resistance.toFixed(2)} <small>(+${(tech.toResist*100).toFixed(1)}%)</small></span></div>
       <div class="metric-row"><span class="metric-l">Media 50 / 200 sesiones</span><span class="metric-v">${tech.sma50?tech.sma50.toFixed(1):'—'} / ${tech.sma200?tech.sma200.toFixed(1):'—'}</span></div>
       <div class="prose" style="margin-top:10px;border-left:2px solid ${sigColor};padding-left:10px"><b style="color:${sigColor}">Conclusión técnica:</b> ${tech.signalTxt}</div>
-    </div>`;
+    </div></details>`;
   }
 
   /* ── SECTOR: oportunidades + competidores (FUSIONADO Y PLEGABLE) ── */
