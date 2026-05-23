@@ -625,7 +625,7 @@ input,select,button,textarea{font-family:inherit}
 <section class="view active" id="v-dash">
   <div class="hero">
     <div class="hero-hdr">
-      <div class="hlbl">ACTIVOS TOTALES<span class="note-ic" onclick="event.stopPropagation();explain('activos-totales')">?</span></div>
+      <div class="hlbl">ACTIVOS<span class="note-ic" onclick="event.stopPropagation();explainActivos()">?</span></div>
       <div class="hero-filter" id="hero-filter"></div>
       <button class="hero-evo-mini" onclick="openEvolutionChart()" aria-label="Evolución de activos">📈</button>
     </div>
@@ -958,7 +958,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v9.5';      /* visible en header y Ajustes */
+const APP_VERSION='v9.6';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1198,20 +1198,18 @@ function positionAtDate(aid,dateStr){
 
 /* Valor de la cartera a fin de año en EUR.
    Usa el coste a esa fecha para precios faltantes -> consistente con datos cortados. */
-function portfolioValueAtYearEnd(year){
+function portfolioValueAtYearEnd(year,okIds){
   let total=0;
   const cut=year+'-12-31';
   DB.assets.forEach(a=>{
+    if(okIds&&!okIds.has(a.id))return;
     const pos=positionAtDate(a.id,cut);
     if(pos.units<=0)return;
     const px=priceAtYearEnd(a.id,year);
     const eff=px>0?px:(pos.cost/pos.units);
     let val=pos.units*eff;
-    /* Salvaguarda contra precios disparatados (moneda mal guardada,
-       precio en peniques tratado como GBP, etc.): si el valor del activo
-       supera 10× su coste, casi seguro es un dato corrupto -> usar coste. */
     if(pos.cost>0&&val>pos.cost*10){
-      val=pos.cost;   /* fallback conservador: valoración a coste */
+      val=pos.cost;
     }
     total+=val;
   });
@@ -1226,9 +1224,9 @@ function portfolioCostAtDate(dateStr){
   return total;
 }
 
-function netFlowInYear(year){
+function netFlowInYear(year,okIds){
   let net=0;
-  DB.ops.filter(o=>o.dt&&o.dt.slice(0,4)===String(year)).forEach(o=>{
+  DB.ops.filter(o=>o.dt&&o.dt.slice(0,4)===String(year)&&(!okIds||okIds.has(o.aid))).forEach(o=>{
     if(o.t==='C')net+=o.q*o.p+(o.f||0);
     else if(o.t==='V')net-=(o.q*o.p-(o.f||0));
   });
@@ -1263,25 +1261,35 @@ function annualReturns(){
     return {year:yr,valIni,valFin,flow,gain,rent,partial,isCurrent:yr>=curYear};
   });
 }
-function calcCAGR(){
+function calcCAGR(filterType){
   const years=activeYears();if(years.length<1)return 0;
-  const totalInvested=DB.ops.filter(o=>o.t==='C').reduce((s,o)=>s+o.q*o.p+(o.f||0),0);
+  /* IDs de activos que cuentan según el filtro (todos o solo del tipo dado) */
+  const okIds=filterType&&filterType!=='Todos'
+    ?new Set(DB.assets.filter(a=>a.type===filterType).map(a=>a.id))
+    :null;
+  const ops=okIds?DB.ops.filter(o=>okIds.has(o.aid)):DB.ops;
+  if(!ops.length)return 0;
+  const totalInvested=ops.filter(o=>o.t==='C').reduce((s,o)=>s+o.q*o.p+(o.f||0),0);
   if(totalInvested<=0)return 0;
-  const valNow=portfolioTotals().val;
-  const firstDate=DB.ops.map(o=>o.dt).sort()[0];
+  const valNow=portfolioTotalsByType(filterType||'Todos').val;
+  const firstDate=ops.map(o=>o.dt).sort()[0];
   const yearsElapsed=Math.max(0.5,(new Date()-new Date(firstDate))/(365.25*24*3600*1000));
   return Math.pow(valNow/totalInvested,1/yearsElapsed)-1;
 }
-function currentYearReturn(){
+function currentYearReturn(filterType){
   const years=activeYears();
   if(!years.length)return{valIni:0,valAct:0,gain:0,rent:0,year:new Date().getFullYear()};
   const curYear=years[years.length-1];
-  /* Rent. del año en curso: time-weighted return.
+  /* Rent. del año en curso filtrada por tipo si corresponde:
      valIni = activos al 31-dic del año anterior
-     valAct = activos hoy (valor abierto, no incluye ventas pasadas) */
-  const valIni=portfolioValueAtYearEnd(curYear-1);
-  const valAct=portfolioTotals().valOpen;
-  const flow=netFlowInYear(curYear);
+     valAct = activos hoy (valor abierto)
+     flow   = neto de compras/ventas durante el año en curso */
+  const okIds=filterType&&filterType!=='Todos'
+    ?new Set(DB.assets.filter(a=>a.type===filterType).map(a=>a.id))
+    :null;
+  const valIni=portfolioValueAtYearEnd(curYear-1,okIds);
+  const valAct=portfolioTotalsByType(filterType||'Todos').valOpen;
+  const flow=netFlowInYear(curYear,okIds);
   const gain=valAct-valIni-flow;
   const base=valIni+flow/2;
   let rent=base>0?gain/base:0;
@@ -3031,7 +3039,7 @@ function toggleHeroSel(ev){
 }
 function renderDash(){
   renderHeroFilter();
-  const T=portfolioTotalsByType(heroFilter),cg=calcCAGR(),cy=currentYearReturn(),an=annualReturns();
+  const T=portfolioTotalsByType(heroFilter),cg=calcCAGR(heroFilter),cy=currentYearReturn(heroFilter),an=annualReturns();
   /* ACTIVOS TOTALES = lo que vale hoy lo que tienes (no incluye ventas pasadas) */
   setText('h-amt',fe(T.valOpen));
   /* GANANCIA / RENT = TOTAL RETURN (incluye realizado + no realizado vs invertido total) */
@@ -4543,11 +4551,46 @@ function openYearDetail(year){
 /* ── GLOSARIO: explicaciones desplegables de cada cabecera del Panel ── */
 const PANEL_GLOSSARY={
   'activos-totales':{
-    t:'Activos totales',
-    q:'¿Qué es?',
-    a:'El valor de mercado actual de todo lo que tienes en cartera <b>hoy</b>, en euros.',
-    h:'Suma de (unidades × precio actual) de cada posición abierta, convertido a EUR. No incluye dinero ya recibido por ventas pasadas.',
-    n:'Si el número sube respecto a "Total invertido" tienes ganancia <span style="color:var(--g)">no realizada</span>; si baja, pérdida no realizada.'
+    t:'Activos · vista general',
+    q:'¿Qué muestra esta tarjeta?',
+    a:'El valor de mercado <b>actual de toda tu cartera</b> sumando absolutamente todas las posiciones abiertas (acciones, ETFs, criptos, bonos, fondos…) convertido a euros.',
+    h:'Para cada activo abierto: unidades × precio actual, pasado a EUR según el tipo de cambio en vivo. Los totales y porcentajes que ves en las demás tarjetas se calculan sobre este mismo conjunto.',
+    n:'Si cambias el desplegable a un tipo concreto, todos los datos del Panel (ganancia, CAGR, año actual) se recalculan considerando solo ese tipo de activos.'
+  },
+  'activos-acciones':{
+    t:'Activos · solo Acciones',
+    q:'¿Qué muestra ahora?',
+    a:'El valor actual de mercado de <b>todas tus acciones individuales</b> (Apple, Microsoft, Iberdrola, etc.), excluyendo ETFs, cripto, bonos y fondos.',
+    h:'Filtra DB.assets por type==="Acciones" y suma unidades × precio actual de cada posición abierta, pasado a EUR.',
+    n:'Las acciones suelen ser la parte más volátil y con mayor potencial de rentabilidad de la cartera. Conviene revisar también la concentración: si una sola acción representa más del 20-25% del total, hay riesgo idiosincrático elevado.'
+  },
+  'activos-etf':{
+    t:'Activos · solo ETFs',
+    q:'¿Qué muestra ahora?',
+    a:'El valor actual de tus <b>fondos cotizados (ETFs)</b>: réplica de índices, sectoriales, temáticos, etc. No incluye acciones individuales ni otros tipos.',
+    h:'Filtra DB.assets por type==="ETF" y suma unidades × precio actual de cada posición abierta, pasado a EUR.',
+    n:'Los ETFs aportan diversificación instantánea y suelen tener menor volatilidad que acciones individuales. Vigila las comisiones (TER) y el seguimiento del índice subyacente.'
+  },
+  'activos-cripto':{
+    t:'Activos · solo Cripto',
+    q:'¿Qué muestra ahora?',
+    a:'El valor actual de mercado de tus <b>criptoactivos</b> (Bitcoin, Ethereum, stablecoins, etc.) convertidos a euros al precio del momento.',
+    h:'Filtra DB.assets por type==="Cripto" y suma unidades × precio actual de cada posición abierta. La cripto cotiza 24/7, así que el valor cambia constantemente.',
+    n:'La cripto suele ser la parte más volátil de una cartera. Vigila su peso relativo: si supera el 10-15% del total, el riesgo de la cartera global aumenta significativamente.'
+  },
+  'activos-bonos':{
+    t:'Activos · solo Bonos',
+    q:'¿Qué muestra ahora?',
+    a:'El valor actual de tus <b>bonos, letras del tesoro o renta fija</b> en cartera.',
+    h:'Filtra DB.assets por type==="Bonos" y suma unidades × precio actual de cada posición abierta, pasado a EUR.',
+    n:'Los bonos aportan estabilidad y rentas predecibles. Su precio sube cuando bajan los tipos de interés y baja cuando suben — vigila la duración media de tu cartera de renta fija.'
+  },
+  'activos-fondos':{
+    t:'Activos · solo Fondos',
+    q:'¿Qué muestra ahora?',
+    a:'El valor actual de tus <b>fondos de inversión tradicionales</b> (no cotizados como ETF), valorados al último NAV disponible.',
+    h:'Filtra DB.assets por type==="Fondos" y suma unidades × NAV actual de cada posición abierta, pasado a EUR.',
+    n:'Los fondos tradicionales se valoran una vez al día al cierre. Revisa periódicamente las comisiones de gestión: en Europa la media supera el 1.5%, lo que erosiona rentabilidad a largo plazo.'
   },
   'total-invertido':{
     t:'Total invertido',
@@ -4659,6 +4702,20 @@ function explain(key){
     <div class="ex-a">${g.h}</div>
     <div class="ex-note">${g.n}</div>
     <div class="shrow"><button class="bok" onclick="closeSheet()">Entendido</button></div>`);
+}
+/* La tarjeta de Activos muestra una explicación distinta según el tipo
+   seleccionado en el desplegable (Todos, Acciones, ETF, etc.). */
+function explainActivos(){
+  const f=(typeof heroFilter!=='undefined')?heroFilter:'Todos';
+  const map={
+    'Todos':'activos-totales',
+    'Acciones':'activos-acciones',
+    'ETF':'activos-etf',
+    'Cripto':'activos-cripto',
+    'Bonos':'activos-bonos',
+    'Fondos':'activos-fondos',
+  };
+  explain(map[f]||'activos-totales');
 }
 /* helper HTML: pega un icono "?" junto a un texto, que abre el glosario */
 function explainCAGR(){
