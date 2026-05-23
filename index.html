@@ -57,24 +57,24 @@ input,select,button,textarea{font-family:inherit}
 .view{display:none;padding:0 14px 28px;animation:fup .25s ease}
 .view.active{display:block}
 @keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.sec{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--w2);padding:20px 2px 9px;text-transform:uppercase}
-.hero{margin:14px 0 0;background:linear-gradient(148deg,#10243f,#0a1626);border:1px solid var(--line);border-radius:var(--rad);padding:22px 20px 14px;position:relative;overflow:hidden}
+.sec{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--w2);padding:13px 2px 7px;text-transform:uppercase}
+.hero{margin:10px 0 0;background:linear-gradient(148deg,#10243f,#0a1626);border:1px solid var(--line);border-radius:var(--rad);padding:14px 16px 10px;position:relative;overflow:hidden}
 .hero::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(34,211,238,.1),transparent 70%);border-radius:50%;pointer-events:none}
-.hlbl{font-size:10px;letter-spacing:.2em;color:var(--w2);margin-bottom:5px}
-.hamt{font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;color:var(--w);line-height:1.05;letter-spacing:-.02em;margin-bottom:9px}
-.hrow{display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:10px;flex-wrap:wrap}
+.hlbl{font-size:10px;letter-spacing:.2em;color:var(--w2);margin-bottom:3px}
+.hamt{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700;color:var(--w);line-height:1.05;letter-spacing:-.02em;margin-bottom:6px;margin-top:4px}
+.hrow{display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:6px;flex-wrap:wrap}
 .hg{font-family:'JetBrains Mono',monospace}.hg.pos{color:var(--g)}.hg.neg{color:var(--r)}
 .hs{color:var(--w3)}.hp{color:var(--w2);font-family:'JetBrains Mono',monospace}
 .hcg{color:var(--c2);font-family:'JetBrains Mono',monospace;cursor:pointer;border-bottom:1px dotted var(--c2)}
-.spkw{height:50px}.spkw canvas{width:100%!important}
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
-.sc{background:var(--card);border:1px solid var(--line);border-radius:var(--rs);padding:13px 14px}
+.spkw{height:38px}.spkw canvas{width:100%!important;max-height:38px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;grid-auto-rows:1fr}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:var(--rs);padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-start}
 .sc.tap{cursor:pointer}.sc.tap:active{border-color:var(--c)}
-.sl{font-size:9px;letter-spacing:.13em;color:var(--w2);margin-bottom:5px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.sl{font-size:9px;letter-spacing:.13em;color:var(--w2);margin-bottom:4px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
 .sl .qm{width:14px;height:14px;border-radius:50%;background:var(--c2);color:var(--bg);font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
-.sv{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;color:var(--w)}
+.sv{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;color:var(--w);line-height:1.1}
 .sv.g{color:var(--g)}.sv.r{color:var(--r)}.sv.c{color:var(--c)}.sv.gold{color:var(--gold)}
-.ybl{background:var(--card2);border:1px solid var(--line);border-radius:var(--rad);padding:16px 6px;display:flex;align-items:center;justify-content:space-around}
+.ybl{background:var(--card2);border:1px solid var(--line);border-radius:var(--rad);padding:10px 6px;display:flex;align-items:center;justify-content:space-around}
 .ybc{text-align:center;flex:1;padding:0 4px}
 .ybl2{font-size:9px;letter-spacing:.1em;color:var(--w2);margin-bottom:5px;text-transform:uppercase}
 .ybv{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--w)}
@@ -440,7 +440,7 @@ input,select,button,textarea{font-family:inherit}
 .hero-evo-btn{display:block;width:100%;margin-top:10px;background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px;color:var(--w2);font-size:11.5px;font-weight:500;cursor:pointer;letter-spacing:.02em}
 .hero-evo-btn:active{background:var(--bg2)}
 /* Botón moderno "Comparar rentabilidad por activo" en el Panel */
-.cmp-launch{display:flex;align-items:center;gap:13px;width:100%;background:linear-gradient(135deg,rgba(34,150,235,.10),rgba(139,124,255,.06));border:1px solid rgba(34,150,235,.22);border-radius:13px;padding:12px 14px;margin-top:14px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .15s,background .15s}
+.cmp-launch{display:flex;align-items:center;gap:11px;width:100%;background:linear-gradient(135deg,rgba(34,150,235,.10),rgba(139,124,255,.06));border:1px solid rgba(34,150,235,.22);border-radius:12px;padding:9px 12px;margin-top:10px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .15s,background .15s}
 .cmp-launch:active{transform:scale(0.98);background:linear-gradient(135deg,rgba(34,150,235,.18),rgba(139,124,255,.12))}
 .cmp-ic{font-size:19px;flex-shrink:0;filter:saturate(0.9)}
 .cmp-tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -612,6 +612,40 @@ input,select,button,textarea{font-family:inherit}
    (ej: CAGR debajo de Media Anual, banda cualitativa debajo de Volatilidad).
    Mantiene la misma altura visual entre tarjetas hermanas. */
 .sv-sub2{font-size:10.5px;color:var(--w3);font-family:'JetBrains Mono',monospace;margin-top:4px;letter-spacing:.02em;font-weight:500;line-height:1.2}
+
+/* ── Botón "Sesión" en hero ── */
+.hero-sess-btn{display:inline-flex;align-items:center;justify-content:center;background:rgba(52,232,158,.10);border:1px solid rgba(52,232,158,.32);color:#34e89e;font-size:11px;font-weight:600;padding:5px 11px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.04em;height:28px;white-space:nowrap;flex-shrink:0}
+.hero-sess-btn:active{transform:scale(0.96);background:rgba(52,232,158,.18)}
+
+/* ── Tarjeta de posición con logo + plegado + % día ── */
+.acard{padding:10px 12px}
+.acard .atop{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.acard-logo{flex-shrink:0;width:36px;height:36px;border-radius:9px;overflow:hidden;background:var(--bg2);display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+.acard-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.acard-logo-i{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.anm-wrap{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.acard .anm{font-size:14px;font-weight:600;color:var(--w);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acard-day{display:inline-block;font-size:10.5px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.01em;padding:1px 6px;border-radius:6px;width:fit-content}
+.acard-day.pos{background:rgba(52,232,158,.14);color:var(--g)}
+.acard-day.neg{background:rgba(255,122,138,.14);color:var(--r)}
+.acard .atop-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.acard-chev{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(34,150,235,.10);color:var(--c2);font-size:12px;transition:transform .25s}
+.acard:not(.acard-coll) .acard-chev{transform:rotate(180deg);background:rgba(34,150,235,.18)}
+/* Cuerpo plegable */
+.acard-body{margin-top:10px;animation:fadein .2s ease}
+.acard.acard-coll .acard-body{display:none}
+.acard-det{margin-top:8px;width:100%;background:transparent;border:1px solid var(--line);color:var(--c2);font-size:11px;font-weight:600;padding:7px;border-radius:8px;cursor:pointer;font-family:inherit}
+.acard-det:active{background:rgba(34,150,235,.08)}
+
+/* ── Resumen Cartera con % día y botón sesión ── */
+.csum-card{display:flex;align-items:center;gap:10px}
+.csum-l{flex:1;min-width:0}
+.csum-lbl{font-size:9.5px;letter-spacing:.1em;color:var(--w3);margin-bottom:2px;text-transform:uppercase}
+.csum-val{font-size:14px;font-weight:700;color:var(--w);font-family:'Space Grotesk',sans-serif}
+.csum-val.g{color:var(--g)}.csum-val.r{color:var(--r)}
+.csum-day{min-width:0}
+.csum-sess{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(34,150,235,.10);border:1px solid rgba(34,150,235,.28);color:var(--c2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.csum-sess:active{transform:scale(0.94);background:rgba(34,150,235,.20)}
 </style>
 </head>
 <body>
@@ -634,6 +668,7 @@ input,select,button,textarea{font-family:inherit}
     <div class="hero-hdr">
       <div class="hlbl">ACTIVOS<span class="note-ic" onclick="event.stopPropagation();explainActivos()">?</span></div>
       <div class="hero-filter" id="hero-filter"></div>
+      <button class="hero-sess-btn" onclick="openSessionChart()" aria-label="Sesión bursátil del día">Sesión</button>
       <button class="hero-evo-mini" onclick="openEvolutionChart()" aria-label="Evolución de activos">📈</button>
     </div>
     <div class="hamt hide-val" id="h-amt">&#8364; 0</div>
@@ -973,7 +1008,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v9.9';      /* visible en header y Ajustes */
+const APP_VERSION='v10.0';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2645,6 +2680,115 @@ function buildVerdict(graham,buffett,valuation,tech){
   else{verdict='EVITAR';cls='sell';sub='Los indicadores actuales no respaldan una compra. Riesgo elevado frente al potencial.';}
   return {score,verdict,cls,sub};
 }
+
+/* ════════════ DATOS DE SESIÓN BURSÁTIL (sin API key) ════════════
+   Usamos Yahoo Finance v8 chart endpoint con interval=1m y range=1d.
+   Devuelve precio minuto a minuto del día actual + pre/post-market si está
+   habilitado. Sin API key. Sin coste de FMP. Rate-limited blando.
+   Cacheamos 5 minutos para no sobrepedir. */
+const _SESS_CACHE={};
+async function fetchYahooSession(ticker){
+  if(!ticker)return null;
+  const k=ticker.toUpperCase();
+  const c=_SESS_CACHE[k];
+  if(c&&Date.now()-c.ts<5*60*1000)return c.data;
+  const hosts=['query1.finance.yahoo.com','query2.finance.yahoo.com'];
+  for(const host of hosts){
+    try{
+      const url='https://'+host+'/v8/finance/chart/'+encodeURIComponent(k)+
+        '?interval=1m&range=1d&includePrePost=true';
+      const txt=await smartFetch(url,{cache:0,validate:t=>t.includes('"chart"')});
+      const data=JSON.parse(txt);
+      const r=data?.chart?.result?.[0];
+      if(!r)continue;
+      const meta=r.meta||{};
+      const ts=r.timestamp||[];
+      const closes=r.indicators?.quote?.[0]?.close||[];
+      const points=[];
+      for(let i=0;i<ts.length;i++){
+        if(closes[i]!=null)points.push({t:ts[i],p:closes[i]});
+      }
+      const prevClose=Number(meta.chartPreviousClose||meta.previousClose||0);
+      const current=Number(meta.regularMarketPrice||(points.length?points[points.length-1].p:0));
+      const dayPct=prevClose>0?(current-prevClose)/prevClose:0;
+      /* Encontrar el límite entre sesión regular y pre/post */
+      const regOpen=meta.currentTradingPeriod?.regular?.start;
+      const regClose=meta.currentTradingPeriod?.regular?.end;
+      const result={
+        ticker:k,
+        currency:meta.currency,
+        prevClose,
+        current,
+        dayPct,
+        points,
+        regOpen,regClose,
+      };
+      _SESS_CACHE[k]={ts:Date.now(),data:result};
+      return result;
+    }catch(e){}
+  }
+  return null;
+}
+
+/* % del día para TODOS los activos abiertos de la cartera.
+   Devuelve {byId:{aid:{dayPct,current,prevClose}}, totalPct, totalVal}.
+   Hace una llamada Yahoo por activo (paralelas). */
+async function fetchPortfolioDayPct(){
+  const assets=DB.assets.filter(a=>{
+    const m=assetMetrics(a);return m.units>1e-9&&a.ticker;
+  });
+  const out={byId:{},totalPct:0,totalVal:0,totalPrev:0};
+  if(!assets.length)return out;
+  const results=await Promise.all(assets.map(a=>fetchYahooSession(a.ticker).catch(()=>null)));
+  let totalVal=0,totalPrev=0;
+  assets.forEach((a,i)=>{
+    const s=results[i];if(!s||!s.current||!s.prevClose)return;
+    const m=assetMetrics(a);
+    const valNative=m.units*s.current;
+    const prevNative=m.units*s.prevClose;
+    const valEur=toEUR(valNative,s.currency||assetCurrency(a));
+    const prevEur=toEUR(prevNative,s.currency||assetCurrency(a));
+    out.byId[a.id]={dayPct:s.dayPct,current:s.current,prevClose:s.prevClose};
+    totalVal+=valEur;
+    totalPrev+=prevEur;
+  });
+  out.totalVal=totalVal;
+  out.totalPrev=totalPrev;
+  out.totalPct=totalPrev>0?(totalVal-totalPrev)/totalPrev:0;
+  return out;
+}
+
+/* Curva intradía agregada de TODA la cartera en EUR.
+   Para cada activo: serie de precios del día × unidades → curva en EUR.
+   Sumamos punto a punto. Útil para la gráfica "Sesión de la cartera". */
+async function fetchPortfolioSessionCurve(){
+  const assets=DB.assets.filter(a=>{
+    const m=assetMetrics(a);return m.units>1e-9&&a.ticker;
+  });
+  if(!assets.length)return null;
+  const results=await Promise.all(assets.map(a=>fetchYahooSession(a.ticker).catch(()=>null)));
+  /* unificar timestamps: tomamos los del primer activo válido como base */
+  const base=results.find(r=>r&&r.points&&r.points.length);
+  if(!base)return null;
+  const tsList=base.points.map(p=>p.t);
+  const curve=tsList.map(t=>({t,p:0}));
+  let totalPrev=0;
+  assets.forEach((a,i)=>{
+    const s=results[i];if(!s||!s.points.length)return;
+    const m=assetMetrics(a);
+    totalPrev+=toEUR(m.units*s.prevClose,s.currency||assetCurrency(a));
+    /* indexar puntos de este activo por timestamp para join rápido */
+    const map={};
+    s.points.forEach(p=>{map[p.t]=p.p;});
+    let lastPx=s.points[0].p;
+    curve.forEach(c=>{
+      const px=map[c.t];
+      if(px!=null)lastPx=px;        /* si no hay punto exacto, mantener último */
+      c.p+=toEUR(m.units*lastPx,s.currency||assetCurrency(a));
+    });
+  });
+  return {curve,totalPrev};
+}
 /* ════ CHARTS ════ */
 const CH={};
 const TT={backgroundColor:'#16263d',borderColor:'#243752',borderWidth:1,titleColor:'#f4f8ff',bodyColor:'#aebfd4',padding:10,cornerRadius:8};
@@ -3224,10 +3368,17 @@ function renderCartera(){
   const cs=G('cart-sum');
   if(cs){
     const cls=T.pct>=0?'g':'r';
+    /* % del día desde el cache global Yahoo */
+    const dp=window._DAYPCT;
+    const dayHtml=(dp&&!isNaN(dp.totalPct))
+      ? `<div class="csum-l csum-day"><div class="csum-lbl">Hoy</div><div class="csum-val ${dp.totalPct>=0?'g':'r'}">${dp.totalPct>=0?'+':''}${(dp.totalPct*100).toFixed(2)}%</div></div>`
+      : '<div class="csum-l csum-day"><div class="csum-lbl">Hoy</div><div class="csum-val" style="color:var(--w3);font-size:11px">—</div></div>';
     cs.innerHTML=`<div class="csum-card">
       <div class="csum-l"><div class="csum-lbl">Valor</div><div class="csum-val hide-val sm">${fe(T.valOpen)}</div></div>
-      <div class="csum-l"><div class="csum-lbl">Posiciones</div><div class="csum-val">${actCount}</div></div>
-      <div class="csum-l"><div class="csum-lbl">Rent. total</div><div class="csum-val ${cls}">${fp(T.pct)}</div></div>
+      <div class="csum-l"><div class="csum-lbl">Posic.</div><div class="csum-val">${actCount}</div></div>
+      <div class="csum-l"><div class="csum-lbl">Rent.</div><div class="csum-val ${cls}">${fp(T.pct)}</div></div>
+      ${dayHtml}
+      <button class="csum-sess" onclick="openCarteraSessionChart()" aria-label="Gráfica sesión cartera">📊</button>
     </div>`;
   }
   /* Selector desplegable de tipo (mismo patrón que el del hero) */
@@ -3316,23 +3467,72 @@ function renderPositions(){
   list.innerHTML=items.map(a=>{
     const m=assetMetrics(a),col=TC[a.type]||'#9aa8bd',closed=m.units<=0;
     const peso=totOpen>0?m.valOpen/totOpen:0;
-    /* Botón de "Explorar" solo si hay ticker (sin ticker no se puede buscar) */
+    /* Logo: FMP image-stock o letra inicial. No consume API key. */
+    const logo=assetLogoHtml(a);
+    /* % del día: viene del cache _DAYPCT (Yahoo), null si aún no se ha cargado */
+    const dp=window._DAYPCT&&window._DAYPCT.byId&&window._DAYPCT.byId[a.id];
+    const dayChip=(dp&&dp.dayPct!=null)
+      ? `<span class="acard-day ${dp.dayPct>=0?'pos':'neg'}">${dp.dayPct>=0?'+':''}${(dp.dayPct*100).toFixed(2)}%</span>`
+      : '';
+    /* Botón Explorar */
     const expBtn=a.ticker
       ? `<button class="acard-exp" onclick="event.stopPropagation();navTo('explorar');setTimeout(()=>exploreExample('${a.ticker}'),300)" aria-label="Analizar en Explorar">🔍</button>`
       : '';
-    return `<div class="acard" onclick="showAssetDetail('${a.id}')">
-      <div class="atop"><div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div><div class="atop-r"><div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div>${expBtn}</div></div>
-      <div class="ams">
-        <div><div class="aml">Valor</div><div class="amv" style="color:${col}">${fe(m.valOpen)}</div></div>
-        <div><div class="aml">Invertido</div><div class="amv">${fe(m.openCost)}</div></div>
-        <div><div class="aml">Rent. total</div><div class="amv ${pc(m.pct)}">${m.inv>0?fp(m.pct):'—'}</div></div>
-        <div><div class="aml">Ganancia total</div><div class="amv ${pc(m.gain)}">${m.gain>=0?'+':'-'}${fe(Math.abs(m.gain))}</div></div>
-        <div><div class="aml">Unidades</div><div class="amv">${fn(m.units)}</div></div>
-        <div><div class="aml">Peso</div><div class="amv" style="color:var(--gold)">${(peso*100).toFixed(1)}%</div></div>
+    /* Tarjeta plegada por defecto: cabecera con logo, nombre, %día, tipo y flecha.
+       Al pulsar la cabecera se despliega el resto (valores). */
+    return `<div class="acard acard-coll" data-aid="${a.id}">
+      <div class="atop" onclick="togglePosCard('${a.id}')">
+        ${logo}
+        <div class="anm-wrap">
+          <div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div>
+          ${dayChip}
+        </div>
+        <div class="atop-r">
+          <div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div>
+          ${expBtn}
+          <span class="acard-chev">▾</span>
+        </div>
       </div>
-      <div class="abar"><div class="abf" style="width:${(peso*100).toFixed(1)}%;background:${col}"></div></div>
+      <div class="acard-body">
+        <div class="ams">
+          <div><div class="aml">Valor</div><div class="amv" style="color:${col}">${fe(m.valOpen)}</div></div>
+          <div><div class="aml">Invertido</div><div class="amv">${fe(m.openCost)}</div></div>
+          <div><div class="aml">Rent. total</div><div class="amv ${pc(m.pct)}">${m.inv>0?fp(m.pct):'—'}</div></div>
+          <div><div class="aml">Ganancia total</div><div class="amv ${pc(m.gain)}">${m.gain>=0?'+':'-'}${fe(Math.abs(m.gain))}</div></div>
+          <div><div class="aml">Unidades</div><div class="amv">${fn(m.units)}</div></div>
+          <div><div class="aml">Peso</div><div class="amv" style="color:var(--gold)">${(peso*100).toFixed(1)}%</div></div>
+        </div>
+        <div class="abar"><div class="abf" style="width:${(peso*100).toFixed(1)}%;background:${col}"></div></div>
+        <button class="acard-det" onclick="event.stopPropagation();showAssetDetail('${a.id}')">Ver detalle del activo →</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+/* Logo del activo: usa FMP image-stock (CDN sin coste de API key) para
+   acciones/ETFs con ticker. Si falla la imagen, muestra letra inicial con
+   color del tipo. Para activos sin ticker (Bonos, fondos, cripto) → inicial. */
+function assetLogoHtml(a){
+  const col=TC[a.type]||'#9aa8bd';
+  const initial=(a.name||'?').trim().charAt(0).toUpperCase();
+  const fallback=`<div class="acard-logo acard-logo-i" style="background:${col}22;color:${col};border-color:${col}44">${initial}</div>`;
+  if(!a.ticker||a.type==='Bonos'||a.type==='Fondos')return fallback;
+  if(a.type==='Cripto'){
+    /* Cripto: usar primer carácter del ticker (BTC → B) con color cripto */
+    return `<div class="acard-logo acard-logo-i" style="background:${col}22;color:${col};border-color:${col}44">${(a.ticker||'?').charAt(0).toUpperCase()}</div>`;
+  }
+  /* FMP image-stock: endpoint estático que no consume la API key (es CDN
+     de imágenes). Si falla, se sustituye por inicial via onerror. */
+  const base=(a.ticker||'').split('.')[0].toUpperCase();
+  const src='https://financialmodelingprep.com/image-stock/'+encodeURIComponent(base)+'.png';
+  return `<div class="acard-logo"><img src="${src}" alt="${base}" loading="lazy" onerror="this.parentElement.outerHTML='${fallback.replace(/'/g,"\\'")}';"></div>`;
+}
+
+/* Despliega/pliega una tarjeta de posición */
+function togglePosCard(aid){
+  const el=document.querySelector('.acard[data-aid="'+aid+'"]');
+  if(!el)return;
+  el.classList.toggle('acard-coll');
 }
 function renderOpsList(){
   const ops=[...DB.ops].sort((a,b)=>b.dt.localeCompare(a.dt));
@@ -5496,15 +5696,15 @@ async function fetchAllPrices(){
 async function doSync(){
   const btn=G('sync-btn');if(!btn)return;
   if(!DB.assets.length){showToast('No hay activos que actualizar');return;}
-  /* desbloquear AudioContext AHORA (estamos dentro del gesto del usuario);
-     si lo intentamos tras el await, iOS lo ignora */
   primeAudio();
   btn.classList.add('spin');
   setText('sync-s','Conectando y descargando precios…');
   try{
-    /* actualizar tipos de cambio junto con los precios */
     if(typeof loadFxRates==='function')await loadFxRates();
     const r=await fetchAllPrices();
+    /* Datos del día desde Yahoo (sin API key, sin coste de FMP) */
+    setText('sync-s','Actualizando datos de sesión…');
+    try{window._DAYPCT=await fetchPortfolioDayPct();}catch(e){}
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
     setText('sync-s','✓ Precio actualizado: '+DB.lastSync);
     renderAll();
@@ -5687,6 +5887,143 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(main)main.innerHTML='<div style="padding:40px 20px;text-align:center;color:#ff6b7a;font-size:14px"><div style="font-size:32px;margin-bottom:16px">⚠</div><div style="color:#f4f8ff;font-weight:700;margin-bottom:8px">Error al iniciar</div><div style="color:#aebfd4;font-size:12px;margin-bottom:20px">'+err.message+'</div><button onclick="localStorage.removeItem(\'cv6\');location.reload()" style="padding:12px 24px;background:#22d3ee;border:none;border-radius:9px;color:#07101f;font-weight:700;font-size:14px;cursor:pointer">Restablecer e intentar de nuevo</button></div>';
   }
 });
+
+/* ── Sesión bursátil: modal con gráfica intradía ──
+   Si el filtro del hero es "Todos", muestra la curva agregada de TODA la
+   cartera durante la sesión actual. Si es un tipo (Acciones, ETF…), muestra
+   la del activo más representativo de ese tipo en la cartera.
+   Usa Yahoo Finance (sin API key) y cachea 5 min. */
+async function openSessionChart(){
+  const filt=(typeof heroFilter!=='undefined')?heroFilter:'Todos';
+  openSheet(`<div class="shttl">📊 Sesión bursátil de hoy</div>
+    <div style="text-align:center;color:var(--w2);font-size:11px;margin-bottom:8px" id="sess-sub">Cargando datos del día…</div>
+    <div class="cc cc-pos" style="height:260px"><canvas id="c-sess" height="260"></canvas></div>
+    <div style="font-size:10.5px;color:var(--w3);text-align:center;margin-top:8px" id="sess-hint">Fuente: Yahoo Finance · sin coste de API</div>
+    <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
+  try{
+    let title='',points=[],prevClose=0,curr='EUR';
+    if(filt==='Todos'){
+      const data=await fetchPortfolioSessionCurve();
+      if(!data||!data.curve.length){setText('sess-sub','No hay datos de sesión disponibles para tus activos.');return;}
+      title='Toda la cartera · valor agregado';
+      points=data.curve.map(p=>({t:p.t,p:p.p}));
+      prevClose=data.totalPrev;
+      curr='EUR';
+    }else{
+      /* tipo concreto: tomamos el activo más representativo (mayor valor abierto) de ese tipo */
+      const cands=DB.assets.filter(a=>a.type===filt&&a.ticker).map(a=>({a,m:assetMetrics(a)})).filter(x=>x.m.units>1e-9);
+      if(!cands.length){setText('sess-sub','No hay activos de este tipo con ticker.');return;}
+      cands.sort((x,y)=>y.m.valOpen-x.m.valOpen);
+      const target=cands[0].a;
+      const s=await fetchYahooSession(target.ticker);
+      if(!s){setText('sess-sub','No se pudo cargar la sesión para '+target.ticker+'.');return;}
+      title=target.name+' ('+target.ticker+') · '+filt;
+      points=s.points;
+      prevClose=s.prevClose;
+      curr=s.currency||'EUR';
+    }
+    const last=points[points.length-1].p;
+    const dayPct=prevClose>0?(last-prevClose)/prevClose*100:0;
+    const cls=dayPct>=0?'g':'r';
+    setText('sess-sub',title);
+    const subEl=G('sess-sub');
+    if(subEl){
+      subEl.innerHTML=`${title} · <b style="color:var(--${cls==='g'?'g':'r'})">${dayPct>=0?'+':''}${dayPct.toFixed(2)}%</b>`;
+    }
+    /* Detectar separación entre regular y pre/post (si hay metadata): para
+       simplicidad mostramos toda la curva con un degradado y línea horizontal
+       que indique el precio de cierre anterior como referencia. */
+    const ctx=G('c-sess');if(!ctx||!chartReady())return;
+    const labels=points.map(p=>{
+      const d=new Date(p.t*1000);
+      return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    });
+    const data=points.map(p=>p.p);
+    const lineColor=dayPct>=0?'#34e89e':'#ff7a8a';
+    const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
+    g.addColorStop(0,dayPct>=0?'rgba(52,232,158,.25)':'rgba(255,122,138,.22)');
+    g.addColorStop(1,'rgba(34,211,238,0)');
+    try{CH.sess=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Precio',data,borderColor:lineColor,borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,tension:.2},
+        /* línea de referencia: cierre anterior */
+        {label:'Cierre anterior',data:data.map(()=>prevClose),borderColor:'rgba(174,191,212,.4)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false,axis:'x'},
+        plugins:{
+          legend:{display:false},
+          tooltip:{...TT,callbacks:{
+            title:c=>c[0].label,
+            label:c=>{
+              if(c.datasetIndex===1)return ' Cierre ant.: '+(curr==='EUR'?fe(c.parsed.y):c.parsed.y.toFixed(2)+' '+curr);
+              return ' '+(curr==='EUR'?fe(c.parsed.y):c.parsed.y.toFixed(2)+' '+curr);
+            }
+          }}
+        },
+        scales:{
+          x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,maxTicksLimit:8}},
+          y:{grid:{color:'#243752'},ticks:{color:'#aebfd4',callback:v=>curr==='EUR'?'€'+Math.round(v):v.toFixed(1)}}
+        },
+        animation:{duration:500}
+      }
+    });attachToggleTooltip(CH.sess);}catch(e){}
+  }catch(e){
+    setText('sess-sub','Error al cargar datos: '+e.message);
+  }
+}
+
+/* Gráfica de sesión de TODA la cartera (acceso desde la barra mini-resumen
+   de Cartera). Sin API key — usa Yahoo. */
+async function openCarteraSessionChart(){
+  openSheet(`<div class="shttl">📊 Sesión bursátil · Cartera</div>
+    <div style="text-align:center;color:var(--w2);font-size:11px;margin-bottom:8px" id="csess-sub">Cargando datos del día…</div>
+    <div class="cc cc-pos" style="height:260px"><canvas id="c-csess" height="260"></canvas></div>
+    <div style="font-size:10.5px;color:var(--w3);text-align:center;margin-top:8px">Suma agregada del valor de todas tus posiciones · Yahoo Finance</div>
+    <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
+  try{
+    const data=await fetchPortfolioSessionCurve();
+    if(!data||!data.curve.length){setText('csess-sub','No hay datos de sesión disponibles.');return;}
+    const points=data.curve;
+    const last=points[points.length-1].p;
+    const prev=data.totalPrev;
+    const dayPct=prev>0?(last-prev)/prev*100:0;
+    const subEl=G('csess-sub');
+    if(subEl){
+      const cls=dayPct>=0?'g':'r';
+      subEl.innerHTML=`Valor agregado · <b style="color:var(--${cls})">${dayPct>=0?'+':''}${dayPct.toFixed(2)}%</b> hoy`;
+    }
+    const ctx=G('c-csess');if(!ctx||!chartReady())return;
+    const labels=points.map(p=>{
+      const d=new Date(p.t*1000);
+      return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    });
+    const ydata=points.map(p=>p.p);
+    const lineColor=dayPct>=0?'#34e89e':'#ff7a8a';
+    const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
+    g.addColorStop(0,dayPct>=0?'rgba(52,232,158,.25)':'rgba(255,122,138,.22)');
+    g.addColorStop(1,'rgba(34,211,238,0)');
+    try{CH.csess=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Valor',data:ydata,borderColor:lineColor,borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,tension:.2},
+        {label:'Cierre ayer',data:ydata.map(()=>prev),borderColor:'rgba(174,191,212,.4)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false,axis:'x'},
+        plugins:{legend:{display:false},tooltip:{...TT,callbacks:{title:c=>c[0].label,label:c=>' '+fe(c.parsed.y)}}},
+        scales:{
+          x:{grid:{color:'#243752'},ticks:{color:'#aebfd4',maxRotation:0,autoSkip:true,maxTicksLimit:8}},
+          y:{grid:{color:'#243752'},ticks:{color:'#aebfd4',callback:v=>'€'+Math.round(v/1000)+'k'}}
+        },
+        animation:{duration:500}
+      }
+    });attachToggleTooltip(CH.csess);}catch(e){}
+  }catch(e){setText('csess-sub','Error al cargar: '+e.message);}
+}
 /* ════ ANALISTA BURSÁTIL ════
    Análisis empresa a empresa en formato de 7 puntos.
    Datos cuantitativos: reales de Yahoo Finance.
