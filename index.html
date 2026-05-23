@@ -1020,7 +1020,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.4';      /* visible en header y Ajustes */
+const APP_VERSION='v10.5';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2772,6 +2772,47 @@ async function fetchYahooSession(ticker){
 /* % del día para TODOS los activos abiertos de la cartera.
    Devuelve {byId:{aid:{dayPct,current,prevClose}}, totalPct, totalVal}.
    Hace una llamada Yahoo por activo (paralelas). */
+/* Persistencia del %día en localStorage.
+   - cv6_dayPct = JSON {ts, data}
+   - Caduca para LECTURA por la app (re-fetch en background) a las 4h.
+   - El chip sigue mostrándose con el último valor conocido aunque la
+     gente no pulse ↺: si los datos son viejos, mejor algo que nada. */
+const _DAYPCT_KEY='cv6_dayPct';
+const _DAYPCT_REFRESH_MS=4*60*60*1000;   /* 4 horas */
+
+/* Lee el cache de localStorage al arrancar la app. Llama una sola vez en boot. */
+function hydrateDayPctCache(){
+  try{
+    const raw=localStorage.getItem(_DAYPCT_KEY);
+    if(!raw)return null;
+    const obj=JSON.parse(raw);
+    if(!obj||!obj.data)return null;
+    window._DAYPCT=obj.data;
+    return obj;
+  }catch(e){return null;}
+}
+
+/* Guarda el resultado del último fetch para mostrarlo al abrir la app sin
+   gastar llamadas extra. La marca de tiempo se usa después para decidir si
+   relanzar la actualización en background. */
+function persistDayPct(data){
+  try{
+    localStorage.setItem(_DAYPCT_KEY,JSON.stringify({ts:Date.now(),data}));
+  }catch(e){}
+}
+
+/* Decide si conviene relanzar fetchPortfolioDayPct en background.
+   Devuelve true si no hay cache, o si la cache tiene más de 4h. */
+function shouldRefreshDayPct(){
+  try{
+    const raw=localStorage.getItem(_DAYPCT_KEY);
+    if(!raw)return true;
+    const obj=JSON.parse(raw);
+    if(!obj||!obj.ts)return true;
+    return (Date.now()-obj.ts)>_DAYPCT_REFRESH_MS;
+  }catch(e){return true;}
+}
+
 async function fetchPortfolioDayPct(){
   const assets=DB.assets.filter(a=>{
     const m=assetMetrics(a);return m.units>1e-9&&a.ticker;
@@ -2794,6 +2835,9 @@ async function fetchPortfolioDayPct(){
   out.totalVal=totalVal;
   out.totalPrev=totalPrev;
   out.totalPct=totalPrev>0?(totalVal-totalPrev)/totalPrev:0;
+  /* Solo persistir si al menos UN activo devolvió datos válidos.
+     Si todos fallaron, mantener el cache anterior intacto. */
+  if(Object.keys(out.byId).length>0)persistDayPct(out);
   return out;
 }
 
@@ -5905,6 +5949,19 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(saved&&saved.r){Object.assign(FX_RATES,saved.r);FX_LOADED=true;renderAll();}
       }catch(e){}
       loadFxRates().then(ok=>{if(ok)renderAll();});
+    }
+    /* Hidratar el cache de %día desde localStorage: aparece en las tarjetas
+       de Cartera al abrir la app sin pulsar ↺. Si han pasado más de 4 horas
+       desde el último fetch, lo relanzamos en background (sin gastar APIs
+       de FMP — Yahoo es gratis). */
+    if(typeof hydrateDayPctCache==='function')hydrateDayPctCache();
+    if(typeof shouldRefreshDayPct==='function'&&shouldRefreshDayPct()&&DB.assets.length){
+      setTimeout(()=>{
+        fetchPortfolioDayPct().then(()=>{
+          /* re-render solo Cartera (lo demás no depende del %día) */
+          try{renderCartera();}catch(e){}
+        }).catch(()=>{});
+      },1500);  /* espera a que el primer paint termine */
     }
     /* actualización automática de precios al abrir la app: opcional.
        Por defecto DESACTIVADA para no quemar llamadas al API gratis. */
