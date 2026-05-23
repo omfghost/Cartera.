@@ -704,9 +704,9 @@ input,select,button,textarea{font-family:inherit}
       <div class="sv-sub2" id="s-cagr-sub">CAGR &mdash;</div>
     </div>
     <div class="sc">
-      <div class="sl">VOLATILIDAD<span class="note-ic" onclick="event.stopPropagation();explain('volatilidad')">?</span></div>
-      <div class="sv" id="s-vol">&mdash;</div>
-      <div class="sv-sub2" id="s-vol-sub">&mdash;</div>
+      <div class="sl">MAYOR POSICI&Oacute;N<span class="note-ic" onclick="event.stopPropagation();explain('mayor-posicion')">?</span></div>
+      <div class="sv c" id="s-largest" style="font-size:14px;line-height:1.15">&mdash;</div>
+      <div class="sv-sub2" id="s-largest-sub">&mdash;</div>
     </div>
   </div>
   <div class="sec">A&Ntilde;O EN CURSO<span class="note-ic" onclick="event.stopPropagation();explain('año-curso')">?</span> <span id="yr-label" style="color:var(--gold)"></span></div>
@@ -1020,7 +1020,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.5';      /* visible en header y Ajustes */
+const APP_VERSION='v10.6';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1341,6 +1341,28 @@ function meanAnnualReturn(filterType){
    año típico la cartera oscila ±15% sobre su trayectoria media.
    Referencias aproximadas: bonos 3-5% · ETFs amplios 12-18% ·
    acciones individuales 20-35% · cripto 50-90%. */
+/* Mayor posición individual de la cartera (filtrable por tipo de activo).
+   Devuelve {name, val, pct} de la posición de mayor valor de mercado dentro
+   del filtro, donde pct es % sobre el total de la cartera filtrada.
+   Útil para detectar concentración excesiva en un activo. */
+function largestPosition(filterType){
+  const assets=DB.assets.filter(a=>{
+    if(filterType&&filterType!=='Todos'&&a.type!==filterType)return false;
+    const m=assetMetrics(a);
+    return m.units>1e-9;
+  });
+  if(!assets.length)return null;
+  let best=null,total=0;
+  assets.forEach(a=>{
+    const m=assetMetrics(a);
+    total+=m.valOpen;
+    if(!best||m.valOpen>best.val)best={name:a.name,val:m.valOpen,type:a.type};
+  });
+  if(!best||total<=0)return null;
+  best.pct=best.val/total;
+  return best;
+}
+
 function portfolioVolatility(filterType){
   /* tomamos hasta 24 meses para tener una muestra reciente y representativa */
   const tl=window._lastTimeline;
@@ -3283,26 +3305,25 @@ function navTo(v){
 /* ════ DASHBOARD ════ */
 let heroFilter='Todos';
 function setHeroFilter(t){heroFilter=t;renderDash();}
-/* Actualiza la tarjeta de volatilidad usando la timeline cacheada.
-   Devuelve "Baja/Moderada/Alta/Muy alta" + porcentaje. Si no hay datos
-   suficientes (cartera muy nueva), muestra '—' con mensaje. */
+/* Actualiza la tarjeta de Mayor Posición.
+   Muestra: nombre (pequeño), valor en € (oculto si modo privacidad activo)
+   y % del total. */
 function refreshVolatilityCard(){
-  const sv=G('s-vol'),sub=G('s-vol-sub');if(!sv||!sub)return;
-  const v=(typeof portfolioVolatility==='function')?portfolioVolatility(heroFilter):null;
-  if(v==null||isNaN(v)){
-    sv.textContent='—';sv.className='sv';
-    sub.textContent='Sin datos suf.';return;
+  const sv=G('s-largest'),sub=G('s-largest-sub');if(!sv||!sub)return;
+  const lp=(typeof largestPosition==='function')?largestPosition(heroFilter):null;
+  if(!lp){
+    sv.textContent='—';sv.className='sv c';
+    sub.textContent='Sin posiciones';return;
   }
-  const vp=v*100;
-  /* Banda cualitativa orientativa: Bonos 3-5% · ETFs amplios 12-18% ·
-     Acciones individuales 20-35% · Cripto 50-90%. */
-  let band='Baja',cls='g';
-  if(vp>=50){band='Muy alta';cls='r';}
-  else if(vp>=25){band='Alta';cls='warn';}
-  else if(vp>=12){band='Moderada';cls='gold';}
-  sv.textContent=vp.toFixed(1)+'%';
-  sv.className='sv '+cls;
-  sub.textContent=band;
+  /* Línea principal: nombre del activo, recortado si es muy largo */
+  const nm=lp.name.length>16?lp.name.slice(0,15)+'…':lp.name;
+  sv.textContent=nm;
+  sv.className='sv c';
+  sv.style.fontSize='14px';
+  sv.style.lineHeight='1.15';
+  /* Subtítulo: valor en € + %.  El valor lleva clase hide-val para que
+     respete el botón de ocultar valores. */
+  sub.innerHTML=`<span class="hide-val sm">${fe(lp.val)}</span> · <b style="color:var(--gold)">${(lp.pct*100).toFixed(1)}%</b>`;
 }
 function portfolioTotalsByType(type){
   if(type==='Todos')return portfolioTotals();
@@ -5022,12 +5043,12 @@ const PANEL_GLOSSARY={
     h:'Media = (rent. año 1 + rent. año 2 + … + rent. año N) / N, descartando el año en curso (incompleto). CAGR = (valor actual / invertido)^(1/años) − 1.',
     n:'<b>Si la media es bastante mayor que el CAGR, tu cartera es volátil</b> (años buenos y malos compensándose). Ejemplo: +100% un año, −50% al siguiente → media +25%, pero CAGR 0% (acabas igual). Cuanto más se parezcan, más estable ha sido la inversión.'
   },
-  'volatilidad':{
-    t:'Volatilidad anualizada',
+  'mayor-posicion':{
+    t:'Mayor posición',
     q:'¿Qué muestra?',
-    a:'Cuánto se mueve la cartera <b>típicamente</b>, mes a mes. Una volatilidad del 15% significa que en un año típico la cartera oscila ±15% sobre su trayectoria media.',
-    h:'Desviación típica de las variaciones mensuales de los últimos 24 meses, anualizada (× √12). Solo considera el patrimonio de las posiciones abiertas, sin contaminarse con aportes nuevos.',
-    n:'Referencias orientativas: <b>Bonos 3-5%</b> · <b>ETFs amplios 12-18%</b> · <b>Acciones individuales 20-35%</b> · <b>Cripto 50-90%</b>. Cuanto más alta, más bandazos has sufrido por el camino aunque el resultado final sea bueno. El filtro de tipo recalcula este valor para ese tipo de activo.'
+    a:'El <b>activo individual con más peso</b> dentro de la selección actual. Aparece el nombre, su valor en € y qué porcentaje representa del total de la cartera (filtrada por el desplegable de tipo).',
+    h:'De entre los activos abiertos del tipo seleccionado, se elige el de mayor valor de mercado actual. El porcentaje es valor / suma total del bloque.',
+    n:'Sirve para detectar <b>concentración excesiva</b>. Si una sola posición representa más del 20-25% de tu cartera, asumes mucho riesgo idiosincrático: lo que le pase a esa empresa o activo impacta de forma desproporcionada en tu rentabilidad. Diversificar reduce ese riesgo.'
   },
   'rent-año':{
     t:'Rent. año actual',
