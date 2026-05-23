@@ -1020,7 +1020,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.6';      /* visible en header y Ajustes */
+const APP_VERSION='v10.7';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3372,17 +3372,17 @@ function renderDash(){
   /* ACTIVOS TOTALES = lo que vale hoy lo que tienes (no incluye ventas pasadas) */
   setText('h-amt',fe(T.valOpen));
   /* GANANCIA / RENT = TOTAL RETURN (incluye realizado + no realizado vs invertido total) */
-  const ge=G('h-gain');ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg '+(T.gain>=0?'pos':'neg');
+  const ge=G('h-gain');ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg hide-val sm '+(T.gain>=0?'pos':'neg');
   setText('h-pct',fp(T.pct));setText('h-cagr','CAGR '+fp(cg,false));
   setText('s-inv',fe(T.inv));
   setText('s-inv-act','Activas: '+fe(T.openCost||0));
-  const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv '+(T.gain>=0?'g':'r');
+  const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv hide-val sm '+(T.gain>=0?'g':'r');
   const st=G('s-tot');if(st){st.textContent=fp(T.pct);st.className='sv '+(T.pct>=0?'g':'r');}
   const sr=G('s-real');
   if(sr){
     const sign=T.realizedPL>=0?'+':'-';
     sr.textContent=sign+fe(Math.abs(T.realizedPL));
-    sr.className='sv '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
+    sr.className='sv hide-val sm '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
   }
   setText('s-cagr-sub','CAGR '+fp(cg,false));
   /* Media anual histórica: promedio de los años completos (filtra el actual) */
