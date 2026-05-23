@@ -617,22 +617,33 @@ input,select,button,textarea{font-family:inherit}
 .hero-sess-btn{display:inline-flex;align-items:center;justify-content:center;background:rgba(52,232,158,.10);border:1px solid rgba(52,232,158,.32);color:#34e89e;font-size:11px;font-weight:600;padding:5px 11px;border-radius:14px;cursor:pointer;font-family:inherit;letter-spacing:.04em;height:28px;white-space:nowrap;flex-shrink:0}
 .hero-sess-btn:active{transform:scale(0.96);background:rgba(52,232,158,.18)}
 
-/* ── Tarjeta de posición con logo + plegado + % día ── */
-.acard{padding:10px 12px}
-.acard .atop{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
-.acard-logo{flex-shrink:0;width:36px;height:36px;border-radius:9px;overflow:hidden;background:var(--bg2);display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+/* ── Tarjeta de posición compacta ── */
+.acard{padding:7px 11px}
+.acard .atop{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;min-height:38px}
+.acard-logo{flex-shrink:0;width:30px;height:30px;border-radius:8px;overflow:hidden;background:var(--bg2);display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
 .acard-logo img{width:100%;height:100%;object-fit:cover;display:block}
-.acard-logo-i{font-size:14px;font-weight:700;letter-spacing:-.01em}
-.anm-wrap{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.acard .anm{font-size:14px;font-weight:600;color:var(--w);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acard-day{display:inline-block;font-size:10.5px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.01em;padding:1px 6px;border-radius:6px;width:fit-content}
+.acard-logo-i{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
+.anm-wrap{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1px;overflow:hidden}
+.acard .anm{font-size:13px;font-weight:600;color:var(--w);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.anm-sub{display:flex;align-items:center;gap:6px}
+.acard-day{display:inline-flex;align-items:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.01em;padding:1px 5px;border-radius:5px;line-height:1.3}
 .acard-day.pos{background:rgba(52,232,158,.14);color:var(--g)}
 .acard-day.neg{background:rgba(255,122,138,.14);color:var(--r)}
-.acard .atop-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.acard-chev{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(34,150,235,.10);color:var(--c2);font-size:12px;transition:transform .25s}
+.acard-val{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--w);flex-shrink:0;margin-left:4px}
+.acard .atop-r{display:flex;align-items:center;gap:5px;flex-shrink:0}
+/* Cuando está plegada: mostrar valor + day chip a la derecha del nombre,
+   ocultar el chip de tipo y el botón explorar para ganar espacio. */
+.acard-coll .acard-val{display:inline-block}
+.acard:not(.acard-coll) .acard-val{display:none}
+.acard-coll .atop-r .atp,
+.acard-coll .atop-r .acard-exp{display:none}
+.acard-exp{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:rgba(34,150,235,.12);border:1px solid rgba(34,150,235,.28);border-radius:6px;font-size:10px;cursor:pointer;padding:0;color:var(--c2);transition:background .15s}
+.acard-exp:active{background:rgba(34,150,235,.28);transform:scale(0.94)}
+.atp{font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid;letter-spacing:.04em;white-space:nowrap}
+.acard-chev{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(34,150,235,.10);color:var(--c2);font-size:11px;transition:transform .25s}
 .acard:not(.acard-coll) .acard-chev{transform:rotate(180deg);background:rgba(34,150,235,.18)}
 /* Cuerpo plegable */
-.acard-body{margin-top:10px;animation:fadein .2s ease}
+.acard-body{margin-top:8px;animation:fadein .2s ease}
 .acard.acard-coll .acard-body{display:none}
 .acard-det{margin-top:8px;width:100%;background:transparent;border:1px solid var(--line);color:var(--c2);font-size:11px;font-weight:600;padding:7px;border-radius:8px;cursor:pointer;font-family:inherit}
 .acard-det:active{background:rgba(34,150,235,.08)}
@@ -1008,7 +1019,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.2';      /* visible en header y Ajustes */
+const APP_VERSION='v10.3';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3463,18 +3474,26 @@ function renderPositions(){
     const peso=totOpen>0?m.valOpen/totOpen:0;
     /* Logo: FMP image-stock CDN. No consume API key. */
     const logo=assetLogoHtml(a);
+    /* % del día (Yahoo, sin API key). Si aún no se ha cargado (cache vacío) o
+       falla la red, no se pinta nada. Tras pulsar ↺ se actualiza. */
+    const dp=window._DAYPCT&&window._DAYPCT.byId&&window._DAYPCT.byId[a.id];
+    const dayChip=(dp&&dp.dayPct!=null)
+      ? `<span class="acard-day ${dp.dayPct>=0?'pos':'neg'}">${dp.dayPct>=0?'+':''}${(dp.dayPct*100).toFixed(2)}%</span>`
+      : '';
     /* Botón Explorar */
     const expBtn=a.ticker
       ? `<button class="acard-exp" onclick="event.stopPropagation();navTo('explorar');setTimeout(()=>exploreExample('${a.ticker}'),300)" aria-label="Analizar en Explorar">🔍</button>`
       : '';
-    /* Tarjeta plegada por defecto: cabecera con logo, nombre, tipo y flecha.
-       Al pulsar la cabecera se despliega el resto (valores). */
+    /* Tarjeta plegada por defecto: cabecera con logo, nombre, %día, VALOR (solo plegada),
+       tipo + lupa (solo desplegada) y chevron. */
     return `<div class="acard acard-coll" data-aid="${a.id}">
       <div class="atop" onclick="togglePosCard('${a.id}')">
         ${logo}
         <div class="anm-wrap">
           <div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div>
+          ${dayChip?`<div class="anm-sub">${dayChip}</div>`:''}
         </div>
+        <div class="acard-val" style="color:${col}">${fe(m.valOpen)}</div>
         <div class="atop-r">
           <div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div>
           ${expBtn}
@@ -5703,6 +5722,12 @@ async function doSync(){
   try{
     if(typeof loadFxRates==='function')await loadFxRates();
     const r=await fetchAllPrices();
+    /* % del día de cada activo desde Yahoo (sin API key).
+       Si falla (CORS, red), no rompe el sync: las tarjetas se quedan sin el chip. */
+    setText('sync-s','Actualizando datos de sesión…');
+    try{
+      window._DAYPCT=await fetchPortfolioDayPct();
+    }catch(e){window._DAYPCT=null;}
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
     setText('sync-s','✓ Precio actualizado: '+DB.lastSync);
     renderAll();
