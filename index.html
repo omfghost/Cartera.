@@ -1008,7 +1008,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.0';      /* visible en header y Ajustes */
+const APP_VERSION='v10.2';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3368,16 +3368,10 @@ function renderCartera(){
   const cs=G('cart-sum');
   if(cs){
     const cls=T.pct>=0?'g':'r';
-    /* % del día desde el cache global Yahoo */
-    const dp=window._DAYPCT;
-    const dayHtml=(dp&&!isNaN(dp.totalPct))
-      ? `<div class="csum-l csum-day"><div class="csum-lbl">Hoy</div><div class="csum-val ${dp.totalPct>=0?'g':'r'}">${dp.totalPct>=0?'+':''}${(dp.totalPct*100).toFixed(2)}%</div></div>`
-      : '<div class="csum-l csum-day"><div class="csum-lbl">Hoy</div><div class="csum-val" style="color:var(--w3);font-size:11px">—</div></div>';
     cs.innerHTML=`<div class="csum-card">
       <div class="csum-l"><div class="csum-lbl">Valor</div><div class="csum-val hide-val sm">${fe(T.valOpen)}</div></div>
-      <div class="csum-l"><div class="csum-lbl">Posic.</div><div class="csum-val">${actCount}</div></div>
-      <div class="csum-l"><div class="csum-lbl">Rent.</div><div class="csum-val ${cls}">${fp(T.pct)}</div></div>
-      ${dayHtml}
+      <div class="csum-l"><div class="csum-lbl">Posiciones</div><div class="csum-val">${actCount}</div></div>
+      <div class="csum-l"><div class="csum-lbl">Rent. total</div><div class="csum-val ${cls}">${fp(T.pct)}</div></div>
       <button class="csum-sess" onclick="openCarteraSessionChart()" aria-label="Gráfica sesión cartera">📊</button>
     </div>`;
   }
@@ -3467,25 +3461,19 @@ function renderPositions(){
   list.innerHTML=items.map(a=>{
     const m=assetMetrics(a),col=TC[a.type]||'#9aa8bd',closed=m.units<=0;
     const peso=totOpen>0?m.valOpen/totOpen:0;
-    /* Logo: FMP image-stock o letra inicial. No consume API key. */
+    /* Logo: FMP image-stock CDN. No consume API key. */
     const logo=assetLogoHtml(a);
-    /* % del día: viene del cache _DAYPCT (Yahoo), null si aún no se ha cargado */
-    const dp=window._DAYPCT&&window._DAYPCT.byId&&window._DAYPCT.byId[a.id];
-    const dayChip=(dp&&dp.dayPct!=null)
-      ? `<span class="acard-day ${dp.dayPct>=0?'pos':'neg'}">${dp.dayPct>=0?'+':''}${(dp.dayPct*100).toFixed(2)}%</span>`
-      : '';
     /* Botón Explorar */
     const expBtn=a.ticker
       ? `<button class="acard-exp" onclick="event.stopPropagation();navTo('explorar');setTimeout(()=>exploreExample('${a.ticker}'),300)" aria-label="Analizar en Explorar">🔍</button>`
       : '';
-    /* Tarjeta plegada por defecto: cabecera con logo, nombre, %día, tipo y flecha.
+    /* Tarjeta plegada por defecto: cabecera con logo, nombre, tipo y flecha.
        Al pulsar la cabecera se despliega el resto (valores). */
     return `<div class="acard acard-coll" data-aid="${a.id}">
       <div class="atop" onclick="togglePosCard('${a.id}')">
         ${logo}
         <div class="anm-wrap">
           <div class="anm">${a.name}${closed?' <span style="font-size:9px;color:var(--w2)">cerrada</span>':''}</div>
-          ${dayChip}
         </div>
         <div class="atop-r">
           <div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div>
@@ -3515,17 +3503,30 @@ function renderPositions(){
 function assetLogoHtml(a){
   const col=TC[a.type]||'#9aa8bd';
   const initial=(a.name||'?').trim().charAt(0).toUpperCase();
-  const fallback=`<div class="acard-logo acard-logo-i" style="background:${col}22;color:${col};border-color:${col}44">${initial}</div>`;
-  if(!a.ticker||a.type==='Bonos'||a.type==='Fondos')return fallback;
-  if(a.type==='Cripto'){
-    /* Cripto: usar primer carácter del ticker (BTC → B) con color cripto */
-    return `<div class="acard-logo acard-logo-i" style="background:${col}22;color:${col};border-color:${col}44">${(a.ticker||'?').charAt(0).toUpperCase()}</div>`;
-  }
-  /* FMP image-stock: endpoint estático que no consume la API key (es CDN
-     de imágenes). Si falla, se sustituye por inicial via onerror. */
+  /* Placeholder con la inicial (fallback si no hay imagen o falla la carga) */
+  const initialDiv=`<div class="acard-logo acard-logo-i" style="background:${col}22;color:${col};border-color:${col}44">${initial}</div>`;
+  if(!a.ticker||a.type==='Bonos'||a.type==='Fondos'||a.type==='Cripto')return initialDiv;
+  /* FMP image-stock es un CDN estático (no consume la API key).
+     Si la imagen falla, onLogoError() reemplaza el contenido por la inicial.
+     Usamos data-* attrs para evitar HTML escapado en el onerror. */
   const base=(a.ticker||'').split('.')[0].toUpperCase();
   const src='https://financialmodelingprep.com/image-stock/'+encodeURIComponent(base)+'.png';
-  return `<div class="acard-logo"><img src="${src}" alt="${base}" loading="lazy" onerror="this.parentElement.outerHTML='${fallback.replace(/'/g,"\\'")}';"></div>`;
+  const bg=col+'22',fg=col,brd=col+'44';
+  return `<div class="acard-logo" data-init="${initial}" data-bg="${bg}" data-fg="${fg}" data-brd="${brd}"><img src="${src}" alt="${base}" loading="lazy" onerror="onLogoError(this)"></div>`;
+}
+
+/* Sustituye un <img> de logo que falló por la inicial usando data-* del wrapper.
+   Evita escapado de HTML en el atributo onerror, que era origen de errores. */
+function onLogoError(img){
+  try{
+    const w=img.parentElement;if(!w)return;
+    const init=w.getAttribute('data-init')||'?';
+    w.classList.add('acard-logo-i');
+    w.innerHTML=init;
+    w.style.background=w.getAttribute('data-bg')||'';
+    w.style.color=w.getAttribute('data-fg')||'';
+    w.style.borderColor=w.getAttribute('data-brd')||'';
+  }catch(e){}
 }
 
 /* Despliega/pliega una tarjeta de posición */
@@ -5702,9 +5703,6 @@ async function doSync(){
   try{
     if(typeof loadFxRates==='function')await loadFxRates();
     const r=await fetchAllPrices();
-    /* Datos del día desde Yahoo (sin API key, sin coste de FMP) */
-    setText('sync-s','Actualizando datos de sesión…');
-    try{window._DAYPCT=await fetchPortfolioDayPct();}catch(e){}
     showToast('✓ '+r.upd+' precios actualizados'+(r.fail?' · '+r.fail+' sin datos':''));
     setText('sync-s','✓ Precio actualizado: '+DB.lastSync);
     renderAll();
