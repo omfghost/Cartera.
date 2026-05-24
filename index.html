@@ -1036,7 +1036,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.4';      /* visible en header y Ajustes */
+const APP_VERSION='v11.5';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1418,7 +1418,10 @@ function calcCAGR(filterType){
 function currentYearReturn(filterType){
   const years=activeYears();
   if(!years.length)return{valIni:0,valAct:0,gain:0,rent:0,year:new Date().getFullYear()};
-  const curYear=years[years.length-1];
+  /* AÑO ACTUAL REAL — no el último de las operaciones. Si la última operación
+     fue en 2025 pero estamos en 2026, queremos 2026, no 2025: el bloque
+     "AÑO EN CURSO" debe medir SIEMPRE el año natural en el que estamos. */
+  const curYear=new Date().getFullYear();
   /* Rent. del año en curso filtrada por tipo si corresponde:
      valIni = activos al 31-dic del año anterior
      valAct = activos hoy (valor abierto)
