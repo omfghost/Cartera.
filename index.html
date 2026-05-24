@@ -1036,7 +1036,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.5';      /* visible en header y Ajustes */
+const APP_VERSION='v11.6';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2526,7 +2526,30 @@ function projection(F){
 /* ════ HISTÓRICO REAL DE PATRIMONIO ════
    Reconstruye el valor de la cartera mes a mes usando el histórico de precios
    real de cada activo. Así la gráfica deja de ser una línea plana. */
+/* HIST_CACHE persiste en localStorage para que las cifras del Panel
+   (rentabilidades por año, Inicio Año, etc.) sean estables desde el primer
+   render al abrir la app, sin tener que esperar a un sync online. */
 const HIST_CACHE={};
+const _HIST_KEY='cv6_histCache';
+/* Restaurar del disco al cargar el script */
+try{
+  const raw=localStorage.getItem(_HIST_KEY);
+  if(raw){
+    const obj=JSON.parse(raw);
+    if(obj&&typeof obj==='object'){
+      Object.keys(obj).forEach(k=>{HIST_CACHE[k]=obj[k];});
+    }
+  }
+}catch(e){}
+/* Guardar en disco. Llamamos esto tras escribir cualquier histórico nuevo
+   (al final de preloadHistory y al final de buildPatrimonyTimeline). */
+function persistHistCache(){
+  try{
+    /* Si la cache es muy grande, limitamos al tamaño razonable: localStorage
+       suele tener 5-10MB de límite por origen, deberíamos estar muy debajo. */
+    localStorage.setItem(_HIST_KEY,JSON.stringify(HIST_CACHE));
+  }catch(e){}
+}
 
 /* Precio (en moneda nativa) de un activo en una fecha, según su serie histórica */
 function priceOnDate(series,times,targetTs){
@@ -2641,6 +2664,9 @@ async function buildPatrimonyTimeline(filterTypes){
     points[0].val=points[0].cost;
     points[0].pct=0;
   }
+  /* Persistir HIST_CACHE para que en próximas aperturas las cifras del Panel
+     ya estén correctas sin esperar a un sync online. */
+  persistHistCache();
   return points;
 }
 
@@ -2660,6 +2686,7 @@ async function preloadHistory(){
     if(!hist)hist={series:[a.price||0],times:[Math.floor(Date.now()/1000)],cur:assetCurrency(a),flat:true};
     HIST_CACHE[a.id]=hist;
   }
+  persistHistCache();
   return true;
 }
 
@@ -3043,12 +3070,13 @@ async function mkSparkline(){
   const filterTypes=heroFilter==='Todos'?null:[heroFilter];
   let h=[];
   try{h=await buildPatrimonyTimeline(filterTypes);}catch(e){}
-  /* expone la timeline para cálculos que la usan (volatilidad).
-     Tras cargarla, repinta la tarjeta de volatilidad — la timeline llega
-     en async después del primer render, así que sin esto la primera vez
-     se vería "—" hasta cambiar de pestaña. */
+  /* expone la timeline para cálculos que la usan (volatilidad/mayor pos.).
+     Tras cargarla repintamos las tarjetas afectadas: la timeline rellena
+     HIST_CACHE en async, así que el primer renderDash ve datos incompletos.
+     Usamos refreshDashCardsOnly (sin volver a llamar a mkSparkline para no
+     entrar en bucle). */
   window._lastTimeline=h;
-  if(typeof refreshVolatilityCard==='function')refreshVolatilityCard();
+  if(typeof refreshDashCardsOnly==='function')refreshDashCardsOnly();
   if(h.length<2){
     h=patrimonioHistory().map(x=>({label:String(x.year),val:x.val}));
   }
@@ -3403,24 +3431,23 @@ function toggleHeroSel(ev){
     },50);
   }
 }
-function renderDash(){
-  renderHeroFilter();
-  /* T y cg dependen del filtro de tipo (cuadro ACTIVOS + 6 tarjetas).
-     cyAll y anAll NO dependen del filtro: el bloque AÑO EN CURSO y la
-     RENTABILIDAD ANUAL muestran SIEMPRE la cartera completa. */
+/* Pinta SOLO los textos del Panel (cuadro Activos + 6 tarjetas + Año en curso).
+   Separado de renderDash() porque debe poder llamarse después de que la timeline
+   asíncrona haya rellenado HIST_CACHE: así las tarjetas Inicio Año/Media Anual,
+   que dependen de precios históricos, se actualizan sin volver a redibujar
+   gráficas (lo cual entraría en bucle al usarse desde mkSparkline). */
+function refreshDashCardsOnly(){
+  /* Recalcular todo con los datos más frescos disponibles */
   const T=portfolioTotalsByType(heroFilter);
   const cg=calcCAGR(heroFilter);
-  const cyFilt=currentYearReturn(heroFilter);   /* solo para tarjeta s-yr si existiera */
-  const cy=currentYearReturn();                  /* SIN filtro: bloque AÑO EN CURSO */
-  const an=annualReturns();                      /* SIN filtro: tabla anual */
-  /* ACTIVOS TOTALES = lo que vale hoy lo que tienes (no incluye ventas pasadas) */
+  const cyFilt=currentYearReturn(heroFilter);
+  const cy=currentYearReturn();          /* SIN filtro: bloque AÑO EN CURSO */
   setText('h-amt',fe(T.valOpen));
-  /* GANANCIA / RENT = TOTAL RETURN (incluye realizado + no realizado vs invertido total) */
-  const ge=G('h-gain');ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg hide-val sm '+(T.gain>=0?'pos':'neg');
+  const ge=G('h-gain');if(ge){ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg hide-val sm '+(T.gain>=0?'pos':'neg');}
   setText('h-pct',fp(T.pct));setText('h-cagr','CAGR '+fp(cg,false));
   setText('s-inv',fe(T.inv));
   setText('s-inv-act','Activas: '+fe(T.openCost||0));
-  const sg=G('s-gain');sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv hide-val sm '+(T.gain>=0?'g':'r');
+  const sg=G('s-gain');if(sg){sg.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));sg.className='sv hide-val sm '+(T.gain>=0?'g':'r');}
   const st=G('s-tot');if(st){st.textContent=fp(T.pct);st.className='sv '+(T.pct>=0?'g':'r');}
   const sr=G('s-real');
   if(sr){
@@ -3429,23 +3456,25 @@ function renderDash(){
     sr.className='sv hide-val sm '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
   }
   setText('s-cagr-sub','CAGR '+fp(cg,false));
-  /* Media anual histórica: promedio de los años completos (filtra el actual) */
   const ma=meanAnnualReturn(heroFilter);
   const smean=G('s-mean');
   if(smean){
     if(ma==null){smean.textContent='—';smean.className='sv c';}
     else{smean.textContent=fp(ma);smean.className='sv '+(ma>=0?'c':'r');}
   }
-  /* la tarjeta s-yr ya no existe; ignoramos su setter */
   const sy=G('s-yr');if(sy){sy.textContent=fp(cyFilt.rent);sy.className='sv '+(cyFilt.rent>=0?'gold':'r');}
-  /* Volatilidad: depende de la timeline, que carga en async.
-     Aquí pintamos el estado preliminar; refreshVolatilityCard reescribe
-     cuando la timeline está disponible. */
-  refreshVolatilityCard();
+  if(typeof refreshVolatilityCard==='function')refreshVolatilityCard();
   setText('yr-label',cy.year);
-  /* INICIO AÑO = valor a 31-dic del año anterior */
   setText('yb-ini',fe(cy.valIni));setText('yb-act',fe(cy.valAct));
-  const yr=G('yb-rent');yr.textContent=fp(cy.rent);yr.className='ybv lg '+(cy.rent>=0?'g':'r');
+  const yr=G('yb-rent');if(yr){yr.textContent=fp(cy.rent);yr.className='ybv lg '+(cy.rent>=0?'g':'r');}
+}
+
+function renderDash(){
+  renderHeroFilter();
+  /* Pintar tarjetas (extraído para poder reutilizar desde mkSparkline async) */
+  refreshDashCardsOnly();
+  /* Donut + tabla anual: independientes del filtro */
+  const an=annualReturns();
   /* Centro del donut de distribución = valor TOTAL de la cartera (no filtrado),
      coherente con que el donut muestra siempre todos los tipos. */
   const Tall=portfolioTotalsByType('Todos');
