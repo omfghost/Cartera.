@@ -1,6 +1,6 @@
-const V='cv11-0';
+const V='cv11-0-1779618096';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(['./index.html','./manifest.json'])).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const u=e.request.url;
   if(u.includes('stooq')||u.includes('coingecko')||u.includes('frankfurter')||u.includes('allorigins')||u.includes('yahoo')||
@@ -9,7 +9,7 @@ self.addEventListener('fetch',e=>{
      u.includes('workers.dev')){
     e.respondWith(fetch(e.request).catch(()=>new Response('',{status:503})));return;
   }
-  e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(res=>{
+  e.respondWith(fetch(e.request).then(res=>{
     if(res.ok){const cl=res.clone();caches.open(V).then(c=>c.put(e.request,cl));}return res;
-  }).catch(()=>caches.match('./index.html'))));
+  }).catch(()=>caches.match(e.request).then(hit=>hit||caches.match('./index.html'))));
 });
