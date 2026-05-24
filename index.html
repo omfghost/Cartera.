@@ -1033,7 +1033,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.9';      /* visible en header y Ajustes */
+const APP_VERSION='v11.0';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3395,7 +3395,14 @@ function toggleHeroSel(ev){
 }
 function renderDash(){
   renderHeroFilter();
-  const T=portfolioTotalsByType(heroFilter),cg=calcCAGR(heroFilter),cy=currentYearReturn(heroFilter),an=annualReturns();
+  /* T y cg dependen del filtro de tipo (cuadro ACTIVOS + 6 tarjetas).
+     cyAll y anAll NO dependen del filtro: el bloque AÑO EN CURSO y la
+     RENTABILIDAD ANUAL muestran SIEMPRE la cartera completa. */
+  const T=portfolioTotalsByType(heroFilter);
+  const cg=calcCAGR(heroFilter);
+  const cyFilt=currentYearReturn(heroFilter);   /* solo para tarjeta s-yr si existiera */
+  const cy=currentYearReturn();                  /* SIN filtro: bloque AÑO EN CURSO */
+  const an=annualReturns();                      /* SIN filtro: tabla anual */
   /* ACTIVOS TOTALES = lo que vale hoy lo que tienes (no incluye ventas pasadas) */
   setText('h-amt',fe(T.valOpen));
   /* GANANCIA / RENT = TOTAL RETURN (incluye realizado + no realizado vs invertido total) */
@@ -3420,7 +3427,7 @@ function renderDash(){
     else{smean.textContent=fp(ma);smean.className='sv '+(ma>=0?'c':'r');}
   }
   /* la tarjeta s-yr ya no existe; ignoramos su setter */
-  const sy=G('s-yr');if(sy){sy.textContent=fp(cy.rent);sy.className='sv '+(cy.rent>=0?'gold':'r');}
+  const sy=G('s-yr');if(sy){sy.textContent=fp(cyFilt.rent);sy.className='sv '+(cyFilt.rent>=0?'gold':'r');}
   /* Volatilidad: depende de la timeline, que carga en async.
      Aquí pintamos el estado preliminar; refreshVolatilityCard reescribe
      cuando la timeline está disponible. */
@@ -3429,7 +3436,10 @@ function renderDash(){
   /* INICIO AÑO = valor a 31-dic del año anterior */
   setText('yb-ini',fe(cy.valIni));setText('yb-act',fe(cy.valAct));
   const yr=G('yb-rent');yr.textContent=fp(cy.rent);yr.className='ybv lg '+(cy.rent>=0?'g':'r');
-  setText('dn-t',fe(T.valOpen));
+  /* Centro del donut de distribución = valor TOTAL de la cartera (no filtrado),
+     coherente con que el donut muestra siempre todos los tipos. */
+  const Tall=portfolioTotalsByType('Todos');
+  setText('dn-t',fe(Tall.valOpen));
   const dr=distribution();
   if(dr.length){
     G('dist-rows').innerHTML=dr.map(d=>`<div class="dr"><div class="ddot" style="background:${d.color}"></div><div class="dnm">${d.type}</div><div class="dpc" style="color:${d.color}">${(d.pct*100).toFixed(0)}%</div><div class="dvl hide-val sm">${fe(d.val,true)}</div><div class="drt ${pc(d.rent)}">${fp(d.rent)}</div></div><div style="margin:-2px 0 6px;padding:0 0 0 24px"><div style="height:2px;background:var(--line);border-radius:2px;overflow:hidden"><div style="height:100%;width:${(d.pct*100).toFixed(1)}%;background:${d.color};border-radius:2px;transition:width .7s ease"></div></div></div>`).join('');
