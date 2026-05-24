@@ -1036,7 +1036,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.3';      /* visible en header y Ajustes */
+const APP_VERSION='v11.4';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -1571,7 +1571,11 @@ const FETCH_CACHE={};
    moneda nativa de cada activo (USD para acciones de EEUU, etc.). Para que
    las cuentas cuadren, TODO se convierte a EUR antes de sumar o comparar.
    Fuente de tipos: Frankfurter (Banco Central Europeo), gratis y sin clave. */
-const FX_RATES={EUR:1};   /* tipos: 1 unidad de MONEDA = FX_RATES[MONEDA] EUR */
+/* Tipos de cambio: 1 unidad de MONEDA = FX_RATES[MONEDA] EUR.
+   Defaults razonables (mayo 2026 aprox) para que el primer render funcione
+   incluso si no hay cache en localStorage. Se sobrescriben con valores reales
+   al llamar loadFxRates(). */
+const FX_RATES={EUR:1,USD:0.92,GBP:1.18,CHF:1.03,JPY:0.006,CAD:0.68,AUD:0.61,SEK:0.087,NOK:0.087,DKK:0.134,HKD:0.118,SGD:0.68,CNY:0.127,INR:0.011,BRL:0.18,MXN:0.054};
 let FX_LOADED=false;
 
 async function loadFxRates(){
@@ -6025,15 +6029,20 @@ document.addEventListener('DOMContentLoaded',()=>{
     /* pintar versión visible para verificar que el build cargado es el último */
     const vt=document.getElementById('ver-chip');
     if(vt&&typeof APP_VERSION!=='undefined')vt.textContent=APP_VERSION;
+    /* Cargar FX guardados ANTES del primer render: si no, todos los assetMetrics
+       calculan con tipos de cambio cero o defaults, y las tarjetas muestran
+       cifras incorrectas hasta que el usuario interactúa con el selector. */
+    try{
+      const saved=JSON.parse(localStorage.getItem('cv6_fx')||'null');
+      if(saved&&saved.r&&typeof FX_RATES!=='undefined'){
+        Object.assign(FX_RATES,saved.r);
+        if(typeof FX_LOADED!=='undefined')FX_LOADED=true;
+      }
+    }catch(e){}
     renderAll();
     initPrivacy();
-    /* cargar tipos de cambio: al llegar, recalcular todo en EUR */
+    /* refresco de tipos de cambio desde red en segundo plano */
     if(typeof loadFxRates==='function'){
-      /* primero intentar tipos guardados para no mostrar cifras crudas */
-      try{
-        const saved=JSON.parse(localStorage.getItem('cv6_fx')||'null');
-        if(saved&&saved.r){Object.assign(FX_RATES,saved.r);FX_LOADED=true;renderAll();}
-      }catch(e){}
       loadFxRates().then(ok=>{if(ok)renderAll();});
     }
     /* Hidratar el cache de %día desde localStorage: aparece en las tarjetas
