@@ -629,9 +629,11 @@ input,select,button,textarea{font-family:inherit}
 .acard-day{display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.01em;padding:1px 5px;border-radius:5px;line-height:1.3}
 .acard-day.pos{background:rgba(52,232,158,.14);color:var(--g)}
 .acard-day.neg{background:rgba(255,122,138,.14);color:var(--r)}
-.acard-val-wrap{display:inline-flex;align-items:baseline;gap:3px;flex-shrink:0;margin-left:4px}
-.acard-val-lbl{font-size:8.5px;color:var(--w3);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
-.acard-val{font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:var(--w)}
+.acard-val-wrap{display:inline-flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;flex-shrink:0;margin-left:4px;line-height:1.1}
+.acard-val-row{display:inline-flex;align-items:baseline;gap:3px}
+.acard-val-lbl{font-size:8px;color:var(--w3);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.acard-val{font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:700;color:var(--w)}
+.acard-val-sm{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:600;color:var(--w2)}
 .acard .atop-r{display:flex;align-items:center;gap:5px;flex-shrink:0}
 /* Cuando está plegada: mostrar valor y CHIP de tipo a la derecha del nombre,
    ocultar la lupa (Explorar) para ahorrar espacio. */
@@ -658,6 +660,14 @@ input,select,button,textarea{font-family:inherit}
 .csum-day{min-width:0}
 .csum-sess{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(34,150,235,.10);border:1px solid rgba(34,150,235,.28);color:var(--c2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .csum-sess:active{transform:scale(0.94);background:rgba(34,150,235,.20)}
+
+/* Botón moderno tipo "card action" — coherente con cmp-launch del Panel */
+.sbtn-modern{display:flex;align-items:center;gap:12px;width:100%;background:linear-gradient(135deg,rgba(34,150,235,.10),rgba(139,124,255,.06));border:1px solid rgba(34,150,235,.22);border-radius:12px;padding:11px 14px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .15s,background .15s;margin-top:4px}
+.sbtn-modern:active{transform:scale(0.98);background:linear-gradient(135deg,rgba(34,150,235,.18),rgba(139,124,255,.12))}
+.sbtn-ic{flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:9px;background:rgba(34,211,238,.15);color:var(--c2);font-size:17px;font-weight:700}
+.sbtn-tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.sbtn-tx b{color:var(--w);font-size:13px;letter-spacing:.01em;font-weight:600}
+.sbtn-tx small{color:var(--w3);font-size:10.5px;line-height:1.35}
 </style>
 </head>
 <body>
@@ -840,7 +850,10 @@ input,select,button,textarea{font-family:inherit}
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">⚡</span>SINCRONIZACI&Oacute;N AUTOM&Aacute;TICA</span><span class="sbt-chev">▾</span></summary><div class="sbs">Si est&aacute; activada, la app actualiza los precios al abrirla. Si est&aacute; desactivada (recomendado), solo se actualizan cuando pulses el bot&oacute;n &#8635; manualmente. Desactivada gastas menos llamadas al API y la app abre m&aacute;s r&aacute;pido.</div><label class="snd-tg"><input type="checkbox" id="autosync-chk" onchange="setAutoSync(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Actualizar precios al abrir la app</span></label></details>
   <details class="sblk sblk-coll" ontoggle="if(this.open)renderDiagnostico()"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">💶</span>PRECIOS Y DIAGN&Oacute;STICO</span><span class="sbt-chev">▾</span></summary>
     <div class="sbs">Edita los precios actuales o pulsa "Resincronizar" para descargarlos limpios desde la fuente. AUTO = se actualiza con &#8635; &middot; MANUAL = los introduces t&uacute;.</div>
-    <button class="sbtn" onclick="resyncAll()">&#8635; Resincronizar precios desde cero</button>
+    <button class="sbtn-modern" onclick="resyncAll()" title="Resincronizar todos los precios">
+      <span class="sbtn-ic">↺</span>
+      <span class="sbtn-tx"><b>Resincronizar precios</b><small>Descarga datos limpios desde la fuente</small></span>
+    </button>
     <div class="sbs" style="margin-top:14px;font-weight:600;color:var(--w);letter-spacing:.04em;font-size:11px">PRECIOS ACTUALES</div>
     <div id="price-rows"></div>
     <div class="sbs" style="margin-top:14px;font-weight:600;color:var(--w);letter-spacing:.04em;font-size:11px">DATOS CRUDOS GUARDADOS</div>
@@ -1020,7 +1033,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v10.7';      /* visible en header y Ajustes */
+const APP_VERSION='v10.9';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3217,10 +3230,11 @@ function mkMulti(){
   const ctx=G('c-ml');if(!ctx)return;
   const an=annualReturns();if(!an.length)return;
   const labels=an.map(x=>String(x.year)+(x.isCurrent?'*':''));
+  /* BARRAS AGRUPADAS: cada año es un grupo, cada activo una barra dentro.
+     Más legible que líneas superpuestas para comparar rentabilidades anuales. */
   const ds=[];
-  ds.push({label:'★ Cartera',data:an.map(x=>parseFloat((x.rent*100).toFixed(2))),borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.08)',borderWidth:3,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#22d3ee',pointBorderColor:'#07101f',pointBorderWidth:2,tension:.35,fill:false,hidden:hidS.has('__tot'),order:-1});
+  ds.push({label:'★ Cartera',data:an.map(x=>parseFloat((x.rent*100).toFixed(2))),backgroundColor:'rgba(34,211,238,.85)',borderColor:'#22d3ee',borderWidth:1,borderRadius:4,hidden:hidS.has('__tot'),order:-1});
   DB.assets.forEach(a=>{
-    /* filtrar activos sin operaciones o cuyas operaciones suman cero (residuos) */
     const ops=DB.ops.filter(o=>o.aid===a.id);
     if(!ops.length)return;
     const m=assetMetrics(a);
@@ -3228,9 +3242,22 @@ function mkMulti(){
     const ar=assetAnnualReturns(a.id);if(!ar.length)return;
     const col=TC[a.type]||'#9aa8bd';
     const dm={};ar.forEach(r=>{if(r.rent!=null)dm[r.year]=parseFloat((r.rent*100).toFixed(2));});
-    ds.push({label:a.name,data:an.map(x=>dm[x.year]!=null?dm[x.year]:null),borderColor:col,backgroundColor:col+'18',borderWidth:2,pointRadius:3,pointHoverRadius:6,tension:.35,fill:false,spanGaps:true,hidden:hidS.has(a.id)});
+    ds.push({label:a.name,data:an.map(x=>dm[x.year]!=null?dm[x.year]:null),backgroundColor:col+'CC',borderColor:col,borderWidth:1,borderRadius:4,hidden:hidS.has(a.id)});
   });
-  try{CH.ml=new Chart(ctx,{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.parsed.y==null?null:' '+c.dataset.label+': '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{grid:{color:'#243752'},ticks:{color:'#aebfd4'}},y:{grid:{color:'#243752'},ticks:{callback:v=>(v>=0?'+':'')+v+'%',color:"#aebfd4"}}},animation:{duration:700}}});attachToggleTooltip(CH.ml);}catch(e){}
+  try{CH.ml=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:ds},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.parsed.y==null?null:' '+c.dataset.label+': '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#aebfd4'}},
+        y:{grid:{color:'#243752'},ticks:{callback:v=>(v>=0?'+':'')+v+'%',color:'#aebfd4'}}
+      },
+      animation:{duration:600}
+    }
+  });attachToggleTooltip(CH.ml);}catch(e){}
 }
 function buildToggles(){
   const row=G('tgl-row');if(!row)return;row.innerHTML='';
@@ -3579,6 +3606,12 @@ function renderPositions(){
       : '';
     /* Tarjeta plegada por defecto: cabecera con logo, nombre, %día, VALOR (solo plegada),
        tipo + lupa (solo desplegada) y chevron. */
+    /* Precio por acción: usa el guardado en a.price; si no hay (sin sync) cae a coste medio.
+       Convertido a EUR para coherencia con el resto de cifras del panel y de Cartera. */
+    const priceShareNative=(a.price>0?a.price:(m.openCost>0&&m.units>0?m.openCost/m.units:null));
+    const curSym=(typeof assetCurrency==='function')?assetCurrency(a):'EUR';
+    const priceShareEur=priceShareNative!=null?toEUR(priceShareNative,curSym):null;
+    const priceTxt=priceShareEur!=null?fe(priceShareEur):'—';
     return `<div class="acard acard-coll" data-aid="${a.id}">
       <div class="atop" onclick="togglePosCard('${a.id}')">
         ${logo}
@@ -3587,8 +3620,14 @@ function renderPositions(){
           ${dayChip?`<div class="anm-sub">${dayChip}</div>`:''}
         </div>
         <div class="acard-val-wrap">
-          <span class="acard-val-lbl">Valor</span>
-          <span class="acard-val hide-val sm" style="color:${col}">${fe(m.valOpen)}</span>
+          <div class="acard-val-row">
+            <span class="acard-val-lbl">Valor</span>
+            <span class="acard-val hide-val sm" style="color:${col}">${fe(m.valOpen)}</span>
+          </div>
+          <div class="acard-val-row">
+            <span class="acard-val-lbl">P.&nbsp;acción</span>
+            <span class="acard-val-sm hide-val sm">${priceTxt}</span>
+          </div>
         </div>
         <div class="atop-r">
           <div class="atp" style="border-color:${col}44;color:${col}">${a.type}</div>
@@ -3602,7 +3641,7 @@ function renderPositions(){
           <div><div class="aml">Invertido</div><div class="amv">${fe(m.openCost)}</div></div>
           <div><div class="aml">Rent. total</div><div class="amv ${pc(m.pct)}">${m.inv>0?fp(m.pct):'—'}</div></div>
           <div><div class="aml">Ganancia total</div><div class="amv ${pc(m.gain)}">${m.gain>=0?'+':'-'}${fe(Math.abs(m.gain))}</div></div>
-          <div><div class="aml">Unidades</div><div class="amv">${fn(m.units)}</div></div>
+          <div><div class="aml">Unidades · P.&nbsp;acción</div><div class="amv">${fn(m.units)}&nbsp;<small class="hide-val sm" style="color:var(--w3);font-weight:500">·&nbsp;${priceTxt}</small></div></div>
           <div><div class="aml">Peso</div><div class="amv" style="color:var(--gold)">${(peso*100).toFixed(1)}%</div></div>
         </div>
         <div class="abar"><div class="abf" style="width:${(peso*100).toFixed(1)}%;background:${col}"></div></div>
@@ -3615,18 +3654,28 @@ function renderPositions(){
 /* Logo del activo: usa FMP image-stock (CDN sin coste de API key) para
    acciones/ETFs con ticker. Si falla la imagen, muestra letra inicial con
    color del tipo. Para activos sin ticker (Bonos, fondos, cripto) → inicial. */
+/* Overrides de logos: cuando el endpoint FMP image-stock no devuelve una
+   imagen reconocible (Constellation Software se ve como "C" del Caribe en lugar
+   del logo oficial), usamos Clearbit Logo API con el dominio de la empresa.
+   Clearbit es gratis y sin API key. */
+const LOGO_OVERRIDES={
+  /* Constellation Software → csisoftware.com */
+  'CSU':'csisoftware.com','CSU.TO':'csisoftware.com',
+  'CNSWF':'csisoftware.com',
+};
 function assetLogoHtml(a){
   const col=TC[a.type]||'#9aa8bd';
   const initial=(a.name||'?').trim().charAt(0).toUpperCase();
-  /* Placeholder con la inicial (fallback si no hay imagen o falla la carga) */
   const initialDiv=`<div class="acard-logo acard-logo-i" style="background:${col}22;color:${col};border-color:${col}44">${initial}</div>`;
   if(!a.ticker||a.type==='Bonos'||a.type==='Fondos'||a.type==='Cripto')return initialDiv;
-  /* FMP image-stock es un CDN estático (no consume la API key).
-     Si la imagen falla, onLogoError() reemplaza el contenido por la inicial.
-     Usamos data-* attrs para evitar HTML escapado en el onerror. */
-  const base=(a.ticker||'').split('.')[0].toUpperCase();
-  const src='https://financialmodelingprep.com/image-stock/'+encodeURIComponent(base)+'.png';
+  const tkUp=(a.ticker||'').toUpperCase();
+  const base=tkUp.split('.')[0];
   const bg=col+'22',fg=col,brd=col+'44';
+  /* Si hay override, usar Clearbit con el dominio personalizado */
+  const domain=LOGO_OVERRIDES[tkUp]||LOGO_OVERRIDES[base];
+  const src=domain
+    ? 'https://logo.clearbit.com/'+encodeURIComponent(domain)
+    : 'https://financialmodelingprep.com/image-stock/'+encodeURIComponent(base)+'.png';
   return `<div class="acard-logo" data-init="${initial}" data-bg="${bg}" data-fg="${fg}" data-brd="${brd}"><img src="${src}" alt="${base}" loading="lazy" onerror="onLogoError(this)"></div>`;
 }
 
