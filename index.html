@@ -77,8 +77,8 @@ input,select,button,textarea{font-family:inherit}
 .ybl{background:var(--card2);border:1px solid var(--line);border-radius:var(--rad);padding:10px 6px;display:flex;align-items:center;justify-content:space-around}
 .ybc{text-align:center;flex:1;padding:0 4px}
 .ybl2{font-size:9px;letter-spacing:.1em;color:var(--w2);margin-bottom:5px;text-transform:uppercase}
-.ybv{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--w)}
-.ybv.c{color:var(--c)}.ybv.lg{font-size:22px}.ybv.g{color:var(--g)}.ybv.r{color:var(--r)}
+.ybv{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;color:var(--w);line-height:1.1}
+.ybv.c{color:var(--c)}.ybv.lg{font-size:17px}.ybv.g{color:var(--g)}.ybv.r{color:var(--r)}
 .ybdiv{width:1px;height:38px;background:var(--line)}
 .dnw{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .dnw canvas{max-width:260px;max-height:260px}
@@ -671,6 +671,10 @@ input,select,button,textarea{font-family:inherit}
 
 /* Tag de versión visible junto al logo CARTERA. Solo texto, sin fondo. */
 .ver-chip{display:inline-block;margin-left:5px;color:var(--w3);font-size:9px;font-weight:500;letter-spacing:.02em;font-family:'JetBrains Mono',monospace;vertical-align:middle;opacity:.65}
+
+/* Interrogación de glosario alineada a la derecha del cuadro de la tarjeta.
+   El .sl ya es display:flex, así que con margin-left:auto la empujamos al final. */
+.note-ic-r{margin-left:auto}
 </style>
 </head>
 <body>
@@ -707,17 +711,17 @@ input,select,button,textarea{font-family:inherit}
     </div>
   </div>
   <div class="sgrid">
-    <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div><div class="sv-sub hide-val" id="s-inv-act">&mdash;</div></div>
-    <div class="sc"><div class="sl">GANANCIA TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('ganancia-total')">?</span></div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
-    <div class="sc"><div class="sl">RENT. TOTAL<span class="note-ic" onclick="event.stopPropagation();explain('rent-total')">?</span></div><div class="sv g" id="s-tot">&mdash;</div></div>
-    <div class="sc"><div class="sl">REALIZADO<span class="note-ic" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
+    <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div><div class="sv-sub hide-val" id="s-inv-act">&mdash;</div></div>
+    <div class="sc"><div class="sl">GANANCIA TOTAL<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('ganancia-total')">?</span></div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
+    <div class="sc"><div class="sl">RENT. TOTAL<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('rent-total')">?</span></div><div class="sv g" id="s-tot">&mdash;</div></div>
+    <div class="sc"><div class="sl">REALIZADO<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
     <div class="sc">
-      <div class="sl">MEDIA ANUAL<span class="note-ic" onclick="event.stopPropagation();explain('media-anual')">?</span></div>
-      <div class="sv c" id="s-mean">&mdash;</div>
-      <div class="sv-sub2" id="s-cagr-sub">CAGR &mdash;</div>
+      <div class="sl">CAGR ANUAL<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('cagr-media')">?</span></div>
+      <div class="sv c" id="s-cagr-big">&mdash;</div>
+      <div class="sv-sub2" id="s-mean-sub">Media &mdash;</div>
     </div>
     <div class="sc">
-      <div class="sl">MAYOR POSICI&Oacute;N<span class="note-ic" onclick="event.stopPropagation();explain('mayor-posicion')">?</span></div>
+      <div class="sl">MAYOR POSICI&Oacute;N<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('mayor-posicion')">?</span></div>
       <div class="sv c" id="s-largest" style="font-size:14px;line-height:1.15">&mdash;</div>
       <div class="sv-sub2" id="s-largest-sub">&mdash;</div>
     </div>
@@ -1036,7 +1040,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.7';      /* visible en header y Ajustes */
+const APP_VERSION='v11.8';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3443,7 +3447,9 @@ function refreshDashCardsOnly(){
   const T=portfolioTotalsByType(heroFilter);
   const cg=calcCAGR(heroFilter);
   const cyFilt=currentYearReturn(heroFilter);
-  const cy=currentYearReturn();          /* SIN filtro: bloque AÑO EN CURSO */
+  /* AÑO EN CURSO ahora respeta el filtro del selector de activos: si seleccionas
+     "Acciones", el bloque muestra los datos del año en curso solo para acciones. */
+  const cy=currentYearReturn(heroFilter);
   setText('h-amt',fe(T.valOpen));
   const ge=G('h-gain');if(ge){ge.textContent=(T.gain>=0?'+':'-')+fe(Math.abs(T.gain));ge.className='hg hide-val sm '+(T.gain>=0?'pos':'neg');}
   setText('h-pct',fp(T.pct));setText('h-cagr','CAGR '+fp(cg,false));
@@ -3457,12 +3463,17 @@ function refreshDashCardsOnly(){
     sr.textContent=sign+fe(Math.abs(T.realizedPL));
     sr.className='sv hide-val sm '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
   }
-  setText('s-cagr-sub','CAGR '+fp(cg,false));
+  /* CAGR (compuesto anualizado) en grande, Media anual histórica en pequeño */
+  const sBig=G('s-cagr-big');
+  if(sBig){
+    sBig.textContent=fp(cg,false);
+    sBig.className='sv '+(cg>=0?'c':'r');
+  }
   const ma=meanAnnualReturn(heroFilter);
-  const smean=G('s-mean');
-  if(smean){
-    if(ma==null){smean.textContent='—';smean.className='sv c';}
-    else{smean.textContent=fp(ma);smean.className='sv '+(ma>=0?'c':'r');}
+  const sSub=G('s-mean-sub');
+  if(sSub){
+    if(ma==null)sSub.textContent='Media —';
+    else sSub.textContent='Media '+fp(ma);
   }
   const sy=G('s-yr');if(sy){sy.textContent=fp(cyFilt.rent);sy.className='sv '+(cyFilt.rent>=0?'gold':'r');}
   if(typeof refreshVolatilityCard==='function')refreshVolatilityCard();
@@ -5136,12 +5147,12 @@ const PANEL_GLOSSARY={
     h:'(Valor actual / Total invertido)^(1/años transcurridos) − 1. Estima la rentabilidad media anualizada.',
     n:'Permite comparar con productos como depósitos (3-4%) o índices (S&P 500 ~10% anual histórico).'
   },
-  'media-anual':{
-    t:'Media anual histórica',
+  'cagr-media':{
+    t:'CAGR anual + Media',
     q:'¿Qué muestra esta tarjeta?',
-    a:'El <b>promedio aritmético</b> de las rentabilidades anuales completas. Te dice qué año típico has tenido año tras año. Justo debajo, en pequeño, el <b>CAGR</b> (rentabilidad anual compuesta), que mide el resultado real acumulado.',
-    h:'Media = (rent. año 1 + rent. año 2 + … + rent. año N) / N, descartando el año en curso (incompleto). CAGR = (valor actual / invertido)^(1/años) − 1.',
-    n:'<b>Si la media es bastante mayor que el CAGR, tu cartera es volátil</b> (años buenos y malos compensándose). Ejemplo: +100% un año, −50% al siguiente → media +25%, pero CAGR 0% (acabas igual). Cuanto más se parezcan, más estable ha sido la inversión.'
+    a:'El <b>CAGR (Compound Annual Growth Rate)</b> en grande: la tasa anual compuesta a la que ha crecido tu cartera. Justo debajo, en pequeño, la <b>media anual</b> aritmética de las rentabilidades de años completos pasados.',
+    h:'CAGR = (valor actual / invertido)^(1/años) − 1. Media = (rent. año 1 + rent. año 2 + … + rent. año N) / N, descartando el año en curso.',
+    n:'<b>Si la media es bastante mayor que el CAGR, tu cartera es volátil</b> (años buenos y malos compensándose). Ejemplo: +100% un año, −50% al siguiente → media +25%, pero CAGR 0%. Cuanto más se parezcan, más estable la inversión.'
   },
   'mayor-posicion':{
     t:'Mayor posición',
