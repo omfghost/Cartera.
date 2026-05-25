@@ -1036,7 +1036,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.6';      /* visible en header y Ajustes */
+const APP_VERSION='v11.7';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -2916,8 +2916,11 @@ async function fetchPortfolioDayPct(){
 /* Curva intradía agregada de TODA la cartera en EUR.
    Para cada activo: serie de precios del día × unidades → curva en EUR.
    Sumamos punto a punto. Útil para la gráfica "Sesión de la cartera". */
-async function fetchPortfolioSessionCurve(){
+async function fetchPortfolioSessionCurve(filterType){
+  /* Curva intradía agregada en EUR. Si llega filterType (Acciones, ETF, Cripto…)
+     solo agrega los activos de ese tipo; sin filtro agrega toda la cartera. */
   const assets=DB.assets.filter(a=>{
+    if(filterType&&filterType!=='Todos'&&a.type!==filterType)return false;
     const m=assetMetrics(a);return m.units>1e-9&&a.ticker;
   });
   if(!assets.length)return null;
@@ -2932,17 +2935,16 @@ async function fetchPortfolioSessionCurve(){
     const s=results[i];if(!s||!s.points.length)return;
     const m=assetMetrics(a);
     totalPrev+=toEUR(m.units*s.prevClose,s.currency||assetCurrency(a));
-    /* indexar puntos de este activo por timestamp para join rápido */
     const map={};
     s.points.forEach(p=>{map[p.t]=p.p;});
     let lastPx=s.points[0].p;
     curve.forEach(c=>{
       const px=map[c.t];
-      if(px!=null)lastPx=px;        /* si no hay punto exacto, mantener último */
+      if(px!=null)lastPx=px;
       c.p+=toEUR(m.units*lastPx,s.currency||assetCurrency(a));
     });
   });
-  return {curve,totalPrev};
+  return {curve,totalPrev,count:assets.length};
 }
 /* ════ CHARTS ════ */
 const CH={};
@@ -6140,26 +6142,20 @@ async function openSessionChart(){
     <div class="shrow"><button class="bok" onclick="closeSheet()">Cerrar</button></div>`);
   try{
     let title='',points=[],prevClose=0,curr='EUR';
-    if(filt==='Todos'){
-      const data=await fetchPortfolioSessionCurve();
-      if(!data||!data.curve.length){setText('sess-sub','No hay datos de sesión disponibles para tus activos.');return;}
-      title='Toda la cartera · valor agregado';
-      points=data.curve.map(p=>({t:p.t,p:p.p}));
-      prevClose=data.totalPrev;
-      curr='EUR';
-    }else{
-      /* tipo concreto: tomamos el activo más representativo (mayor valor abierto) de ese tipo */
-      const cands=DB.assets.filter(a=>a.type===filt&&a.ticker).map(a=>({a,m:assetMetrics(a)})).filter(x=>x.m.units>1e-9);
-      if(!cands.length){setText('sess-sub','No hay activos de este tipo con ticker.');return;}
-      cands.sort((x,y)=>y.m.valOpen-x.m.valOpen);
-      const target=cands[0].a;
-      const s=await fetchYahooSession(target.ticker);
-      if(!s){setText('sess-sub','No se pudo cargar la sesión para '+target.ticker+'.');return;}
-      title=target.name+' ('+target.ticker+') · '+filt;
-      points=s.points;
-      prevClose=s.prevClose;
-      curr=s.currency||'EUR';
+    /* SIEMPRE usamos la curva AGREGADA — sumando todas las posiciones del tipo
+       filtrado (o todas si "Todos"). Antes, con un tipo concreto seleccionado,
+       se mostraba solo el activo más grande, lo cual era engañoso: el botón
+       Sesión debe reflejar el comportamiento del conjunto, no de uno solo. */
+    const data=await fetchPortfolioSessionCurve(filt==='Todos'?null:filt);
+    if(!data||!data.curve.length){
+      setText('sess-sub','No hay datos de sesión disponibles para los activos del filtro.');return;
     }
+    title=filt==='Todos'
+      ?'Toda la cartera · valor agregado'
+      :filt+' · '+data.count+' '+(data.count===1?'activo':'activos')+' agregados';
+    points=data.curve.map(p=>({t:p.t,p:p.p}));
+    prevClose=data.totalPrev;
+    curr='EUR';
     const last=points[points.length-1].p;
     const dayPct=prevClose>0?(last-prevClose)/prevClose*100:0;
     const cls=dayPct>=0?'g':'r';
@@ -6176,7 +6172,7 @@ async function openSessionChart(){
       const d=new Date(p.t*1000);
       return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
     });
-    const data=points.map(p=>p.p);
+    const ydata=points.map(p=>p.p);
     const lineColor=dayPct>=0?'#34e89e':'#ff7a8a';
     const g=ctx.getContext('2d').createLinearGradient(0,0,0,220);
     g.addColorStop(0,dayPct>=0?'rgba(52,232,158,.25)':'rgba(255,122,138,.22)');
@@ -6184,9 +6180,9 @@ async function openSessionChart(){
     try{CH.sess=new Chart(ctx,{
       type:'line',
       data:{labels,datasets:[
-        {label:'Precio',data,borderColor:lineColor,borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,tension:.2},
+        {label:'Precio',data:ydata,borderColor:lineColor,borderWidth:2,fill:true,backgroundColor:g,pointRadius:0,pointHoverRadius:6,tension:.2},
         /* línea de referencia: cierre anterior */
-        {label:'Cierre anterior',data:data.map(()=>prevClose),borderColor:'rgba(174,191,212,.4)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}
+        {label:'Cierre anterior',data:ydata.map(()=>prevClose),borderColor:'rgba(174,191,212,.4)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
