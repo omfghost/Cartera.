@@ -1067,7 +1067,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.9';      /* visible en header y Ajustes */
+const APP_VERSION='v12.0';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3173,9 +3173,13 @@ function mkDonut(){
 const ACC_COLORS=['#22d3ee','#34e89e','#ffb74d','#a78bfa','#ff6b9d','#4ade80',
   '#60a5fa','#f472b6','#fbbf24','#2dd4bf','#c084fc','#fb7185','#38bdf8','#a3e635'];
 function accDistribution(){
-  /* solo activos de tipo Acciones con posición abierta */
+  /* solo activos de tipo Acciones con posición ABIERTA hoy.
+     Usamos valOpen (lo que vale lo que aún tienes), NO val (que incluye
+     el importe de ventas pasadas). Así una acción liquidada desaparece
+     del donut y las parcialmente vendidas cuentan solo por lo que queda,
+     coherente con el resto del Panel (donut por tipo, tarjetas, etc.). */
   const accs=DB.assets.filter(a=>a.type==='Acciones'&&DB.ops.some(o=>o.aid===a.id))
-    .map(a=>({name:a.name,val:assetMetrics(a).val}))
+    .map(a=>({name:a.name,val:assetMetrics(a).valOpen}))
     .filter(x=>x.val>0.01)
     .sort((a,b)=>b.val-a.val);
   const total=accs.reduce((s,x)=>s+x.val,0);
