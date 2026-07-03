@@ -675,6 +675,19 @@ input,select,button,textarea{font-family:inherit}
 /* Interrogación de glosario alineada a la derecha del cuadro de la tarjeta.
    El .sl ya es display:flex, así que con margin-left:auto la empujamos al final. */
 .note-ic-r{margin-left:auto}
+
+/* ── Ajustes: bloque de impuestos ── */
+.tax-input-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 12px}
+.tax-lbl{font-size:12px;color:var(--w);font-weight:500}
+.tax-field{display:inline-flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid rgba(34,150,235,.28);border-radius:9px;padding:6px 10px}
+.tax-field input{width:52px;background:transparent;border:none;color:var(--w);font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;text-align:right;outline:none}
+.tax-field input::-webkit-outer-spin-button,.tax-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.tax-pct{color:var(--c2);font-size:13px;font-weight:600}
+.tax-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tax-preset{flex:1;min-width:44px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:7px 4px;color:var(--w2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.tax-preset:active{transform:scale(0.95)}
+.tax-preset.on{background:rgba(34,150,235,.16);border-color:rgba(34,150,235,.5);color:var(--c2)}
+.tax-note{font-size:11px;color:var(--w2);line-height:1.7;background:var(--bg2);border-radius:9px;padding:11px 13px}
 </style>
 </head>
 <body>
@@ -714,7 +727,7 @@ input,select,button,textarea{font-family:inherit}
     <div class="sc"><div class="sl">TOTAL INVERTIDO<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('total-invertido')">?</span></div><div class="sv hide-val sm" id="s-inv">&mdash;</div><div class="sv-sub hide-val" id="s-inv-act">&mdash;</div></div>
     <div class="sc"><div class="sl">GANANCIA TOTAL<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('ganancia-total')">?</span></div><div class="sv g hide-val sm" id="s-gain">&mdash;</div></div>
     <div class="sc"><div class="sl">RENT. TOTAL<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('rent-total')">?</span></div><div class="sv g" id="s-tot">&mdash;</div></div>
-    <div class="sc"><div class="sl">REALIZADO<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div></div>
+    <div class="sc"><div class="sl">REALIZADO<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('realizado')">?</span></div><div class="sv hide-val sm" id="s-real">&mdash;</div><div class="sv-sub2 hide-val" id="s-real-net">&mdash;</div></div>
     <div class="sc">
       <div class="sl">CAGR ANUAL<span class="note-ic note-ic-r" onclick="event.stopPropagation();explain('cagr-media')">?</span></div>
       <div class="sv c" id="s-cagr-big">&mdash;</div>
@@ -870,6 +883,20 @@ input,select,button,textarea{font-family:inherit}
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">✏️</span>EDITAR ACTIVOS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Pulsa un activo para editar su nombre, tipo y ticker. &Uacute;til si la importaci&oacute;n asign&oacute; mal el tipo o si necesitas corregir el ticker para que se sincronicen los precios.</div><div id="cat-rows"></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">📥</span>IMPORTAR OPERACIONES DE BROKER</span><span class="sbt-chev">▾</span></summary><div class="sbs">Importa tu historial desde un archivo CSV exportado de <b>Trade Republic</b>, <b>Binance</b>, <b>DEGIRO</b>, <b>Interactive Brokers</b>, <b>XTB</b> o <b>MyInvestor</b>. La app detecta el formato y a&ntilde;ade las operaciones autom&aacute;ticamente.</div><button class="sbtn" onclick="triggerBrokerImport()">&#128229; Importar archivo de broker</button><input type="file" id="brokerf" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="handleBrokerImport(event)"><div style="font-size:11px;color:var(--w2);line-height:1.7;margin-top:10px"><b style="color:var(--w)">C&oacute;mo exportar:</b><br>&bull; <b>Trade Republic:</b> Perfil &rarr; Extractos &rarr; Exportar transacciones.<br>&bull; <b>Binance:</b> Cartera &rarr; Historial &rarr; Exportar registros.<br>&bull; <b>DEGIRO:</b> Actividad &rarr; Transacciones &rarr; Exportar CSV.<br>&bull; <b>Interactive Brokers:</b> Informes &rarr; Flex/Actividad &rarr; CSV.<br>&bull; <b>XTB:</b> Historial de cuenta &rarr; Exportar.<br>&bull; <b>MyInvestor:</b> Movimientos &rarr; Descargar.</div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">💾</span>COPIA DE SEGURIDAD</span><span class="sbt-chev">▾</span></summary><button class="sbtn" onclick="exportJSON()">&#128228; Exportar datos (JSON)</button><button class="sbtn" onclick="triggerImport()">&#128229; Importar datos (JSON)</button><input type="file" id="impf" accept=".json" style="display:none" onchange="handleImport(event)"><button class="sbtn danger" onclick="confirmReset()">&#128465; Restablecer datos de ejemplo</button></details>
+  <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">🧾</span>IMPUESTOS SOBRE PLUSVAL&Iacute;AS</span><span class="sbt-chev">▾</span></summary><div class="sbs">Tipo impositivo aplicado para estimar el <b>neto despu&eacute;s de impuestos</b> de tus ganancias realizadas (mostrado bajo la tarjeta REALIZADO del Panel). Las p&eacute;rdidas se compensan con las ganancias antes de aplicar el tipo.</div>
+    <div class="tax-input-row">
+      <label class="tax-lbl">Tipo aplicado</label>
+      <div class="tax-field"><input type="number" id="tax-rate-inp" min="0" max="60" step="0.5" inputmode="decimal" onchange="setTaxRate(this.value)"><span class="tax-pct">%</span></div>
+    </div>
+    <div class="tax-presets">
+      <button class="tax-preset" onclick="setTaxRate(19)">19%</button>
+      <button class="tax-preset" onclick="setTaxRate(21)">21%</button>
+      <button class="tax-preset" onclick="setTaxRate(23)">23%</button>
+      <button class="tax-preset" onclick="setTaxRate(27)">27%</button>
+      <button class="tax-preset" onclick="setTaxRate(30)">30%</button>
+    </div>
+    <div class="tax-note">Tramos del ahorro (IRPF Espa&ntilde;a, orientativos):<br>&bull; <b>19%</b> hasta 6.000&euro;<br>&bull; <b>21%</b> de 6.000 a 50.000&euro;<br>&bull; <b>23%</b> de 50.000 a 200.000&euro;<br>&bull; <b>27%</b> de 200.000 a 300.000&euro;<br>&bull; <b>30%</b> m&aacute;s de 300.000&euro;<br><br><span style="color:var(--w3)">Estimaci&oacute;n orientativa. No es asesoramiento fiscal: el tipo real depende de tu situaci&oacute;n global y de otras ganancias del a&ntilde;o.</span></div>
+  </details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">🔔</span>SONIDO DE FINALIZACI&Oacute;N</span><span class="sbt-chev">▾</span></summary><div class="sbs">Una nota suave cuando termina la actualizaci&oacute;n de precios o la resincronizaci&oacute;n.</div><label class="snd-tg"><input type="checkbox" id="snd-chk" onchange="setSoundEnabled(this.checked)"><span class="snd-tg-sl"></span><span class="snd-tg-lbl">Activado</span></label></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">📱</span>INSTALAR EN iPHONE</span><span class="sbt-chev">▾</span></summary><div class="sbs" style="margin-bottom:14px">Sin App Store &middot; Icono en pantalla de inicio &middot; Funciona offline</div><div class="ig"><div class="igs"><div class="ign">1</div><div>Abre esta URL en <b>Safari</b> (no Chrome)</div></div><div class="igs"><div class="ign">2</div><div>Toca el bot&oacute;n <b>Compartir &#8673;</b> abajo</div></div><div class="igs"><div class="ign">3</div><div>Selecciona <b>"A&ntilde;adir a pantalla de inicio"</b></div></div><div class="igs"><div class="ign">4</div><div>Toca <b>A&ntilde;adir</b></div></div><div class="ign2">&#10003; Funciona sin internet &middot; &#10003; Datos en el dispositivo</div></div></details>
   <details class="sblk sblk-coll"><summary class="sbt-sum"><span class="sbt"><span class="sbt-ic">ℹ️</span>SOBRE LOS AN&Aacute;LISIS</span><span class="sbt-chev">▾</span></summary><div style="font-size:11px;color:var(--w2);line-height:1.8"><div>&bull; Con clave de <b>FMP</b> configurada, los datos vienen de su API. Sin clave, se usan fuentes de respaldo.</div><div>&bull; Los an&aacute;lisis (Graham, Buffett, EV/FCF, t&eacute;cnico, veredicto, posici&oacute;n competitiva) los <b>calcula la app</b> con sus algoritmos.</div><div>&bull; Las etiquetas <b>EST</b> / <b>CONSENSO</b> marcan valores estimados o de terceros.</div><div>&bull; <b>No es asesoramiento financiero.</b> Verifica siempre antes de invertir.</div></div></details>
@@ -1040,7 +1067,7 @@ function searchCompanies(query){
 }
 'use strict';
 /* ════ MI CARTERA v7 ════ */
-const APP_VERSION='v11.8';      /* visible en header y Ajustes */
+const APP_VERSION='v11.9';      /* visible en header y Ajustes */
 
 const TC={'Criptomoneda':'#8b7cff','ETF':'#22d3ee','Acciones':'#34e89e',
   'Fondos':'#80cbc4','Metales':'#ffd54a','Renta Fija':'#7fc8e8',
@@ -3376,6 +3403,36 @@ function navTo(v){
 /* ════ DASHBOARD ════ */
 let heroFilter='Todos';
 function setHeroFilter(t){heroFilter=t;renderDash();}
+
+/* ── IMPUESTOS SOBRE PLUSVALÍAS (estimación) ──
+   El tipo se guarda en localStorage. Por defecto 19% (primer tramo del ahorro
+   en España). El usuario puede cambiarlo en Ajustes.
+   Tramos del ahorro (IRPF España, orientativos): 19% hasta 6.000€ · 21% de
+   6.000-50.000€ · 23% de 50.000-200.000€ · 27% de 200.000-300.000€ · 30% >300.000€. */
+function getTaxRate(){
+  const v=parseFloat(localStorage.getItem('cv6_taxRate'));
+  return (!isNaN(v)&&v>=0&&v<=60)?v:19;   /* porcentaje, default 19 */
+}
+function setTaxRate(pct){
+  const v=parseFloat(pct);
+  if(isNaN(v)||v<0||v>60)return;
+  localStorage.setItem('cv6_taxRate',String(v));
+  renderDash();renderSettings();
+}
+/* Calcula el neto después de impuestos de una ganancia realizada.
+   realizedPL ya está NETO de pérdidas (compensación implícita, opción C):
+   suma ganancias y pérdidas de todas las ventas. Sobre el saldo, si es
+   positivo aplicamos el tipo; si es negativo (pérdida neta) no hay impuesto.
+   Devuelve {gross, tax, net, rate}. */
+function realizedAfterTax(realizedPL){
+  const rate=getTaxRate()/100;
+  if(realizedPL>0){
+    const tax=realizedPL*rate;
+    return {gross:realizedPL,tax,net:realizedPL-tax,rate:getTaxRate()};
+  }
+  /* pérdida neta o cero: sin impuesto (las pérdidas se compensarían a futuro) */
+  return {gross:realizedPL,tax:0,net:realizedPL,rate:getTaxRate()};
+}
 /* Actualiza la tarjeta de Mayor Posición.
    Muestra: nombre (pequeño), valor en € (oculto si modo privacidad activo)
    y % del total. */
@@ -3462,6 +3519,20 @@ function refreshDashCardsOnly(){
     const sign=T.realizedPL>=0?'+':'-';
     sr.textContent=sign+fe(Math.abs(T.realizedPL));
     sr.className='sv hide-val sm '+(T.realizedPL>0?'g':T.realizedPL<0?'r':'');
+  }
+  /* Sub-línea: neto estimado después de impuestos (solo si hay ganancia realizada) */
+  const srn=G('s-real-net');
+  if(srn){
+    const at=realizedAfterTax(T.realizedPL);
+    if(T.realizedPL>0.005){
+      const sgn=at.net>=0?'+':'-';
+      srn.textContent='Neto '+sgn+fe(Math.abs(at.net))+' ('+at.rate+'%)';
+      srn.style.display='';
+    }else{
+      /* sin ganancia realizada no hay impuesto que estimar */
+      srn.textContent='';
+      srn.style.display='none';
+    }
   }
   /* CAGR (compuesto anualizado) en grande, Media anual histórica en pequeño */
   const sBig=G('s-cagr-big');
@@ -4475,6 +4546,13 @@ function renderSettings(){
   /* estado del toggle de sonido */
   const chk=G('snd-chk');if(chk)chk.checked=isSoundEnabled();
   const aschk=G('autosync-chk');if(aschk)aschk.checked=isAutoSyncEnabled();
+  /* tipo impositivo actual + resaltar preset activo */
+  const tinp=G('tax-rate-inp');if(tinp)tinp.value=getTaxRate();
+  const curRate=getTaxRate();
+  document.querySelectorAll('.tax-preset').forEach(b=>{
+    const val=parseFloat(b.textContent);
+    b.classList.toggle('on',val===curRate);
+  });
   /* versión visible */
   const v=G('ver-tag');if(v)v.textContent='Mi Cartera '+APP_VERSION+' · PWA · Datos en el dispositivo';
   /* listado de activos con su tipo para reclasificar */
@@ -5136,9 +5214,9 @@ const PANEL_GLOSSARY={
   'realizado':{
     t:'Realizado (acumulado)',
     q:'¿Qué es?',
-    a:'Suma de ganancias y pérdidas <b>realizadas</b> (= ya materializadas en ventas) a lo largo de toda tu historia.',
-    h:'Por cada venta: (precio venta − precio medio de compra) × unidades vendidas − comisiones. Sumado a lo largo del tiempo.',
-    n:'Verde = balance positivo de ventas. Es independiente del valor actual de lo que aún tienes.'
+    a:'Suma de ganancias y pérdidas <b>realizadas</b> (= ya materializadas en ventas) a lo largo de toda tu historia. Debajo, en pequeño, el <b>neto estimado después de impuestos</b>.',
+    h:'Por cada venta: (precio venta − precio medio de compra) × unidades vendidas − comisiones. Sumado a lo largo del tiempo. El neto aplica el tipo impositivo configurado en Ajustes sobre el saldo positivo (las pérdidas se compensan antes).',
+    n:'Verde = balance positivo de ventas. El neto es una <b>estimación orientativa</b>: el tipo real depende de tu situación fiscal global. Cambia el tipo en Ajustes → Impuestos sobre plusvalías.'
   },
   'cagr':{
     t:'CAGR anual',
